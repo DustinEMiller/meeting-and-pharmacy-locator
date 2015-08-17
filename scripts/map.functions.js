@@ -3,37 +3,37 @@
  * TODO: IE8 DESIGN TWEAKS?
  */
 
-jQuery(document).ready(function(){
-    
+$(document).ready(function(){
+
     if($('#map-wrapper').css('display') === 'none'){
         mobile = true;
     }
     else {
         mobile = false;
     }
-    
+
     if('XDomainRequest' in window && window.XDomainRequest !== null) {
         useShirley = true;
         $.support.cors = true;
         clientKey = "pD5ltovTQHNvhP32e2zQ";
     }
 
-    
+
     if(getCookie('cms_user_zip_code') !== null){
         $("[name=location]").val(getCookie('cms_user_zip_code'));
     }
-    
+
     $('#mapform').on('submit', function () {
         codeWrapper();
-        
+
         var location = $("[name=location]").val();
         var radius = $("[name=radius]:checked").val();
         origin = location;
-        
+
         for (var i = 0; i < allMarkers.length; i++) {
             allMarkers[i].setMap(null);
         }
-        
+
         allMarkers = [];
         $("#locations, #directions").html("");
         $("#finished h2, .message, #number-results").remove();
@@ -41,13 +41,13 @@ jQuery(document).ready(function(){
         $("[aria-invalid=true]").attr("aria-invalid", "false");
         nextAddress = 0;
         delay = 0;
-        
+
         if($("#mapform").data("map-type") === 'pharmacy' && !$("[name=pharmacy]:checked").val()) {
             messageHandler("Please select a pharmacy type.", "#mapform", "error", false);
             codeWrapper();
             return;
         }
-        
+
         if (!radius){
             messageHandler("Please select a radius.", "#mapform", "error", false);
             codeWrapper();
@@ -69,28 +69,28 @@ jQuery(document).ready(function(){
                 codeWrapper();
                 return;
             }
-            
+
             location = location.split(',');
-            
+
             if(location.length !== 2){
                 messageHandler("That is not a valid City, State combo", "[name=location]", "error", true);
                 codeWrapper();
                 return;
             }
-            
+
             for(var i = 0; i < location.length; i++){
                 location[i] = location[i].trim();
             }  
-            
+
             var found = false;
 
             $.each(stateJSON, function(i, v) {
                 if (v.name.search(new RegExp(location[1], "i")) != -1 || v.abbreviation.search(new RegExp(location[1], "i")) != -1) {
                     found = true;
                     location[1] = v.abbreviation;
-                    
+
                     var url = "//www.zipcodeapi.com/rest/"+clientKey+"/city-zips.json/"+location[0]+"/"+location[1];
-                    
+
                     if(useShirley){
                         url = "//askshirley.org/zip/api/cityzips/"+clientKey+"/"+location[0]+"/"+location[1];
                     }
@@ -102,7 +102,7 @@ jQuery(document).ready(function(){
                             switch (status){
                                 case 'success':
                                     var data = JSON.parse(jqXHR.responseText);
-                                    
+
                                     if(data.error || data.error_msg){
                                         messageHandler("There was a problem with your request. Please try again later", "#mapform", "error", false);
                                         codeWrapper();
@@ -143,14 +143,14 @@ jQuery(document).ready(function(){
             }
         }   
     });
-    
+
     $('#results').on('click touch', '#starting-loc button', function () {
         $('.default-message-box').remove();
         $('.message').remove();
         var type = $('.direction-links .button.active').attr("class").replace(' active', '').replace(' button', '');;
         requestDirections(type, $('.direction-links .button.active').parent().attr("data-marker-index"), 'starting-loc');
     });
-    
+
     if(!mobile){
         $('#locations').on('click touch', '.direction-links .button', function(){
             $('.default-message-box').remove();
@@ -160,9 +160,8 @@ jQuery(document).ready(function(){
             requestDirections(type, $(this).parent().attr("data-marker-index"), 'directions-button');
         });
     }
-    
-});
 
+});
 var geocoder;
 var map;
 var service;
@@ -184,7 +183,7 @@ var pharmurl = "//spreadsheets.google.com/a/google.com/tq?key=1X2y2MVq82sgCXznHM
 var pharmplusurl = "//spreadsheets.google.com/a/google.com/tq?key=14du8qyaID-DmqTHMEfIpy_W6l2dmOluzq8qfVfIdsbg";
 var semurl = "//spreadsheets.google.com/a/google.com/tq?key=15R_yJWOph16dwxWtzfnWCCt6z8DjFiId3MVu-KLuF7g";
 var packedResults = [];
-        
+
 function initialize() {
     geocoder = new google.maps.Geocoder();
     directionsService = new google.maps.DirectionsService();
@@ -195,11 +194,11 @@ function initialize() {
     };
 
     map = new google.maps.Map(document.getElementById('map-canvas'), mapOptions);
-    
+
     var rendererOptions = {
         map: map
     };
-    
+
     directionsDisplay = new google.maps.DirectionsRenderer(rendererOptions);
 }
 
@@ -222,10 +221,10 @@ function codeAddress(next){
     var location = toTitleCase(places[nextAddress]['name']) + ' ' + toTitleCase(places[nextAddress]['address']) + ' ' + 
             toTitleCase(places[nextAddress]['city']) + ' ' + places[nextAddress]['state'] + ' ' + places[nextAddress]['zip'];
     var templateScript;
-    
+
     var number = nextAddress + 1;
     geocoder.geocode( { 'address': location }, function(results, status) {
-        
+
     if (status == google.maps.GeocoderStatus.OK) {
         if(!mobile){
             map.setCenter(results[0].geometry.location);
@@ -297,7 +296,7 @@ function codeAddress(next){
                 });
                 break;
         }
-        
+
         if(mobile){
             var root;
             if($("#mapform").data("map-type") === "pharmacy") {
@@ -306,7 +305,7 @@ function codeAddress(next){
             else {
                 root = "maps.google.com?saddr="+origin+"&daddr="+context['address']+" "+context['city']+" "+context['state'];
             }
-            
+
             context['walk'] = encodeURI(root+"&directionsmode=walk");
             context['bike'] = encodeURI(root+"&directionsmode=bike");
             context['transit'] = encodeURI(root+"&directionsmode=transit");
@@ -350,11 +349,11 @@ function isInt(value) {
 
 function zipRadius(zipcode, radius) {
     var url = "//www.zipcodeapi.com/rest/"+clientKey+"/radius.json/"+zipcode+"/"+radius+"/mile";
-    
+
     if(useShirley){
         url = "//askshirley.org/zip/api/radius/"+clientKey+"/"+zipcode+"/"+radius;
     }
-    
+
     $.ajax({
         url: url,
         dataType: 'text',
@@ -362,7 +361,7 @@ function zipRadius(zipcode, radius) {
             switch (status){
                 case 'success':
                     var data = JSON.parse(jqXHR.responseText);
-                    
+
                     if(data.error || data.error_msg){
                         messageHandler("There was a problem with your request. Please try again later", "#mapform", "error", false);
                         codeWrapper();
@@ -414,7 +413,7 @@ function findPlaces(zipcodes) {
             zipColumn = "E";
             break;
     }
-    
+
     //This is broken up into multiple queries because of freaking IE (character limit on jsonp scripts)
     for(var i = 0; i < zipcodes.zip_codes.length; i++){
         if(i == 0 || ($.support.cors && i%41 === 0)) {
@@ -423,7 +422,7 @@ function findPlaces(zipcodes) {
         else {
             whereClause += " OR "+zipColumn+" = " + zipcodes.zip_codes[i].zip_code;
         }
-        
+
         if($.support.cors && i%40 === 0 && i != 0){
             whereClauses.push(whereClause);
         } else if (i === zipcodes.zip_codes.length-1) {
@@ -448,7 +447,7 @@ function scriptInsertion(){
         if (!done && (!this.readyState || this.readyState === 'loaded' || this.readyState === 'complete')) {
             done = true;
             script.onload = script.onreadystatechange = null;
-            
+
             if (script.parentNode) {
                 return script.parentNode.removeChild(script);
             }
@@ -489,24 +488,24 @@ function queryHandler () {
             break;
         case "seminar":
             var seminars = 0;
-            
+
             for(i = 0; i < packedResults.length; i++) {
                 var row = packedResults[i];
 
                 var semDate = new Date(row['c'][4].v);
                 var now = new Date();
-                
+
                 if(Date.parse(now.toDateString()) > Date.parse(semDate.toDateString())){
                     continue;
                 }
-                
+
                 var event = {
                     date: semDate.toDateString(),
                     time: semDate.toLocaleTimeString(navigator.language, {hour: '2-digit', minute:'2-digit'})
                 };
-                
+
                 var index = getKeyByAddress(places, row['c'][1].v);
-                
+
                 if(index !== -1) {
                     places[index]['events'].push(event);
                     seminars++;
@@ -525,23 +524,23 @@ function queryHandler () {
                     places.push(place);
                 }
             }
-            
+
             var msgLoc = places.length+" Different Locations";
-            
+
             if(places.length == 0){
                 msgLoc = "0 Locations";
             }
             else if (places.length == 1) {
                 msgLoc = "1 Location";
             }
-            
+
             var context = {
                 locations: msgLoc,
                 number: seminars
             };
             break;
     }    
-           
+
     var templateScript = $("#result-list").html();
     var template = Handlebars.compile(templateScript);
 
@@ -576,13 +575,13 @@ function getKeyByAddress(obj, str) {
 function requestDirections(type, locationID, caller) { 
     var statusMessage = '';
     var element = 'none';
-    
+
     if($("[name=starting-location]").length > 0) {
         origin = $("[name=starting-location]").val();
     } 
-    
+
     var end = allMarkers[locationID]['title'];
-    
+
     switch (type) {
         case 'walk':
             type = google.maps.TravelMode.WALKING;
@@ -597,14 +596,14 @@ function requestDirections(type, locationID, caller) {
             type = google.maps.TravelMode.DRIVING;
             break;   
     }
-    
+
     var request = {
       origin:origin,
       destination:end,
       travelMode: type
     };
     directionsService.route(request, function(result, status) {
-        
+
         if (status == google.maps.DirectionsStatus.OK) {
             $("#directions").html('');
             directionsDisplay.setDirections(result);
@@ -661,255 +660,14 @@ function showSteps(directionResult) {
     };
     context['steps'].push(step);
   }
-  
+
   $("#directions").append(template(context));
   messageHandler(directionResult.routes[0].warnings, '#starting-loc', 'warning', false);
 }
 
-var stateJSON = [
-    {
-        "name": "Alabama",
-        "abbreviation": "AL"
-    },
-    {
-        "name": "Alaska",
-        "abbreviation": "AK"
-    },
-    {
-        "name": "American Samoa",
-        "abbreviation": "AS"
-    },
-    {
-        "name": "Arizona",
-        "abbreviation": "AZ"
-    },
-    {
-        "name": "Arkansas",
-        "abbreviation": "AR"
-    },
-    {
-        "name": "California",
-        "abbreviation": "CA"
-    },
-    {
-        "name": "Colorado",
-        "abbreviation": "CO"
-    },
-    {
-        "name": "Connecticut",
-        "abbreviation": "CT"
-    },
-    {
-        "name": "Delaware",
-        "abbreviation": "DE"
-    },
-    {
-        "name": "District Of Columbia",
-        "abbreviation": "DC"
-    },
-    {
-        "name": "Federated States Of Micronesia",
-        "abbreviation": "FM"
-    },
-    {
-        "name": "Florida",
-        "abbreviation": "FL"
-    },
-    {
-        "name": "Georgia",
-        "abbreviation": "GA"
-    },
-    {
-        "name": "Guam",
-        "abbreviation": "GU"
-    },
-    {
-        "name": "Hawaii",
-        "abbreviation": "HI"
-    },
-    {
-        "name": "Idaho",
-        "abbreviation": "ID"
-    },
-    {
-        "name": "Illinois",
-        "abbreviation": "IL"
-    },
-    {
-        "name": "Indiana",
-        "abbreviation": "IN"
-    },
-    {
-        "name": "Iowa",
-        "abbreviation": "IA"
-    },
-    {
-        "name": "Kansas",
-        "abbreviation": "KS"
-    },
-    {
-        "name": "Kentucky",
-        "abbreviation": "KY"
-    },
-    {
-        "name": "Louisiana",
-        "abbreviation": "LA"
-    },
-    {
-        "name": "Maine",
-        "abbreviation": "ME"
-    },
-    {
-        "name": "Marshall Islands",
-        "abbreviation": "MH"
-    },
-    {
-        "name": "Maryland",
-        "abbreviation": "MD"
-    },
-    {
-        "name": "Massachusetts",
-        "abbreviation": "MA"
-    },
-    {
-        "name": "Michigan",
-        "abbreviation": "MI"
-    },
-    {
-        "name": "Minnesota",
-        "abbreviation": "MN"
-    },
-    {
-        "name": "Mississippi",
-        "abbreviation": "MS"
-    },
-    {
-        "name": "Missouri",
-        "abbreviation": "MO"
-    },
-    {
-        "name": "Montana",
-        "abbreviation": "MT"
-    },
-    {
-        "name": "Nebraska",
-        "abbreviation": "NE"
-    },
-    {
-        "name": "Nevada",
-        "abbreviation": "NV"
-    },
-    {
-        "name": "New Hampshire",
-        "abbreviation": "NH"
-    },
-    {
-        "name": "New Jersey",
-        "abbreviation": "NJ"
-    },
-    {
-        "name": "New Mexico",
-        "abbreviation": "NM"
-    },
-    {
-        "name": "New York",
-        "abbreviation": "NY"
-    },
-    {
-        "name": "North Carolina",
-        "abbreviation": "NC"
-    },
-    {
-        "name": "North Dakota",
-        "abbreviation": "ND"
-    },
-    {
-        "name": "Northern Mariana Islands",
-        "abbreviation": "MP"
-    },
-    {
-        "name": "Ohio",
-        "abbreviation": "OH"
-    },
-    {
-        "name": "Oklahoma",
-        "abbreviation": "OK"
-    },
-    {
-        "name": "Oregon",
-        "abbreviation": "OR"
-    },
-    {
-        "name": "Palau",
-        "abbreviation": "PW"
-    },
-    {
-        "name": "Pennsylvania",
-        "abbreviation": "PA"
-    },
-    {
-        "name": "Puerto Rico",
-        "abbreviation": "PR"
-    },
-    {
-        "name": "Rhode Island",
-        "abbreviation": "RI"
-    },
-    {
-        "name": "South Carolina",
-        "abbreviation": "SC"
-    },
-    {
-        "name": "South Dakota",
-        "abbreviation": "SD"
-    },
-    {
-        "name": "Tennessee",
-        "abbreviation": "TN"
-    },
-    {
-        "name": "Texas",
-        "abbreviation": "TX"
-    },
-    {
-        "name": "Utah",
-        "abbreviation": "UT"
-    },
-    {
-        "name": "Vermont",
-        "abbreviation": "VT"
-    },
-    {
-        "name": "Virgin Islands",
-        "abbreviation": "VI"
-    },
-    {
-        "name": "Virginia",
-        "abbreviation": "VA"
-    },
-    {
-        "name": "Washington",
-        "abbreviation": "WA"
-    },
-    {
-        "name": "West Virginia",
-        "abbreviation": "WV"
-    },
-    {
-        "name": "Wisconsin",
-        "abbreviation": "WI"
-    },
-    {
-        "name": "Wyoming",
-        "abbreviation": "WY"
-    }
-];
-
-//google.maps.event.addDomListener(window, 'load', initialize());
-//google.maps.event.addDomListener(window, 'resize', initialize);
-/*google.maps.event.addListener(allMarkers, 'click', function() {
-    console.log('log');
-});*/
+    var stateJSON = [{"name":"Alabama","abbreviation":"AL"},{"name":"Alaska","abbreviation":"AK"},{"name":"American Samoa","abbreviation":"AS"},{"name":"Arizona","abbreviation":"AZ"},{"name":"Arkansas","abbreviation":"AR"},{"name":"California","abbreviation":"CA"},{"name":"Colorado","abbreviation":"CO"},{"name":"Connecticut","abbreviation":"CT"},{"name":"Delaware","abbreviation":"DE"},{"name":"District Of Columbia","abbreviation":"DC"},{"name":"Federated States Of Micronesia","abbreviation":"FM"},{"name":"Florida","abbreviation":"FL"},{"name":"Georgia","abbreviation":"GA"},{"name":"Guam","abbreviation":"GU"},{"name":"Hawaii","abbreviation":"HI"},{"name":"Idaho","abbreviation":"ID"},{"name":"Illinois","abbreviation":"IL"},{"name":"Indiana","abbreviation":"IN"},{"name":"Iowa","abbreviation":"IA"},{"name":"Kansas","abbreviation":"KS"},{"name":"Kentucky","abbreviation":"KY"},{"name":"Louisiana","abbreviation":"LA"},{"name":"Maine","abbreviation":"ME"},{"name":"Marshall Islands","abbreviation":"MH"},{"name":"Maryland","abbreviation":"MD"},{"name":"Massachusetts","abbreviation":"MA"},{"name":"Michigan","abbreviation":"MI"},{"name":"Minnesota","abbreviation":"MN"},{"name":"Mississippi","abbreviation":"MS"},{"name":"Missouri","abbreviation":"MO"},{"name":"Montana","abbreviation":"MT"},{"name":"Nebraska","abbreviation":"NE"},{"name":"Nevada","abbreviation":"NV"},{"name":"New Hampshire","abbreviation":"NH"},{"name":"New Jersey","abbreviation":"NJ"},{"name":"New Mexico","abbreviation":"NM"},{"name":"New York","abbreviation":"NY"},{"name":"North Carolina","abbreviation":"NC"},{"name":"North Dakota","abbreviation":"ND"},{"name":"Northern Mariana Islands","abbreviation":"MP"},{"name":"Ohio","abbreviation":"OH"},{"name":"Oklahoma","abbreviation":"OK"},{"name":"Oregon","abbreviation":"OR"},{"name":"Palau","abbreviation":"PW"},{"name":"Pennsylvania","abbreviation":"PA"},{"name":"Puerto Rico","abbreviation":"PR"},{"name":"Rhode Island","abbreviation":"RI"},{"name":"South Carolina","abbreviation":"SC"},{"name":"South Dakota","abbreviation":"SD"},{"name":"Tennessee","abbreviation":"TN"},{"name":"Texas","abbreviation":"TX"},{"name":"Utah","abbreviation":"UT"},{"name":"Vermont","abbreviation":"VT"},{"name":"Virgin Islands","abbreviation":"VI"},{"name":"Virginia","abbreviation":"VA"},{"name":"Washington","abbreviation":"WA"},{"name":"West Virginia","abbreviation":"WV"},{"name":"Wisconsin","abbreviation":"WI"},{"name":"Wyoming","abbreviation":"WY"}];
+    
 $(window).on('load resize',function(e){
-   initialize();
-});                                                                                            
+    initialize();
+});   
+                                                                                       
