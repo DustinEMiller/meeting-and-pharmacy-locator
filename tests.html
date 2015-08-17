@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<!--
+To change this license header, choose License Headers in Project Properties.
+To change this template file, choose Tools | Templates
+and open the template in the editor.
+-->
+<html>
+    <head>
+        <title>TODO supply a title</title>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    </head>
+    <body>
+        <div id="results"></div>
+        <div><a href="#" id="test">Test Random Location</a></div>
+        <script src="//maps.googleapis.com/maps/api/js?key=AIzaSyB8riOVaEiiWOY2O6H-kKHB6bqG7GUW2Ys"></script>
+        <script src="//cdnjs.cloudflare.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script> 
+                <script>
+var results = '';
+var geocoder;
+$('#test').on('click touch', function () {
+    $('#results').html();
+    var num = Math.floor(Math.random() * (49 - 0 + 1)) + 0;
+    $('#results').append("<h3>State: "+coords[num]['state']+" Lat: "+coords[num]['latitude']+" Long: "+coords[num]['longitude']+"</h3>");
+    googleCoding(coords[num]['latitude'], coords[num]['longitude']);
+    shirleyCoding(coords[num]['latitude'], coords[num]['longitude'], coords[num]['state']);
+});
+function initialize() {
+  // Try HTML5 geolocation
+  if(navigator.geolocation) {
+    navigator.geolocation.getCurrentPosition(function(position) {
+        $('#results').append("<h3>User Location Lat: "+position.coords.latitude+" Long: "+position.coords.longitude+"</h3>");
+        googleCoding(position.coords.latitude, position.coords.longitude);
+        shirleyCoding(position.coords.latitude, position.coords.longitude);
+    }, function() {
+      handleNoGeolocation(true);
+    });
+  } else {
+    // Browser doesn't support Geolocation
+    handleNoGeolocation(false);
+  }
+}
+
+function handleNoGeolocation(errorFlag) {
+    if (errorFlag) {
+        $('#results').append('Error: The Geolocation service failed.'+ "<br>");
+    } else {
+        $('#results').append('Error: Your browser doesn\'t support geolocation.'+ "<br>");
+    }
+
+}
+
+function googleCoding(lat, lng){
+    var pos = new google.maps.LatLng(lat, lng);
+    geocoder = new google.maps.Geocoder();
+    geocoder.geocode({'latLng': pos}, function(results, status) {
+        if (status === google.maps.GeocoderStatus.OK) {
+            for (var i = 0; i<results[0].address_components.length; i++) {
+                console.log(results[0].address_components[i].types[0]);
+                if(results[0].address_components[i].types[0] == 'postal_code'){
+                    //var zip = results[0].formatted_address;
+                    //var index = zip.search(/\d{5}/g, '')
+                    //zip = zip.substring(index, index + 5);
+                    $('#results').append("Google Geocoder: " + results[0].address_components[i].short_name + "<br>");
+                }
+            }
+            console.log(results[0]);
+            
+        }
+    });
+}
+
+function shirleyCoding(lat, lng){
+    $.ajax({
+        url: "//askshirley.org/zip/api/geocode/pD5ltovTQHNvhP32e2zQ/"+lat+"/"+lng,
+        dataType: 'text',
+        complete: function(jqXHR, status){
+            switch (status){
+                case 'success':
+                    var data = JSON.parse(jqXHR.responseText);
+                    if(data.error || data.error_msg){
+                        $('#results').append("There was a problem with your request. Please try again later"+ "<br>");
+                    }
+                    else {
+                        $('#results').append("Shirley Geocoder: "+data.zip_codes[0].zip_code+ "<br>");
+                    }
+                    break;
+                default:
+                    $('#results').append("There was an error. Please try again."+ "<br>");
+                    break;
+            } 
+        }
+    });
+}
+
+google.maps.event.addDomListener(window, 'load', initialize);
+var coords = [
+    {
+        "state": "AK",
+        "latitude": "61.3850",
+        "longitude": "-152.2683"
+    },
+    {
+        "state": "AL",
+        "latitude": "32.7990",
+        "longitude": "-86.8073"
+    },
+    {
+        "state": "AR",
+        "latitude": "34.9513",
+        "longitude": "-92.3809"
+    },
+    {
+        "state": "AS",
+        "latitude": "14.2417",
+        "longitude": "-170.7197"
+    },
+    {
+        "state": "AZ",
+        "latitude": "33.7712",
+        "longitude": "-111.3877"
+    },
+    {
+        "state": "CA",
+        "latitude": "36.1700",
+        "longitude": "-119.7462"
+    },
+    {
+        "state": "CO",
+        "latitude": "39.0646",
+        "longitude": "-105.3272"
+    },
+    {
+        "state": "CT",
+        "latitude": "41.5834",
+        "longitude": "-72.7622"
+    },
+    {
+        "state": "DC",
+        "latitude": "38.8964",
+        "longitude": "-77.0262"
+    },
+    {
+        "state": "DE",
+        "latitude": "39.3498",
+        "longitude": "-75.5148"
+    },
+    {
+        "state": "FL",
+        "latitude": "27.8333",
+        "longitude": "-81.7170"
+    },
+    {
+        "state": "GA",
+        "latitude": "32.9866",
+        "longitude": "-83.6487"
+    },
+    {
+        "state": "HI",
+        "latitude": "21.1098",
+        "longitude": "-157.5311"
+    },
+    {
+        "state": "IA",
+        "latitude": "42.0046",
+        "longitude": "-93.2140"
+    },
+    {
+        "state": "ID",
+        "latitude": "44.2394",
+        "longitude": "-114.5103"
+    },
+    {
+        "state": "IL",
+        "latitude": "40.3363",
+        "longitude": "-89.0022"
+    },
+    {
+        "state": "IN",
+        "latitude": "39.8647",
+        "longitude": "-86.2604"
+    },
+    {
+        "state": "KS",
+        "latitude": "38.5111",
+        "longitude": "-96.8005"
+    },
+    {
+        "state": "KY",
+        "latitude": "37.6690",
+        "longitude": "-84.6514"
+    },
+    {
+        "state": "LA",
+        "latitude": "31.1801",
+        "longitude": "-91.8749"
+    },
+    {
+        "state": "MA",
+        "latitude": "42.2373",
+        "longitude": "-71.5314"
+    },
+    {
+        "state": "MD",
+        "latitude": "39.0724",
+        "longitude": "-76.7902"
+    },
+    {
+        "state": "ME",
+        "latitude": "44.6074",
+        "longitude": "-69.3977"
+    },
+    {
+        "state": "MI",
+        "latitude": "43.3504",
+        "longitude": "-84.5603"
+    },
+    {
+        "state": "MN",
+        "latitude": "45.7326",
+        "longitude": "-93.9196"
+    },
+    {
+        "state": "MO",
+        "latitude": "38.4623",
+        "longitude": "-92.3020"
+    },
+    {
+        "state": "MP",
+        "latitude": "14.8058",
+        "longitude": "145.5505"
+    },
+    {
+        "state": "MS",
+        "latitude": "32.7673",
+        "longitude": "-89.6812"
+    },
+    {
+        "state": "MT",
+        "latitude": "46.9048",
+        "longitude": "-110.3261"
+    },
+    {
+        "state": "NC",
+        "latitude": "35.6411",
+        "longitude": "-79.8431"
+    },
+    {
+        "state": "ND",
+        "latitude": "47.5362",
+        "longitude": "-99.7930"
+    },
+    {
+        "state": "NE",
+        "latitude": "41.1289",
+        "longitude": "-98.2883"
+    },
+    {
+        "state": "NH",
+        "latitude": "43.4108",
+        "longitude": "-71.5653"
+    },
+    {
+        "state": "NJ",
+        "latitude": "40.3140",
+        "longitude": "-74.5089"
+    },
+    {
+        "state": "NM",
+        "latitude": "34.8375",
+        "longitude": "-106.2371"
+    },
+    {
+        "state": "NV",
+        "latitude": "38.4199",
+        "longitude": "-117.1219"
+    },
+    {
+        "state": "NY",
+        "latitude": "42.1497",
+        "longitude": "-74.9384"
+    },
+    {
+        "state": "OH",
+        "latitude": "40.3736",
+        "longitude": "-82.7755"
+    },
+    {
+        "state": "OK",
+        "latitude": "35.5376",
+        "longitude": "-96.9247"
+    },
+    {
+        "state": "OR",
+        "latitude": "44.5672",
+        "longitude": "-122.1269"
+    },
+    {
+        "state": "PA",
+        "latitude": "40.5773",
+        "longitude": "-77.2640"
+    },
+    {
+        "state": "RI",
+        "latitude": "41.6772",
+        "longitude": "-71.5101"
+    },
+    {
+        "state": "SC",
+        "latitude": "33.8191",
+        "longitude": "-80.9066"
+    },
+    {
+        "state": "SD",
+        "latitude": "44.2853",
+        "longitude": "-99.4632"
+    },
+    {
+        "state": "TN",
+        "latitude": "35.7449",
+        "longitude": "-86.7489"
+    },
+    {
+        "state": "TX",
+        "latitude": "31.1060",
+        "longitude": "-97.6475"
+    },
+    {
+        "state": "UT",
+        "latitude": "40.1135",
+        "longitude": "-111.8535"
+    },
+    {
+        "state": "VA",
+        "latitude": "37.7680",
+        "longitude": "-78.2057"
+    },
+    {
+        "state": "VI",
+        "latitude": "18.0001",
+        "longitude": "-64.8199"
+    },
+    {
+        "state": "VT",
+        "latitude": "44.0407",
+        "longitude": "-72.7093"
+    },
+    {
+        "state": "WA",
+        "latitude": "47.3917",
+        "longitude": "-121.5708"
+    },
+    {
+        "state": "WI",
+        "latitude": "44.2563",
+        "longitude": "-89.6385"
+    },
+    {
+        "state": "WV",
+        "latitude": "38.4680",
+        "longitude": "-80.9696"
+    },
+    {
+        "state": "WY",
+        "latitude": "42.7475",
+        "longitude": "-107.2085"
+    },
+]
+        </script>
+    </body>
+</html>
