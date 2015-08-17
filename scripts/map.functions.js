@@ -1,6 +1,8 @@
 /*
  * TODO: LINK UP TO SOCIAL MEDIA/GOOGLE PLACES TO ADD HOURS/PICTURES OF BUSINESS
  * TODO: IE8 DESIGN TWEAKS?
+ * TODO: IIFE
+ * TODO: Function Expressions
  */
 
 $(document).ready(function(){
