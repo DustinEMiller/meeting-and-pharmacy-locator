@@ -164,45 +164,6 @@ $(document).ready(function(){
     }
 
 });
-var geocoder;
-var map;
-var service;
-var mobile;
-var directionsDisplay;
-var directionsService;
-var useShirley = false;
-var origin;
-var allMarkers = [];
-var nextAddress = 0;
-var nextClause = 0;
-var whereClauses = [];
-var queryurl;
-var selectClause;
-var delay = 0;
-var places = [];
-var clientKey = "js-k0p09YraX0SYvCu2lCxAcVLcBxZMbEhwEGwNEYXCYQAut4xOH4oTZa6AH6nTKEqp";
-var pharmurl = "//spreadsheets.google.com/a/google.com/tq?key=1X2y2MVq82sgCXznHMdJEbyqIheL-SJ1dq2xxMO7kUkY";
-var pharmplusurl = "//spreadsheets.google.com/a/google.com/tq?key=14du8qyaID-DmqTHMEfIpy_W6l2dmOluzq8qfVfIdsbg";
-var semurl = "//spreadsheets.google.com/a/google.com/tq?key=15R_yJWOph16dwxWtzfnWCCt6z8DjFiId3MVu-KLuF7g";
-var packedResults = [];
-
-function initialize() {
-    geocoder = new google.maps.Geocoder();
-    directionsService = new google.maps.DirectionsService();
-    var mapOptions = {
-      center: new google.maps.LatLng(34.9983818,-99.99967040000001),
-      zoom: 4,
-      mapTypeId: google.maps.MapTypeId.ROADMAP
-    };
-
-    map = new google.maps.Map(document.getElementById('map-canvas'), mapOptions);
-
-    var rendererOptions = {
-        map: map
-    };
-
-    directionsDisplay = new google.maps.DirectionsRenderer(rendererOptions);
-}
 
 function toTitleCase(str) {
     return str.replace(/\w\S*/g, function(txt){return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase();});
@@ -458,18 +419,6 @@ function scriptInsertion(){
     window.document.getElementsByTagName('head')[0].appendChild(script);
 }
 
-function queryPacker(res) {
-    for(var i = 0; i < res.table.rows.length; i++){
-        packedResults.push(res.table.rows[i]);
-    }
-    nextClause++;
-    if(nextClause < whereClauses.length) {
-        scriptInsertion(encodeURI(queryurl+'&tq='+selectClause + whereClauses[nextClause]+'&tqx=responseHandler:queryPacker'));
-    } else {       
-        queryHandler();
-    }
-}
-
 function queryHandler () {
     switch ($("#mapform").data("map-type")) {
         case "pharmacy":
@@ -667,9 +616,70 @@ function showSteps(directionResult) {
   messageHandler(directionResult.routes[0].warnings, '#starting-loc', 'warning', false);
 }
 
-    var stateJSON = [{"name":"Alabama","abbreviation":"AL"},{"name":"Alaska","abbreviation":"AK"},{"name":"American Samoa","abbreviation":"AS"},{"name":"Arizona","abbreviation":"AZ"},{"name":"Arkansas","abbreviation":"AR"},{"name":"California","abbreviation":"CA"},{"name":"Colorado","abbreviation":"CO"},{"name":"Connecticut","abbreviation":"CT"},{"name":"Delaware","abbreviation":"DE"},{"name":"District Of Columbia","abbreviation":"DC"},{"name":"Federated States Of Micronesia","abbreviation":"FM"},{"name":"Florida","abbreviation":"FL"},{"name":"Georgia","abbreviation":"GA"},{"name":"Guam","abbreviation":"GU"},{"name":"Hawaii","abbreviation":"HI"},{"name":"Idaho","abbreviation":"ID"},{"name":"Illinois","abbreviation":"IL"},{"name":"Indiana","abbreviation":"IN"},{"name":"Iowa","abbreviation":"IA"},{"name":"Kansas","abbreviation":"KS"},{"name":"Kentucky","abbreviation":"KY"},{"name":"Louisiana","abbreviation":"LA"},{"name":"Maine","abbreviation":"ME"},{"name":"Marshall Islands","abbreviation":"MH"},{"name":"Maryland","abbreviation":"MD"},{"name":"Massachusetts","abbreviation":"MA"},{"name":"Michigan","abbreviation":"MI"},{"name":"Minnesota","abbreviation":"MN"},{"name":"Mississippi","abbreviation":"MS"},{"name":"Missouri","abbreviation":"MO"},{"name":"Montana","abbreviation":"MT"},{"name":"Nebraska","abbreviation":"NE"},{"name":"Nevada","abbreviation":"NV"},{"name":"New Hampshire","abbreviation":"NH"},{"name":"New Jersey","abbreviation":"NJ"},{"name":"New Mexico","abbreviation":"NM"},{"name":"New York","abbreviation":"NY"},{"name":"North Carolina","abbreviation":"NC"},{"name":"North Dakota","abbreviation":"ND"},{"name":"Northern Mariana Islands","abbreviation":"MP"},{"name":"Ohio","abbreviation":"OH"},{"name":"Oklahoma","abbreviation":"OK"},{"name":"Oregon","abbreviation":"OR"},{"name":"Palau","abbreviation":"PW"},{"name":"Pennsylvania","abbreviation":"PA"},{"name":"Puerto Rico","abbreviation":"PR"},{"name":"Rhode Island","abbreviation":"RI"},{"name":"South Carolina","abbreviation":"SC"},{"name":"South Dakota","abbreviation":"SD"},{"name":"Tennessee","abbreviation":"TN"},{"name":"Texas","abbreviation":"TX"},{"name":"Utah","abbreviation":"UT"},{"name":"Vermont","abbreviation":"VT"},{"name":"Virgin Islands","abbreviation":"VI"},{"name":"Virginia","abbreviation":"VA"},{"name":"Washington","abbreviation":"WA"},{"name":"West Virginia","abbreviation":"WV"},{"name":"Wisconsin","abbreviation":"WI"},{"name":"Wyoming","abbreviation":"WY"}];
+//Global Space 
+function MapManager(){
+    this.states = [];
+}
+
+MapManager.prototype.loadStates = function(data) {
+    this.states.push(data);
+    console.log(this.states);
+};
+
+MapManager.prototype.init = function() {
+    this.geocoder = new google.maps.Geocoder();
+    this.map = new google.maps.Map(document.getElementById('map-canvas'), {
+            center: new google.maps.LatLng(34.9983818,-99.99967040000001),
+            zoom: 4,
+            mapTypeId: google.maps.MapTypeId.ROADMAP
+        });
+    this.directionsDisplay = new google.maps.DirectionsRenderer({
+        map: this.map
+    });
+    this.directionsService = new google.maps.DirectionsService();;
+    this.useShirley = false;
+    this.clientKey = "js-k0p09YraX0SYvCu2lCxAcVLcBxZMbEhwEGwNEYXCYQAut4xOH4oTZa6AH6nTKEqp";
+    this.pharmurl = "//spreadsheets.google.com/a/google.com/tq?key=1X2y2MVq82sgCXznHMdJEbyqIheL-SJ1dq2xxMO7kUkY";
+    this.pharmplusurl = "//spreadsheets.google.com/a/google.com/tq?key=14du8qyaID-DmqTHMEfIpy_W6l2dmOluzq8qfVfIdsbg";
+    this.semurl = "//spreadsheets.google.com/a/google.com/tq?key=15R_yJWOph16dwxWtzfnWCCt6z8DjFiId3MVu-KLuF7g";
     
+    this.service;
+    this.mobile;
+    this.origin;
+    this.allMarkers = [];
+    this.nextAddress = 0;
+    this.nextClause = 0;
+    this.whereClauses = [];
+    this.queryurl;
+    this.selectClause;
+    this.delay = 0;
+    this.places = [];
+    this.packedResults = [];
+};
+
+var theMap = new MapManager();
+
+theMap.loadStates([{"name":"Alabama","abbreviation":"AL"},{"name":"Alaska","abbreviation":"AK"},{"name":"American Samoa","abbreviation":"AS"},{"name":"Arizona","abbreviation":"AZ"},{"name":"Arkansas","abbreviation":"AR"},{"name":"California","abbreviation":"CA"},{"name":"Colorado","abbreviation":"CO"},{"name":"Connecticut","abbreviation":"CT"},{"name":"Delaware","abbreviation":"DE"},{"name":"District Of Columbia","abbreviation":"DC"},{"name":"Federated States Of Micronesia","abbreviation":"FM"},{"name":"Florida","abbreviation":"FL"},{"name":"Georgia","abbreviation":"GA"},{"name":"Guam","abbreviation":"GU"},{"name":"Hawaii","abbreviation":"HI"},{"name":"Idaho","abbreviation":"ID"},{"name":"Illinois","abbreviation":"IL"},{"name":"Indiana","abbreviation":"IN"},{"name":"Iowa","abbreviation":"IA"},{"name":"Kansas","abbreviation":"KS"},{"name":"Kentucky","abbreviation":"KY"},{"name":"Louisiana","abbreviation":"LA"},{"name":"Maine","abbreviation":"ME"},{"name":"Marshall Islands","abbreviation":"MH"},{"name":"Maryland","abbreviation":"MD"},{"name":"Massachusetts","abbreviation":"MA"},{"name":"Michigan","abbreviation":"MI"},{"name":"Minnesota","abbreviation":"MN"},{"name":"Mississippi","abbreviation":"MS"},{"name":"Missouri","abbreviation":"MO"},{"name":"Montana","abbreviation":"MT"},{"name":"Nebraska","abbreviation":"NE"},{"name":"Nevada","abbreviation":"NV"},{"name":"New Hampshire","abbreviation":"NH"},{"name":"New Jersey","abbreviation":"NJ"},{"name":"New Mexico","abbreviation":"NM"},{"name":"New York","abbreviation":"NY"},{"name":"North Carolina","abbreviation":"NC"},{"name":"North Dakota","abbreviation":"ND"},{"name":"Northern Mariana Islands","abbreviation":"MP"},{"name":"Ohio","abbreviation":"OH"},{"name":"Oklahoma","abbreviation":"OK"},{"name":"Oregon","abbreviation":"OR"},{"name":"Palau","abbreviation":"PW"},{"name":"Pennsylvania","abbreviation":"PA"},{"name":"Puerto Rico","abbreviation":"PR"},{"name":"Rhode Island","abbreviation":"RI"},{"name":"South Carolina","abbreviation":"SC"},{"name":"South Dakota","abbreviation":"SD"},{"name":"Tennessee","abbreviation":"TN"},{"name":"Texas","abbreviation":"TX"},{"name":"Utah","abbreviation":"UT"},{"name":"Vermont","abbreviation":"VT"},{"name":"Virgin Islands","abbreviation":"VI"},{"name":"Virginia","abbreviation":"VA"},{"name":"Washington","abbreviation":"WA"},{"name":"West Virginia","abbreviation":"WV"},{"name":"Wisconsin","abbreviation":"WI"},{"name":"Wyoming","abbreviation":"WY"}]);
+
+//Can put this in a namespace to keep it from polluting the Global object
+function queryPacker(res) {
+    for(var i = 0; i < res.table.rows.length; i++){
+        packedResults.push(res.table.rows[i]);
+    }
+    nextClause++;
+    if(nextClause < whereClauses.length) {
+        scriptInsertion(encodeURI(queryurl+'&tq='+selectClause + whereClauses[nextClause]+'&tqx=responseHandler:queryPacker'));
+    } else {       
+        queryHandler();
+    }
+}
+
 $(window).on('load resize',function(e){
-    initialize();
-});   
-                                                                                       
+    theMap.init();
+});  
+
+//document.ready?
+//Handler for directions button
+//Handler for both submit button
+//Handler for query packer on the jquery element
+//Seperate object for seminars and pharmacy? need an object prototype
