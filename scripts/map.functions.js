@@ -24,145 +24,6 @@ $(document).ready(function(){
     if(getCookie('cms_user_zip_code') !== null){
         $("[name=location]").val(getCookie('cms_user_zip_code'));
     }
-
-    $('#mapform').on('submit', function () {
-        codeWrapper();
-
-        var location = $("[name=location]").val();
-        var radius = $("[name=radius]:checked").val();
-        origin = location;
-
-        for (var i = 0; i < allMarkers.length; i++) {
-            allMarkers[i].setMap(null);
-        }
-
-        allMarkers = [];
-        $("#locations, #directions").html("");
-        $("#finished h2, .message, #number-results").remove();
-        $(".error, .warning").removeClass("error warning");
-        $("[aria-invalid=true]").attr("aria-invalid", "false");
-        nextAddress = 0;
-        delay = 0;
-
-        if($("#mapform").data("map-type") === 'pharmacy' && !$("[name=pharmacy]:checked").val()) {
-            messageHandler("Please select a pharmacy type.", "#mapform", "error", false);
-            codeWrapper();
-            return;
-        }
-
-        if (!radius){
-            messageHandler("Please select a radius.", "#mapform", "error", false);
-            codeWrapper();
-            return;
-        }
-
-        if(isInt(location)) {
-            if(/(^\d{5}$)/.test(location)) {
-                zipRadius(location, radius);
-            } 
-            else {
-                messageHandler("That is not a valid zipcode", "[name=location]", "error", true);
-                codeWrapper();
-            }
-        } 
-        else {
-            if(location == ''){
-                messageHandler("That is not a valid ZIP or City, State combo", "[name=location]", "error", true);
-                codeWrapper();
-                return;
-            }
-
-            location = location.split(',');
-
-            if(location.length !== 2){
-                messageHandler("That is not a valid City, State combo", "[name=location]", "error", true);
-                codeWrapper();
-                return;
-            }
-
-            for(var i = 0; i < location.length; i++){
-                location[i] = location[i].trim();
-            }  
-
-            var found = false;
-
-            $.each(stateJSON, function(i, v) {
-                if (v.name.search(new RegExp(location[1], "i")) != -1 || v.abbreviation.search(new RegExp(location[1], "i")) != -1) {
-                    found = true;
-                    location[1] = v.abbreviation;
-
-                    var url = "//www.zipcodeapi.com/rest/"+clientKey+"/city-zips.json/"+location[0]+"/"+location[1];
-
-                    if(useShirley){
-                        url = "//askshirley.org/zip/api/cityzips/"+clientKey+"/"+location[0]+"/"+location[1];
-                    }
-
-                    $.ajax({
-                        "url": url,
-                        "dataType": 'text',
-                        complete: function(jqXHR, status){
-                            switch (status){
-                                case 'success':
-                                    var data = JSON.parse(jqXHR.responseText);
-
-                                    if(data.error || data.error_msg){
-                                        messageHandler("There was a problem with your request. Please try again later", "#mapform", "error", false);
-                                        codeWrapper();
-                                    }
-                                    else if(data.zip_codes.length > 0) {
-                                        zipRadius(data.zip_codes[0], radius);
-                                    }
-                                    else {
-                                        messageHandler("There was no data for your location. Please try a different city/state combination.", "#mapform", "error", false);
-                                        codeWrapper();
-                                    };
-                                    break;
-                                case 'timeout':
-                                    messageHandler("The request took to long to complete. Please try again.", "#mapform", "error", false);
-                                    codeWrapper();
-                                    break;
-                                case 'nocontent':
-                                    messageHandler("There was no content to process. Please try again.", "#mapform", "error", false);
-                                    codeWrapper();
-                                    break;
-                                default:
-                                    messageHandler("There was an error. Please try again.", "#mapform", "error", false);
-                                    codeWrapper();
-                                    break;
-                            } 
-                        }
-                    });
-                }
-             });
-
-            if(!found){
-                if(location[1].length == 2) {
-                    messageHandler("Incorrect State Abbreviation", "[name=location]", "error", true);
-                }
-                else {
-                    messageHandler("Incorrect State Name", "[name=location]", "error", true);
-                }
-            }
-        }   
-    });
-
-    $('#results').on('click touch', '#starting-loc button', function () {
-        $('.default-message-box').remove();
-        $('.message').remove();
-        var type = $('.direction-links .button.active').attr("class").replace(' active', '').replace(' button', '');;
-        requestDirections(type, $('.direction-links .button.active').parent().attr("data-marker-index"), 'starting-loc');
-    });
-
-    if(!mobile){
-        $('#locations').on('click touch', '.direction-links .button', function(){
-            $('.default-message-box').remove();
-            $('.direction-links .button.active').removeClass('active');
-            var type = $(this).attr("class").replace(' active', '').replace(' button', '');;
-            $(this).addClass('active');
-            requestDirections(type, $(this).parent().attr("data-marker-index"), 'directions-button');
-        });
-    }
-
 });
 
 function toTitleCase(str) {
@@ -623,10 +484,137 @@ function MapManager(){
 
 MapManager.prototype.loadStates = function(data) {
     this.states.push(data);
-    console.log(this.states);
 };
 
-MapManager.prototype.init = function() {
+MapManager.prototype.handleMapForm = function(evt) {
+    codeWrapper();
+
+    var location = $("[name=location]").val();
+    var radius = $("[name=radius]:checked").val();
+    origin = location;
+
+    for (var i = 0; i < allMarkers.length; i++) {
+        allMarkers[i].setMap(null);
+    }
+
+    allMarkers = [];
+    $("#locations, #directions").html("");
+    $("#finished h2, .message, #number-results").remove();
+    $(".error, .warning").removeClass("error warning");
+    $("[aria-invalid=true]").attr("aria-invalid", "false");
+    nextAddress = 0;
+    delay = 0;
+
+    if($("#mapform").data("map-type") === 'pharmacy' && !$("[name=pharmacy]:checked").val()) {
+        messageHandler("Please select a pharmacy type.", "#mapform", "error", false);
+        codeWrapper();
+        return;
+    }
+
+    if (!radius){
+        messageHandler("Please select a radius.", "#mapform", "error", false);
+        codeWrapper();
+        return;
+    }
+
+    if(isInt(location)) {
+        if(/(^\d{5}$)/.test(location)) {
+            zipRadius(location, radius);
+        } 
+        else {
+            messageHandler("That is not a valid zipcode", "[name=location]", "error", true);
+            codeWrapper();
+        }
+    } 
+    else {
+        if(location == ''){
+            messageHandler("That is not a valid ZIP or City, State combo", "[name=location]", "error", true);
+            codeWrapper();
+            return;
+        }
+
+        location = location.split(',');
+
+        if(location.length !== 2){
+            messageHandler("That is not a valid City, State combo", "[name=location]", "error", true);
+            codeWrapper();
+            return;
+        }
+
+        for(var i = 0; i < location.length; i++){
+            location[i] = location[i].trim();
+        }  
+
+        var found = false;
+
+        $.each(stateJSON, function(i, v) {
+            if (v.name.search(new RegExp(location[1], "i")) != -1 || v.abbreviation.search(new RegExp(location[1], "i")) != -1) {
+                found = true;
+                location[1] = v.abbreviation;
+
+                var url = "//www.zipcodeapi.com/rest/"+clientKey+"/city-zips.json/"+location[0]+"/"+location[1];
+
+                if(useShirley){
+                    url = "//askshirley.org/zip/api/cityzips/"+clientKey+"/"+location[0]+"/"+location[1];
+                }
+
+                $.ajax({
+                    "url": url,
+                    "dataType": 'text',
+                    complete: function(jqXHR, status){
+                        switch (status){
+                            case 'success':
+                                var data = JSON.parse(jqXHR.responseText);
+
+                                if(data.error || data.error_msg){
+                                    messageHandler("There was a problem with your request. Please try again later", "#mapform", "error", false);
+                                    codeWrapper();
+                                }
+                                else if(data.zip_codes.length > 0) {
+                                    zipRadius(data.zip_codes[0], radius);
+                                }
+                                else {
+                                    messageHandler("There was no data for your location. Please try a different city/state combination.", "#mapform", "error", false);
+                                    codeWrapper();
+                                };
+                                break;
+                            case 'timeout':
+                                messageHandler("The request took to long to complete. Please try again.", "#mapform", "error", false);
+                                codeWrapper();
+                                break;
+                            case 'nocontent':
+                                messageHandler("There was no content to process. Please try again.", "#mapform", "error", false);
+                                codeWrapper();
+                                break;
+                            default:
+                                messageHandler("There was an error. Please try again.", "#mapform", "error", false);
+                                codeWrapper();
+                                break;
+                        } 
+                    }
+                });
+            }
+         });
+
+        if(!found){
+            if(location[1].length == 2) {
+                messageHandler("Incorrect State Abbreviation", "[name=location]", "error", true);
+            }
+            else {
+                messageHandler("Incorrect State Name", "[name=location]", "error", true);
+            }
+        }
+    }   
+};
+
+MapManager.prototype.handleResultsLocation = function(evt) {
+    $('.default-message-box').remove();
+    $('.message').remove();
+    var type = $('.direction-links .button.active').attr("class").replace(' active', '').replace(' button', '');;
+    requestDirections(type, $('.direction-links .button.active').parent().attr("data-marker-index"), 'starting-loc');
+};
+
+MapManager.prototype.init = function(opts) {
     this.geocoder = new google.maps.Geocoder();
     this.map = new google.maps.Map(document.getElementById('map-canvas'), {
             center: new google.maps.LatLng(34.9983818,-99.99967040000001),
@@ -642,9 +630,9 @@ MapManager.prototype.init = function() {
     this.pharmurl = "//spreadsheets.google.com/a/google.com/tq?key=1X2y2MVq82sgCXznHMdJEbyqIheL-SJ1dq2xxMO7kUkY";
     this.pharmplusurl = "//spreadsheets.google.com/a/google.com/tq?key=14du8qyaID-DmqTHMEfIpy_W6l2dmOluzq8qfVfIdsbg";
     this.semurl = "//spreadsheets.google.com/a/google.com/tq?key=15R_yJWOph16dwxWtzfnWCCt6z8DjFiId3MVu-KLuF7g";
+    this.mobile = false;
     
     this.service;
-    this.mobile;
     this.origin;
     this.allMarkers = [];
     this.nextAddress = 0;
@@ -655,13 +643,32 @@ MapManager.prototype.init = function() {
     this.delay = 0;
     this.places = [];
     this.packedResults = [];
+    
+    this.$mapform = $(opts.mapform);
+    this.$results = $(opts.results);
+    
+    //listen for map form submit
+    this.$mapform.bind("submit",this.handleMapForm.bind(this));
+    
+    //listen for clicks on starting location button
+    this.$results.on("click touch","#starting-loc button",this.handleResultsLocation.bind(this));
+
+    if(!mobile){
+        $('#locations').on('click touch', '.direction-links .button', function(){
+            $('.default-message-box').remove();
+            $('.direction-links .button.active').removeClass('active');
+            var type = $(this).attr("class").replace(' active', '').replace(' button', '');;
+            $(this).addClass('active');
+            requestDirections(type, $(this).parent().attr("data-marker-index"), 'directions-button');
+        });
+    }
 };
 
 var theMap = new MapManager();
 
 theMap.loadStates([{"name":"Alabama","abbreviation":"AL"},{"name":"Alaska","abbreviation":"AK"},{"name":"American Samoa","abbreviation":"AS"},{"name":"Arizona","abbreviation":"AZ"},{"name":"Arkansas","abbreviation":"AR"},{"name":"California","abbreviation":"CA"},{"name":"Colorado","abbreviation":"CO"},{"name":"Connecticut","abbreviation":"CT"},{"name":"Delaware","abbreviation":"DE"},{"name":"District Of Columbia","abbreviation":"DC"},{"name":"Federated States Of Micronesia","abbreviation":"FM"},{"name":"Florida","abbreviation":"FL"},{"name":"Georgia","abbreviation":"GA"},{"name":"Guam","abbreviation":"GU"},{"name":"Hawaii","abbreviation":"HI"},{"name":"Idaho","abbreviation":"ID"},{"name":"Illinois","abbreviation":"IL"},{"name":"Indiana","abbreviation":"IN"},{"name":"Iowa","abbreviation":"IA"},{"name":"Kansas","abbreviation":"KS"},{"name":"Kentucky","abbreviation":"KY"},{"name":"Louisiana","abbreviation":"LA"},{"name":"Maine","abbreviation":"ME"},{"name":"Marshall Islands","abbreviation":"MH"},{"name":"Maryland","abbreviation":"MD"},{"name":"Massachusetts","abbreviation":"MA"},{"name":"Michigan","abbreviation":"MI"},{"name":"Minnesota","abbreviation":"MN"},{"name":"Mississippi","abbreviation":"MS"},{"name":"Missouri","abbreviation":"MO"},{"name":"Montana","abbreviation":"MT"},{"name":"Nebraska","abbreviation":"NE"},{"name":"Nevada","abbreviation":"NV"},{"name":"New Hampshire","abbreviation":"NH"},{"name":"New Jersey","abbreviation":"NJ"},{"name":"New Mexico","abbreviation":"NM"},{"name":"New York","abbreviation":"NY"},{"name":"North Carolina","abbreviation":"NC"},{"name":"North Dakota","abbreviation":"ND"},{"name":"Northern Mariana Islands","abbreviation":"MP"},{"name":"Ohio","abbreviation":"OH"},{"name":"Oklahoma","abbreviation":"OK"},{"name":"Oregon","abbreviation":"OR"},{"name":"Palau","abbreviation":"PW"},{"name":"Pennsylvania","abbreviation":"PA"},{"name":"Puerto Rico","abbreviation":"PR"},{"name":"Rhode Island","abbreviation":"RI"},{"name":"South Carolina","abbreviation":"SC"},{"name":"South Dakota","abbreviation":"SD"},{"name":"Tennessee","abbreviation":"TN"},{"name":"Texas","abbreviation":"TX"},{"name":"Utah","abbreviation":"UT"},{"name":"Vermont","abbreviation":"VT"},{"name":"Virgin Islands","abbreviation":"VI"},{"name":"Virginia","abbreviation":"VA"},{"name":"Washington","abbreviation":"WA"},{"name":"West Virginia","abbreviation":"WV"},{"name":"Wisconsin","abbreviation":"WI"},{"name":"Wyoming","abbreviation":"WY"}]);
 
-//Can put this in a namespace to keep it from polluting the Global object
+//Can put this in a namespace to keep it from polluting the global space
 function queryPacker(res) {
     for(var i = 0; i < res.table.rows.length; i++){
         packedResults.push(res.table.rows[i]);
@@ -675,7 +682,10 @@ function queryPacker(res) {
 }
 
 $(window).on('load resize',function(e){
-    theMap.init();
+    theMap.init({
+        mapform: "#mapform",
+        results : "#results"
+    });
 });  
 
 //document.ready?
