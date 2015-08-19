@@ -7,13 +7,14 @@ function MapManager(){
 }
 
 MapManager.prototype.codeAddress = function(next){
-    var location = toTitleCase(this.places[this.nextAddress]['name']) + ' ' + toTitleCase(this.places[this.nextAddress]['address']) + ' ' + 
-            toTitleCase(this.places[this.nextAddress]['city']) + ' ' + this.places[this.nextAddress]['state'] + ' ' + this.places[this.nextAddress]['zip'];
+    var location = this.toTitleCase(this.places[this.nextAddress]['name']) + ' ' + this.toTitleCase(this.places[this.nextAddress]['address']) + ' ' + 
+            this.toTitleCase(this.places[this.nextAddress]['city']) + ' ' + this.places[this.nextAddress]['state'] + ' ' 
+            + this.places[this.nextAddress]['zip'];
     var templateScript;
 
     var number = this.nextAddress + 1;
     this.geocoder.geocode( { 'address': location }, function(results, status) {
-
+        console.log(this.nextAddress);
     if (status == google.maps.GeocoderStatus.OK) {
         if(!this.mobile){
            this.map.setCenter(results[0].geometry.location);
@@ -26,7 +27,7 @@ MapManager.prototype.codeAddress = function(next){
             };
 
             var marker = new google.maps.Marker({
-                map: map,
+                map: this.map,
                 position: results[0].geometry.location,
                 icon:iconImage,
                 title:location,
@@ -112,14 +113,15 @@ MapManager.prototype.codeAddress = function(next){
         } 
     }
     this.nextAddress++;
-    this.next();
+    next();
   });
-}
+};
 
 MapManager.prototype.zipRadius = function(zipcode, radius) {
     var url = "//www.zipcodeapi.com/rest/"+this.clientKey+"/radius.json/"+zipcode+"/"+radius+"/mile";
+    var self = this;
 
-    if(useShirley){
+    if(this.useShirley){
         url = "//askshirley.org/zip/api/radius/"+this.clientKey+"/"+zipcode+"/"+radius;
     }
 
@@ -132,38 +134,38 @@ MapManager.prototype.zipRadius = function(zipcode, radius) {
                     var data = JSON.parse(jqXHR.responseText);
 
                     if(data.error || data.error_msg){
-                        this.messageHandler("There was a problem with your request. Please try again later", "#mapform", "error", false);
-                        this.codeWrapper();
+                        self.messageHandler("There was a problem with your request. Please try again later", "#mapform", "error", false);
+                        self.codeWrapper();
                     }
                     else {
-                        this.findPlaces(data);
+                        self.findPlaces(data);
                     }
                     break;
                 case 'timeout':
-                    this.messageHandler("The request took too long to complete. Please try again.", "#mapform", "error", false);
-                    this.codeWrapper();
+                    self.messageHandler("The request took too long to complete. Please try again.", "#mapform", "error", false);
+                    self.codeWrapper();
                     break;
                 case 'nocontent':
-                    this.messageHandler("There was no content to process. Please try again.", "#mapform", "error", false);
-                    this.codeWrapper();
+                    self.messageHandler("There was no content to process. Please try again.", "#mapform", "error", false);
+                    self.codeWrapper();
                     break;
                 default:
-                    this.messageHandler("There was an error. Please try again.", "#mapform", "error", false);
-                    this.codeWrapper();
+                    self.messageHandler("There was an error. Please try again.", "#mapform", "error", false);
+                    self.codeWrapper();
                     break;
             } 
         }
     });
 };
 
-function scriptInsertion(){
+MapManager.prototype.scriptInsertion = function(){
     var script = window.document.createElement('script');
 
     script.async = true;
-    script.src = encodeURI(queryurl+'&tq='+selectClause + whereClauses[nextClause]+'&tqx=responseHandler:queryPacker');
+    script.src = encodeURI(this.queryurl+'&tq='+this.selectClause + this.whereClauses[this.nextClause]+'&tqx=responseHandler:queryPacker');
     script.onerror = function() {
-        messageHandler("There was an error, please try again.", "#mapform", "error", false);
-        codeWrapper();
+        this.messageHandler("There was an error, please try again.", "#mapform", "error", false);
+        this.codeWrapper();
     };
     var done = false;
     script.onload = script.onreadystatechange = function() {
@@ -177,12 +179,12 @@ function scriptInsertion(){
         }
     };
     window.document.getElementsByTagName('head')[0].appendChild(script);
-}
+};
 
-function queryHandler () {
+MapManager.prototype.queryHandler = function() {
     switch ($("#mapform").data("map-type")) {
         case "pharmacy":
-            places = packedResults.map(function(row){
+            this.places = this.packedResults.map(function(row){
                 var place = {
                     nabp: row['c'][0].v,
                     name: row['c'][1].v,
@@ -194,14 +196,14 @@ function queryHandler () {
                 return place;
             });
             var context = {
-                number: places.length
+                number: this.places.length
             };
             break;
         case "seminar":
             var seminars = 0;
 
-            for(i = 0; i < packedResults.length; i++) {
-                var row = packedResults[i];
+            for(i = 0; i < this.packedResults.length; i++) {
+                var row = this.packedResults[i];
 
                 var semDate = new Date(row['c'][4].v);
                 var now = new Date();
@@ -215,10 +217,10 @@ function queryHandler () {
                     time: semDate.toLocaleTimeString(navigator.language, {hour: '2-digit', minute:'2-digit'})
                 };
 
-                var index = getKeyByAddress(places, row['c'][1].v);
+                var index = getKeyByAddress(this.places, row['c'][1].v);
 
                 if(index !== -1) {
-                    places[index]['events'].push(event);
+                    this.places[index]['events'].push(event);
                     seminars++;
                 }
                 else {
@@ -232,16 +234,16 @@ function queryHandler () {
                     };
                     place['events'].push(event);
                     seminars++;
-                    places.push(place);
+                    this.places.push(place);
                 }
             }
 
-            var msgLoc = places.length+" Different Locations";
+            var msgLoc = this.places.length+" Different Locations";
 
-            if(places.length == 0){
+            if(this.places.length == 0){
                 msgLoc = "0 Locations";
             }
-            else if (places.length == 1) {
+            else if (this.places.length == 1) {
                 msgLoc = "1 Location";
             }
 
@@ -257,42 +259,32 @@ function queryHandler () {
 
     $("#results").prepend(template(context));
 
-    theNext();
-}
+    this.theNext();
+};
 
-function theNext() {
-    if (nextAddress < places.length) {
-        if (nextAddress < 10){
-            delay = 100;
+MapManager.prototype.theNext = function() {
+    if (this.nextAddress < this.places.length) {
+        if (this.nextAddress < 10){
+            this.delay = 100;
         }
-        setTimeout('codeAddress(theNext)', delay);  
+        var self = this;
+        setTimeout(self.codeAddress(self.theNext), self.delay);  
     } else {
-        codeWrapper();
+        this.codeWrapper();
     }
-}
+};
 
-function getKeyByAddress(obj, str) {
-    var returnKey = -1;
-
-    $.each(obj, function(key, info) {
-        if (info.address == str) {
-           returnKey = key;
-           return false; 
-        };   
-    });
-    return returnKey;       
-}
-
-function requestDirections(type, locationID, caller) { 
+MapManager.prototype.requestDirections = function(type, locationID, caller) { 
     var statusMessage = '';
     var element = 'none';
 
     if($("[name=starting-location]").length > 0) {
-        origin = $("[name=starting-location]").val();
+        this.origin = $("[name=starting-location]").val();
     } 
 
-    var end = allMarkers[locationID]['title'];
+    var end = this.allMarkers[locationID]['title'];
 
+    //TODO:Clean
     switch (type) {
         case 'walk':
             type = google.maps.TravelMode.WALKING;
@@ -313,12 +305,12 @@ function requestDirections(type, locationID, caller) {
       destination:end,
       travelMode: type
     };
-    directionsService.route(request, function(result, status) {
+    this.directionsService.route(request, function(result, status) {
 
         if (status == google.maps.DirectionsStatus.OK) {
             $("#directions").html('');
-            directionsDisplay.setDirections(result);
-            showSteps(result);
+            this.directionsDisplay.setDirections(result);
+            this.showSteps(result);
         }
         else {
             switch (status) {
@@ -346,18 +338,18 @@ function requestDirections(type, locationID, caller) {
             else {
                 element = '#filter'
             }
-            messageHandler(statusMessage, element, 'error', isForm);
+            this.messageHandler(statusMessage, element, 'error', isForm);
         }
     });
-}
+};
 
-function showSteps(directionResult) {
+MapManager.prototype.showSteps = function(directionResult) {
     var route = directionResult.routes[0].legs[0];
     var templateScript = $("#direction-steps").html();
     var template = Handlebars.compile(templateScript);
 
     var context = {
-        origin: origin,
+        origin: this.origin,
         distance: route.distance.text,
         duration: route.duration.text,
         steps: []
@@ -373,8 +365,8 @@ function showSteps(directionResult) {
   }
 
   $("#directions").append(template(context));
-  messageHandler(directionResult.routes[0].warnings, '#starting-loc', 'warning', false);
-}
+  this.messageHandler(directionResult.routes[0].warnings, '#starting-loc', 'warning', false);
+};
 
 MapManager.prototype.findPlaces = function(zipcodes) {
     var whereClause, zipColumn;
@@ -388,16 +380,16 @@ MapManager.prototype.findPlaces = function(zipcodes) {
     switch ($("#mapform").data("map-type")) {
         case "pharmacy":
             if($("[name=pharmacy]:checked").val() === "pharm"){
-                this.queryurl = pharmurl;
+                this.queryurl = this.pharmurl;
             }
             else {
-                this.queryurl = pharmplusurl;
+                this.queryurl = this.pharmplusurl;
             }
             this.selectClause = "SELECT A, B, C, D, E, F";
             zipColumn = "F";
             break;
         case "seminar":
-            this.queryurl = semurl;
+            this.queryurl = this.semurl;
             this.selectClause = "SELECT B, C, D, E, F, I";
             zipColumn = "E";
             break;
@@ -442,6 +434,17 @@ MapManager.prototype.isInt = function(value) {
   return (x | 0) === x;
 };
 
+MapManager.prototype.getKeyByAddress = function(obj, str) {
+    var returnKey = -1;
+
+    $.each(obj, function(key, info) {
+        if (info.address == str) {
+           returnKey = key;
+           return false; 
+        };   
+    });
+    return returnKey;       
+};
 
 MapManager.prototype.loadStates = function(data) {
     this.states.push(data);
@@ -449,7 +452,7 @@ MapManager.prototype.loadStates = function(data) {
 
 MapManager.prototype.toTitleCase = function(str) {
     return str.replace(/\w\S*/g, function(txt){return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase();});
-}
+};
 
 MapManager.prototype.messageHandler = function(message, selector, messageType, isForm) {  
     if (isForm) {
@@ -460,9 +463,10 @@ MapManager.prototype.messageHandler = function(message, selector, messageType, i
     else {
         $("<div class='message message-label default-message-box "+messageType+"' role='alert'>"+message+"</div>").insertAfter(selector);
     }
-}
+};
+
 MapManager.prototype.handleMapForm = function(evt) {
-    codeWrapper();
+    this.codeWrapper();
 
     var radius = $("[name=radius]:checked").val();
     var location = $("[name=location]").val()
@@ -493,7 +497,7 @@ MapManager.prototype.handleMapForm = function(evt) {
         return;
     }
 
-    if(isInt(location)) {
+    if(this.isInt(location)) {
         if(/(^\d{5}$)/.test(location)) {
             this.zipRadius(location, radius);
         } 
@@ -522,6 +526,7 @@ MapManager.prototype.handleMapForm = function(evt) {
         }  
 
         var found = false;
+        var self = this;
 
         $.each(this.states, function(i, v) {
             if (v.name.search(new RegExp(location[1], "i")) != -1 || v.abbreviation.search(new RegExp(location[1], "i")) != -1) {
@@ -543,28 +548,28 @@ MapManager.prototype.handleMapForm = function(evt) {
                                 var data = JSON.parse(jqXHR.responseText);
 
                                 if(data.error || data.error_msg){
-                                    this.messageHandler("There was a problem with your request. Please try again later", "#mapform", "error", false);
-                                    this.codeWrapper();
+                                    self.messageHandler("There was a problem with your request. Please try again later", "#mapform", "error", false);
+                                    self.codeWrapper();
                                 }
                                 else if(data.zip_codes.length > 0) {
-                                    this.zipRadius(data.zip_codes[0], radius);
+                                    self.zipRadius(data.zip_codes[0], radius);
                                 }
                                 else {
-                                    this.messageHandler("There was no data for your location. Please try a different city/state combination.", "#mapform", "error", false);
-                                    this.codeWrapper();
+                                    self.messageHandler("There was no data for your location. Please try a different city/state combination.", "#mapform", "error", false);
+                                    self.codeWrapper();
                                 };
                                 break;
                             case 'timeout':
-                                this.messageHandler("The request took to long to complete. Please try again.", "#mapform", "error", false);
-                                this.codeWrapper();
+                                self.messageHandler("The request took to long to complete. Please try again.", "#mapform", "error", false);
+                                self.codeWrapper();
                                 break;
                             case 'nocontent':
-                                this.messageHandler("There was no content to process. Please try again.", "#mapform", "error", false);
-                                this.codeWrapper();
+                                self.messageHandler("There was no content to process. Please try again.", "#mapform", "error", false);
+                                self.codeWrapper();
                                 break;
                             default:
-                                this.messageHandler("There was an error. Please try again.", "#mapform", "error", false);
-                                this.codeWrapper();
+                                self.messageHandler("There was an error. Please try again.", "#mapform", "error", false);
+                                self.codeWrapper();
                                 break;
                         } 
                     }
@@ -597,6 +602,7 @@ MapManager.prototype.init = function(opts) {
             zoom: 4,
             mapTypeId: google.maps.MapTypeId.ROADMAP
         });
+
     this.directionsDisplay = new google.maps.DirectionsRenderer({
         map: this.map
     });
@@ -623,24 +629,23 @@ MapManager.prototype.init = function(opts) {
     this.$mapform = $(opts.mapform);
     this.$results = $(opts.results);
     
-    /*FIX
+    //TODO:Clean
     if($('#map-wrapper').css('display') === 'none'){
-        mobile = true;
+        this.mobile = true;
     }
     else {
-        mobile = false;
+       this.mobile = false;
     }
 
     if('XDomainRequest' in window && window.XDomainRequest !== null) {
-        useShirley = true;
+        this.useShirley = true;
         $.support.cors = true;
-        clientKey = "pD5ltovTQHNvhP32e2zQ";
+        this.clientKey = "pD5ltovTQHNvhP32e2zQ";
     }
-
 
     if(getCookie('cms_user_zip_code') !== null){
         $("[name=location]").val(getCookie('cms_user_zip_code'));
-    }*/
+    }
     
     //listen for map form submit
     this.$mapform.bind("submit",this.handleMapForm.bind(this));
@@ -649,7 +654,7 @@ MapManager.prototype.init = function(opts) {
     this.$results.on("click touch","#starting-loc button",this.handleResultsLocation.bind(this));
 
     //add handler
-    if(!mobile){
+    if(!this.mobile){
         $('#locations').on('click touch', '.direction-links .button', function(){
             $('.default-message-box').remove();
             $('.direction-links .button.active').removeClass('active');
@@ -667,13 +672,13 @@ theMap.loadStates([{"name":"Alabama","abbreviation":"AL"},{"name":"Alaska","abbr
 //Can put this in a namespace to keep it from polluting the global space
 function queryPacker(res) {
     for(var i = 0; i < res.table.rows.length; i++){
-        packedResults.push(res.table.rows[i]);
+        theMap.packedResults.push(res.table.rows[i]);
     }
-    nextClause++;
-    if(nextClause < whereClauses.length) {
-        scriptInsertion(encodeURI(queryurl+'&tq='+selectClause + whereClauses[nextClause]+'&tqx=responseHandler:queryPacker'));
+    theMap.nextClause++;
+    if(theMap.nextClause < theMap.whereClauses.length) {
+        theMap.scriptInsertion(encodeURI(theMap.queryurl+'&tq='+theMap.selectClause + theMap.whereClauses[theMap.nextClause]+'&tqx=responseHandler:queryPacker'));
     } else {       
-        queryHandler();
+        theMap.queryHandler();
     }
 }
 
