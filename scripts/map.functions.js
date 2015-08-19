@@ -13,11 +13,14 @@ MapManager.prototype.codeAddress = function(next){
     var templateScript;
 
     var number = this.nextAddress + 1;
+    //Goes up the scope chain?
+    var self = this;
     this.geocoder.geocode( { 'address': location }, function(results, status) {
-        console.log(this.nextAddress);
+
     if (status == google.maps.GeocoderStatus.OK) {
-        if(!this.mobile){
-           this.map.setCenter(results[0].geometry.location);
+
+        if(!self.mobile){
+           self.map.setCenter(results[0].geometry.location);
 
             var iconImage = {
                 url: '//askshirley.org/images/green/marker'+number+'.png',
@@ -27,22 +30,22 @@ MapManager.prototype.codeAddress = function(next){
             };
 
             var marker = new google.maps.Marker({
-                map: this.map,
+                map: self.map,
                 position: results[0].geometry.location,
                 icon:iconImage,
                 title:location,
                 optimized: false,
-                zIndex: (this.nextAddress + 1)
+                zIndex: (self.nextAddress + 1)
             });
 
-            this.allMarkers.push(marker);
+            self.allMarkers.push(marker);
 
             var bounds = new google.maps.LatLngBounds();
-            for(i=0;i< this.allMarkers.length;i++) {
-                bounds.extend(this.allMarkers[i].getPosition());
+            for(i=0;i< self.allMarkers.length;i++) {
+                bounds.extend(self.allMarkers[i].getPosition());
             }
-            this.map.setCenter(bounds.getCenter());
-            this.map.fitBounds(bounds);
+            self.map.setCenter(bounds.getCenter());
+            self.map.fitBounds(bounds);
             templateScript = $("#location-list").html();
         }
         else {
@@ -54,29 +57,29 @@ MapManager.prototype.codeAddress = function(next){
         switch ($("#mapform").data("map-type")) {
             case "pharmacy":
                 var context = {
-                    index: this.nextAddress,
+                    index: self.nextAddress,
                     number: number,
-                    name: this.toTitleCase(this.places[this.nextAddress]['name']),
-                    address: this.toTitleCase(this.places[this.nextAddress]['address']),
-                    city: this.toTitleCase(this.places[this.nextAddress]['city']),
-                    state: this.places[this.nextAddress]['state'],
-                    zip: this.places[this.nextAddress]['zip'],
-                    nabp: this.places[this.nextAddress]['nabp']
+                    name: self.toTitleCase(self.places[self.nextAddress]['name']),
+                    address: self.toTitleCase(self.places[self.nextAddress]['address']),
+                    city: self.toTitleCase(self.places[self.nextAddress]['city']),
+                    state: self.places[self.nextAddress]['state'],
+                    zip: self.places[self.nextAddress]['zip'],
+                    nabp: self.places[self.nextAddress]['nabp']
                 };
                 break;
             case "seminar":  
                 var context = {
-                    index: this.nextAddress,
+                    index: self.nextAddress,
                     number: number,
-                    name: this.toTitleCase(this.places[this.nextAddress]['name']),
-                    address: this.toTitleCase(this.places[this.nextAddress]['address']),
-                    city: this.toTitleCase(this.places[this.nextAddress]['city']),
-                    state: this.places[this.nextAddress]['state'],
-                    zip: this.places[this.nextAddress]['zip'],
+                    name: self.toTitleCase(self.places[self.nextAddress]['name']),
+                    address: self.toTitleCase(self.places[self.nextAddress]['address']),
+                    city: self.toTitleCase(self.places[self.nextAddress]['city']),
+                    state: self.places[self.nextAddress]['state'],
+                    zip: self.places[self.nextAddress]['zip'],
                     events: []
                 };
 
-                context['events'] = this.places[this.nextAddress]['events'].map(function(row,index){
+                context['events'] = self.places[self.nextAddress]['events'].map(function(row,index){
                     var event = {
                         number: index+1,
                         date: row['date'],
@@ -87,7 +90,7 @@ MapManager.prototype.codeAddress = function(next){
                 break;
         }
 
-        if(this.mobile){
+        if(self.mobile){
             var root;
             if($("#mapform").data("map-type") === "pharmacy") {
                 root = "maps.google.com?saddr="+origin+"&daddr="+context['name']+" "+context['address']+" "+context['city']+" "+context['state'];
@@ -106,14 +109,14 @@ MapManager.prototype.codeAddress = function(next){
 
     } else {
         if (status == google.maps.GeocoderStatus.OVER_QUERY_LIMIT) {
-            this.nextAddress--;
-            this.delay++;
+            self.nextAddress--;
+            self.delay++;
           } else {
-            this.messageHandler("There was an external error, please try again", "#number-results", "error", false);
+            self.messageHandler("There was an external error, please try again", "#number-results", "error", false);
         } 
     }
-    this.nextAddress++;
-    next();
+    self.nextAddress++;
+    next(self);
   });
 };
 
@@ -263,14 +266,18 @@ MapManager.prototype.queryHandler = function() {
 };
 
 MapManager.prototype.theNext = function() {
-    if (this.nextAddress < this.places.length) {
-        if (this.nextAddress < 10){
-            this.delay = 100;
+    var self = this;
+    if(arguments.length == 1) {
+        self = arguments[0];
+    }
+    
+    if (self.nextAddress < self.places.length) {
+        if (self.nextAddress < 10){
+            self.delay = 100;
         }
-        var self = this;
         setTimeout(self.codeAddress(self.theNext), self.delay);  
     } else {
-        this.codeWrapper();
+        self.codeWrapper();
     }
 };
 
@@ -596,6 +603,7 @@ MapManager.prototype.handleResultsLocation = function(evt) {
 };
 
 MapManager.prototype.init = function(opts) {
+    console.log('init');
     this.geocoder = new google.maps.Geocoder();
     this.map = new google.maps.Map(document.getElementById('map-canvas'), {
             center: new google.maps.LatLng(34.9983818,-99.99967040000001),
@@ -666,6 +674,7 @@ MapManager.prototype.init = function(opts) {
 };
 
 var theMap = new MapManager();
+var loaded = false;
 
 theMap.loadStates([{"name":"Alabama","abbreviation":"AL"},{"name":"Alaska","abbreviation":"AK"},{"name":"American Samoa","abbreviation":"AS"},{"name":"Arizona","abbreviation":"AZ"},{"name":"Arkansas","abbreviation":"AR"},{"name":"California","abbreviation":"CA"},{"name":"Colorado","abbreviation":"CO"},{"name":"Connecticut","abbreviation":"CT"},{"name":"Delaware","abbreviation":"DE"},{"name":"District Of Columbia","abbreviation":"DC"},{"name":"Federated States Of Micronesia","abbreviation":"FM"},{"name":"Florida","abbreviation":"FL"},{"name":"Georgia","abbreviation":"GA"},{"name":"Guam","abbreviation":"GU"},{"name":"Hawaii","abbreviation":"HI"},{"name":"Idaho","abbreviation":"ID"},{"name":"Illinois","abbreviation":"IL"},{"name":"Indiana","abbreviation":"IN"},{"name":"Iowa","abbreviation":"IA"},{"name":"Kansas","abbreviation":"KS"},{"name":"Kentucky","abbreviation":"KY"},{"name":"Louisiana","abbreviation":"LA"},{"name":"Maine","abbreviation":"ME"},{"name":"Marshall Islands","abbreviation":"MH"},{"name":"Maryland","abbreviation":"MD"},{"name":"Massachusetts","abbreviation":"MA"},{"name":"Michigan","abbreviation":"MI"},{"name":"Minnesota","abbreviation":"MN"},{"name":"Mississippi","abbreviation":"MS"},{"name":"Missouri","abbreviation":"MO"},{"name":"Montana","abbreviation":"MT"},{"name":"Nebraska","abbreviation":"NE"},{"name":"Nevada","abbreviation":"NV"},{"name":"New Hampshire","abbreviation":"NH"},{"name":"New Jersey","abbreviation":"NJ"},{"name":"New Mexico","abbreviation":"NM"},{"name":"New York","abbreviation":"NY"},{"name":"North Carolina","abbreviation":"NC"},{"name":"North Dakota","abbreviation":"ND"},{"name":"Northern Mariana Islands","abbreviation":"MP"},{"name":"Ohio","abbreviation":"OH"},{"name":"Oklahoma","abbreviation":"OK"},{"name":"Oregon","abbreviation":"OR"},{"name":"Palau","abbreviation":"PW"},{"name":"Pennsylvania","abbreviation":"PA"},{"name":"Puerto Rico","abbreviation":"PR"},{"name":"Rhode Island","abbreviation":"RI"},{"name":"South Carolina","abbreviation":"SC"},{"name":"South Dakota","abbreviation":"SD"},{"name":"Tennessee","abbreviation":"TN"},{"name":"Texas","abbreviation":"TX"},{"name":"Utah","abbreviation":"UT"},{"name":"Vermont","abbreviation":"VT"},{"name":"Virgin Islands","abbreviation":"VI"},{"name":"Virginia","abbreviation":"VA"},{"name":"Washington","abbreviation":"WA"},{"name":"West Virginia","abbreviation":"WV"},{"name":"Wisconsin","abbreviation":"WI"},{"name":"Wyoming","abbreviation":"WY"}]);
 
@@ -683,10 +692,14 @@ function queryPacker(res) {
 }
 
 $(window).on('load resize',function(e){
-    theMap.init({
-        mapform: "#mapform",
-        results : "#results"
-    });
+    if(!loaded){
+        theMap.init({
+            mapform: "#mapform",
+            results : "#results"
+        });
+        loaded = true;
+    }
+    
 });  
 
 //document.ready?
