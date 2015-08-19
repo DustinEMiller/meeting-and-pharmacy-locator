@@ -1,57 +1,22 @@
 /*
  * TODO: LINK UP TO SOCIAL MEDIA/GOOGLE PLACES TO ADD HOURS/PICTURES OF BUSINESS
  * TODO: IE8 DESIGN TWEAKS?
- * TODO: IIFE
- * TODO: Function Expressions
  */
-
-$(document).ready(function(){
-
-    if($('#map-wrapper').css('display') === 'none'){
-        mobile = true;
-    }
-    else {
-        mobile = false;
-    }
-
-    if('XDomainRequest' in window && window.XDomainRequest !== null) {
-        useShirley = true;
-        $.support.cors = true;
-        clientKey = "pD5ltovTQHNvhP32e2zQ";
-    }
-
-
-    if(getCookie('cms_user_zip_code') !== null){
-        $("[name=location]").val(getCookie('cms_user_zip_code'));
-    }
-});
-
-function toTitleCase(str) {
-    return str.replace(/\w\S*/g, function(txt){return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase();});
+function MapManager(){
+    this.states = [];
 }
 
-function messageHandler(message, selector, messageType, isForm) {  
-    if (isForm) {
-        $("<div class='message message-label' role='alert'>"+message+"</div>").insertAfter(selector);
-        $(selector).parent().parent().addClass(messageType);
-        $(selector).attr('aria-invalid', 'true');
-    }
-    else {
-        $("<div class='message message-label default-message-box "+messageType+"' role='alert'>"+message+"</div>").insertAfter(selector);
-    }
-}
-
-function codeAddress(next){
-    var location = toTitleCase(places[nextAddress]['name']) + ' ' + toTitleCase(places[nextAddress]['address']) + ' ' + 
-            toTitleCase(places[nextAddress]['city']) + ' ' + places[nextAddress]['state'] + ' ' + places[nextAddress]['zip'];
+MapManager.prototype.codeAddress = function(next){
+    var location = toTitleCase(this.places[this.nextAddress]['name']) + ' ' + toTitleCase(this.places[this.nextAddress]['address']) + ' ' + 
+            toTitleCase(this.places[this.nextAddress]['city']) + ' ' + this.places[this.nextAddress]['state'] + ' ' + this.places[this.nextAddress]['zip'];
     var templateScript;
 
-    var number = nextAddress + 1;
-    geocoder.geocode( { 'address': location }, function(results, status) {
+    var number = this.nextAddress + 1;
+    this.geocoder.geocode( { 'address': location }, function(results, status) {
 
     if (status == google.maps.GeocoderStatus.OK) {
-        if(!mobile){
-            map.setCenter(results[0].geometry.location);
+        if(!this.mobile){
+           this.map.setCenter(results[0].geometry.location);
 
             var iconImage = {
                 url: '//askshirley.org/images/green/marker'+number+'.png',
@@ -66,17 +31,17 @@ function codeAddress(next){
                 icon:iconImage,
                 title:location,
                 optimized: false,
-                zIndex: (nextAddress + 1)
+                zIndex: (this.nextAddress + 1)
             });
 
-            allMarkers.push(marker);
+            this.allMarkers.push(marker);
 
             var bounds = new google.maps.LatLngBounds();
-            for(i=0;i< allMarkers.length;i++) {
-                bounds.extend(allMarkers[i].getPosition());
+            for(i=0;i< this.allMarkers.length;i++) {
+                bounds.extend(this.allMarkers[i].getPosition());
             }
-            map.setCenter(bounds.getCenter());
-            map.fitBounds(bounds);
+            this.map.setCenter(bounds.getCenter());
+            this.map.fitBounds(bounds);
             templateScript = $("#location-list").html();
         }
         else {
@@ -88,29 +53,29 @@ function codeAddress(next){
         switch ($("#mapform").data("map-type")) {
             case "pharmacy":
                 var context = {
-                    index: nextAddress,
+                    index: this.nextAddress,
                     number: number,
-                    name: toTitleCase(places[nextAddress]['name']),
-                    address: toTitleCase(places[nextAddress]['address']),
-                    city: toTitleCase(places[nextAddress]['city']),
-                    state: places[nextAddress]['state'],
-                    zip: places[nextAddress]['zip'],
-                    nabp: places[nextAddress]['nabp']
+                    name: this.toTitleCase(this.places[this.nextAddress]['name']),
+                    address: this.toTitleCase(this.places[this.nextAddress]['address']),
+                    city: this.toTitleCase(this.places[this.nextAddress]['city']),
+                    state: this.places[this.nextAddress]['state'],
+                    zip: this.places[this.nextAddress]['zip'],
+                    nabp: this.places[this.nextAddress]['nabp']
                 };
                 break;
             case "seminar":  
                 var context = {
-                    index: nextAddress,
+                    index: this.nextAddress,
                     number: number,
-                    name: toTitleCase(places[nextAddress]['name']),
-                    address: toTitleCase(places[nextAddress]['address']),
-                    city: toTitleCase(places[nextAddress]['city']),
-                    state: places[nextAddress]['state'],
-                    zip: places[nextAddress]['zip'],
+                    name: this.toTitleCase(this.places[this.nextAddress]['name']),
+                    address: this.toTitleCase(this.places[this.nextAddress]['address']),
+                    city: this.toTitleCase(this.places[this.nextAddress]['city']),
+                    state: this.places[this.nextAddress]['state'],
+                    zip: this.places[this.nextAddress]['zip'],
                     events: []
                 };
 
-                context['events'] = places[nextAddress]['events'].map(function(row,index){
+                context['events'] = this.places[this.nextAddress]['events'].map(function(row,index){
                     var event = {
                         number: index+1,
                         date: row['date'],
@@ -121,7 +86,7 @@ function codeAddress(next){
                 break;
         }
 
-        if(mobile){
+        if(this.mobile){
             var root;
             if($("#mapform").data("map-type") === "pharmacy") {
                 root = "maps.google.com?saddr="+origin+"&daddr="+context['name']+" "+context['address']+" "+context['city']+" "+context['state'];
@@ -140,42 +105,22 @@ function codeAddress(next){
 
     } else {
         if (status == google.maps.GeocoderStatus.OVER_QUERY_LIMIT) {
-            nextAddress--;
-            delay++;
+            this.nextAddress--;
+            this.delay++;
           } else {
-            messageHandler("There was an external error, please try again", "#number-results", "error", false);
+            this.messageHandler("There was an external error, please try again", "#number-results", "error", false);
         } 
     }
-    nextAddress++;
-    next();
+    this.nextAddress++;
+    this.next();
   });
 }
 
-function codeWrapper() {
-    $('#loading').toggle();
-
-    if($('#loading').is(':visible')) {
-        var i = 0;
-        setInterval(function() {
-            i = ++i % 4;
-            $("#loading").html("Loading"+Array(i+1).join("."));
-        }, 500);
-    }
-}
-
-function isInt(value) {
-  if (isNaN(value)) {
-    return false;
-  }
-  var x = parseFloat(value);
-  return (x | 0) === x;
-}
-
-function zipRadius(zipcode, radius) {
-    var url = "//www.zipcodeapi.com/rest/"+clientKey+"/radius.json/"+zipcode+"/"+radius+"/mile";
+MapManager.prototype.zipRadius = function(zipcode, radius) {
+    var url = "//www.zipcodeapi.com/rest/"+this.clientKey+"/radius.json/"+zipcode+"/"+radius+"/mile";
 
     if(useShirley){
-        url = "//askshirley.org/zip/api/radius/"+clientKey+"/"+zipcode+"/"+radius;
+        url = "//askshirley.org/zip/api/radius/"+this.clientKey+"/"+zipcode+"/"+radius;
     }
 
     $.ajax({
@@ -187,75 +132,29 @@ function zipRadius(zipcode, radius) {
                     var data = JSON.parse(jqXHR.responseText);
 
                     if(data.error || data.error_msg){
-                        messageHandler("There was a problem with your request. Please try again later", "#mapform", "error", false);
-                        codeWrapper();
+                        this.messageHandler("There was a problem with your request. Please try again later", "#mapform", "error", false);
+                        this.codeWrapper();
                     }
                     else {
-                        findPlaces(data);
+                        this.findPlaces(data);
                     }
                     break;
                 case 'timeout':
-                    messageHandler("The request took too long to complete. Please try again.", "#mapform", "error", false);
-                    codeWrapper();
+                    this.messageHandler("The request took too long to complete. Please try again.", "#mapform", "error", false);
+                    this.codeWrapper();
                     break;
                 case 'nocontent':
-                    messageHandler("There was no content to process. Please try again.", "#mapform", "error", false);
-                    codeWrapper();
+                    this.messageHandler("There was no content to process. Please try again.", "#mapform", "error", false);
+                    this.codeWrapper();
                     break;
                 default:
-                    messageHandler("There was an error. Please try again.", "#mapform", "error", false);
-                    codeWrapper();
+                    this.messageHandler("There was an error. Please try again.", "#mapform", "error", false);
+                    this.codeWrapper();
                     break;
             } 
         }
     });
-}
-
-function findPlaces(zipcodes) {
-    var whereClause, zipColumn;
-    places = [];
-    packedResults = [];
-    whereClauses = [];
-    nextClause = 0;
-    queryurl = '';
-    selectClause = '';
-
-    switch ($("#mapform").data("map-type")) {
-        case "pharmacy":
-            if($("[name=pharmacy]:checked").val() === "pharm"){
-                queryurl = pharmurl;
-            }
-            else {
-                queryurl = pharmplusurl;
-            }
-            selectClause = "SELECT A, B, C, D, E, F";
-            zipColumn = "F";
-            break;
-        case "seminar":
-            queryurl = semurl;
-            selectClause = "SELECT B, C, D, E, F, I";
-            zipColumn = "E";
-            break;
-    }
-
-    //This is broken up into multiple queries because of freaking IE (character limit on jsonp scripts)
-    for(var i = 0; i < zipcodes.zip_codes.length; i++){
-        if(i == 0 || ($.support.cors && i%41 === 0)) {
-            whereClause = " WHERE "+zipColumn+" = " + zipcodes.zip_codes[i].zip_code;
-        }
-        else {
-            whereClause += " OR "+zipColumn+" = " + zipcodes.zip_codes[i].zip_code;
-        }
-
-        if($.support.cors && i%40 === 0 && i != 0){
-            whereClauses.push(whereClause);
-        } else if (i === zipcodes.zip_codes.length-1) {
-            whereClauses.push(whereClause);
-        }
-    } 
-
-    scriptInsertion();
-}
+};
 
 function scriptInsertion(){
     var script = window.document.createElement('script');
@@ -477,67 +376,144 @@ function showSteps(directionResult) {
   messageHandler(directionResult.routes[0].warnings, '#starting-loc', 'warning', false);
 }
 
-//Global Space 
-function MapManager(){
-    this.states = [];
+MapManager.prototype.findPlaces = function(zipcodes) {
+    var whereClause, zipColumn;
+    this.places = [];
+    this.packedResults = [];
+    this.whereClauses = [];
+    this.nextClause = 0;
+    this.queryurl = '';
+    this.selectClause = '';
+
+    switch ($("#mapform").data("map-type")) {
+        case "pharmacy":
+            if($("[name=pharmacy]:checked").val() === "pharm"){
+                this.queryurl = pharmurl;
+            }
+            else {
+                this.queryurl = pharmplusurl;
+            }
+            this.selectClause = "SELECT A, B, C, D, E, F";
+            zipColumn = "F";
+            break;
+        case "seminar":
+            this.queryurl = semurl;
+            this.selectClause = "SELECT B, C, D, E, F, I";
+            zipColumn = "E";
+            break;
+    }
+
+    //This is broken up into multiple queries because of freaking IE (character limit on jsonp scripts)
+    for(var i = 0; i < zipcodes.zip_codes.length; i++){
+        if(i == 0 || ($.support.cors && i%41 === 0)) {
+            whereClause = " WHERE "+zipColumn+" = " + zipcodes.zip_codes[i].zip_code;
+        }
+        else {
+            whereClause += " OR "+zipColumn+" = " + zipcodes.zip_codes[i].zip_code;
+        }
+
+        if($.support.cors && i%40 === 0 && i != 0){
+            this.whereClauses.push(whereClause);
+        } else if (i === zipcodes.zip_codes.length-1) {
+            this.whereClauses.push(whereClause);
+        }
+    } 
+
+    this.scriptInsertion();
+};
+
+MapManager.prototype.codeWrapper = function() {
+    $('#loading').toggle();
+
+    if($('#loading').is(':visible')) {
+        var i = 0;
+        setInterval(function() {
+            i = ++i % 4;
+            $("#loading").html("Loading"+Array(i+1).join("."));
+        }, 500);
+    }
 }
+
+MapManager.prototype.isInt = function(value) {
+  if (isNaN(value)) {
+    return false;
+  }
+  var x = parseFloat(value);
+  return (x | 0) === x;
+};
+
 
 MapManager.prototype.loadStates = function(data) {
     this.states.push(data);
 };
 
+MapManager.prototype.toTitleCase = function(str) {
+    return str.replace(/\w\S*/g, function(txt){return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase();});
+}
+
+MapManager.prototype.messageHandler = function(message, selector, messageType, isForm) {  
+    if (isForm) {
+        $("<div class='message message-label' role='alert'>"+message+"</div>").insertAfter(selector);
+        $(selector).parent().parent().addClass(messageType);
+        $(selector).attr('aria-invalid', 'true');
+    }
+    else {
+        $("<div class='message message-label default-message-box "+messageType+"' role='alert'>"+message+"</div>").insertAfter(selector);
+    }
+}
 MapManager.prototype.handleMapForm = function(evt) {
     codeWrapper();
 
-    var location = $("[name=location]").val();
     var radius = $("[name=radius]:checked").val();
-    origin = location;
-
-    for (var i = 0; i < allMarkers.length; i++) {
-        allMarkers[i].setMap(null);
+    var location = $("[name=location]").val()
+    this.origin = location;
+    this.allMarkers = [];  
+    this.nextAddress = 0;
+    this.delay = 0;
+    
+    for (var i = 0; i < this.allMarkers.length; i++) {
+        this.allMarkers[i].setMap(null);
     }
 
-    allMarkers = [];
     $("#locations, #directions").html("");
     $("#finished h2, .message, #number-results").remove();
     $(".error, .warning").removeClass("error warning");
     $("[aria-invalid=true]").attr("aria-invalid", "false");
-    nextAddress = 0;
-    delay = 0;
+    
 
-    if($("#mapform").data("map-type") === 'pharmacy' && !$("[name=pharmacy]:checked").val()) {
-        messageHandler("Please select a pharmacy type.", "#mapform", "error", false);
-        codeWrapper();
+    if(this.$mapform.data("map-type") === 'pharmacy' && !$("[name=pharmacy]:checked").val()) {
+        this.messageHandler("Please select a pharmacy type.", "#mapform", "error", false);
+        this.codeWrapper();
         return;
     }
 
     if (!radius){
-        messageHandler("Please select a radius.", "#mapform", "error", false);
-        codeWrapper();
+        this.messageHandler("Please select a radius.", "#mapform", "error", false);
+        this.codeWrapper();
         return;
     }
 
     if(isInt(location)) {
         if(/(^\d{5}$)/.test(location)) {
-            zipRadius(location, radius);
+            this.zipRadius(location, radius);
         } 
         else {
-            messageHandler("That is not a valid zipcode", "[name=location]", "error", true);
-            codeWrapper();
+            this.messageHandler("That is not a valid zipcode", "[name=location]", "error", true);
+            this.codeWrapper();
         }
     } 
     else {
         if(location == ''){
-            messageHandler("That is not a valid ZIP or City, State combo", "[name=location]", "error", true);
-            codeWrapper();
+            this.messageHandler("That is not a valid ZIP or City, State combo", "[name=location]", "error", true);
+            this.codeWrapper();
             return;
         }
 
         location = location.split(',');
 
         if(location.length !== 2){
-            messageHandler("That is not a valid City, State combo", "[name=location]", "error", true);
-            codeWrapper();
+            this.messageHandler("That is not a valid City, State combo", "[name=location]", "error", true);
+            this.codeWrapper();
             return;
         }
 
@@ -547,15 +523,15 @@ MapManager.prototype.handleMapForm = function(evt) {
 
         var found = false;
 
-        $.each(stateJSON, function(i, v) {
+        $.each(this.states, function(i, v) {
             if (v.name.search(new RegExp(location[1], "i")) != -1 || v.abbreviation.search(new RegExp(location[1], "i")) != -1) {
                 found = true;
                 location[1] = v.abbreviation;
 
-                var url = "//www.zipcodeapi.com/rest/"+clientKey+"/city-zips.json/"+location[0]+"/"+location[1];
+                var url = "//www.zipcodeapi.com/rest/"+this.clientKey+"/city-zips.json/"+location[0]+"/"+location[1];
 
                 if(useShirley){
-                    url = "//askshirley.org/zip/api/cityzips/"+clientKey+"/"+location[0]+"/"+location[1];
+                    url = "//askshirley.org/zip/api/cityzips/"+this.clientKey+"/"+location[0]+"/"+location[1];
                 }
 
                 $.ajax({
@@ -567,28 +543,28 @@ MapManager.prototype.handleMapForm = function(evt) {
                                 var data = JSON.parse(jqXHR.responseText);
 
                                 if(data.error || data.error_msg){
-                                    messageHandler("There was a problem with your request. Please try again later", "#mapform", "error", false);
-                                    codeWrapper();
+                                    this.messageHandler("There was a problem with your request. Please try again later", "#mapform", "error", false);
+                                    this.codeWrapper();
                                 }
                                 else if(data.zip_codes.length > 0) {
-                                    zipRadius(data.zip_codes[0], radius);
+                                    this.zipRadius(data.zip_codes[0], radius);
                                 }
                                 else {
-                                    messageHandler("There was no data for your location. Please try a different city/state combination.", "#mapform", "error", false);
-                                    codeWrapper();
+                                    this.messageHandler("There was no data for your location. Please try a different city/state combination.", "#mapform", "error", false);
+                                    this.codeWrapper();
                                 };
                                 break;
                             case 'timeout':
-                                messageHandler("The request took to long to complete. Please try again.", "#mapform", "error", false);
-                                codeWrapper();
+                                this.messageHandler("The request took to long to complete. Please try again.", "#mapform", "error", false);
+                                this.codeWrapper();
                                 break;
                             case 'nocontent':
-                                messageHandler("There was no content to process. Please try again.", "#mapform", "error", false);
-                                codeWrapper();
+                                this.messageHandler("There was no content to process. Please try again.", "#mapform", "error", false);
+                                this.codeWrapper();
                                 break;
                             default:
-                                messageHandler("There was an error. Please try again.", "#mapform", "error", false);
-                                codeWrapper();
+                                this.messageHandler("There was an error. Please try again.", "#mapform", "error", false);
+                                this.codeWrapper();
                                 break;
                         } 
                     }
@@ -598,10 +574,10 @@ MapManager.prototype.handleMapForm = function(evt) {
 
         if(!found){
             if(location[1].length == 2) {
-                messageHandler("Incorrect State Abbreviation", "[name=location]", "error", true);
+                this.messageHandler("Incorrect State Abbreviation", "[name=location]", "error", true);
             }
             else {
-                messageHandler("Incorrect State Name", "[name=location]", "error", true);
+                this.messageHandler("Incorrect State Name", "[name=location]", "error", true);
             }
         }
     }   
@@ -647,12 +623,32 @@ MapManager.prototype.init = function(opts) {
     this.$mapform = $(opts.mapform);
     this.$results = $(opts.results);
     
+    /*FIX
+    if($('#map-wrapper').css('display') === 'none'){
+        mobile = true;
+    }
+    else {
+        mobile = false;
+    }
+
+    if('XDomainRequest' in window && window.XDomainRequest !== null) {
+        useShirley = true;
+        $.support.cors = true;
+        clientKey = "pD5ltovTQHNvhP32e2zQ";
+    }
+
+
+    if(getCookie('cms_user_zip_code') !== null){
+        $("[name=location]").val(getCookie('cms_user_zip_code'));
+    }*/
+    
     //listen for map form submit
     this.$mapform.bind("submit",this.handleMapForm.bind(this));
     
     //listen for clicks on starting location button
     this.$results.on("click touch","#starting-loc button",this.handleResultsLocation.bind(this));
 
+    //add handler
     if(!mobile){
         $('#locations').on('click touch', '.direction-links .button', function(){
             $('.default-message-box').remove();
