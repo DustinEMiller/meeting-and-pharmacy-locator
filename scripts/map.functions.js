@@ -709,8 +709,93 @@ var MapManager = (function(){
 
 MapManager.loadStates([{"name":"Alabama","abbreviation":"AL"},{"name":"Alaska","abbreviation":"AK"},{"name":"American Samoa","abbreviation":"AS"},{"name":"Arizona","abbreviation":"AZ"},{"name":"Arkansas","abbreviation":"AR"},{"name":"California","abbreviation":"CA"},{"name":"Colorado","abbreviation":"CO"},{"name":"Connecticut","abbreviation":"CT"},{"name":"Delaware","abbreviation":"DE"},{"name":"District Of Columbia","abbreviation":"DC"},{"name":"Federated States Of Micronesia","abbreviation":"FM"},{"name":"Florida","abbreviation":"FL"},{"name":"Georgia","abbreviation":"GA"},{"name":"Guam","abbreviation":"GU"},{"name":"Hawaii","abbreviation":"HI"},{"name":"Idaho","abbreviation":"ID"},{"name":"Illinois","abbreviation":"IL"},{"name":"Indiana","abbreviation":"IN"},{"name":"Iowa","abbreviation":"IA"},{"name":"Kansas","abbreviation":"KS"},{"name":"Kentucky","abbreviation":"KY"},{"name":"Louisiana","abbreviation":"LA"},{"name":"Maine","abbreviation":"ME"},{"name":"Marshall Islands","abbreviation":"MH"},{"name":"Maryland","abbreviation":"MD"},{"name":"Massachusetts","abbreviation":"MA"},{"name":"Michigan","abbreviation":"MI"},{"name":"Minnesota","abbreviation":"MN"},{"name":"Mississippi","abbreviation":"MS"},{"name":"Missouri","abbreviation":"MO"},{"name":"Montana","abbreviation":"MT"},{"name":"Nebraska","abbreviation":"NE"},{"name":"Nevada","abbreviation":"NV"},{"name":"New Hampshire","abbreviation":"NH"},{"name":"New Jersey","abbreviation":"NJ"},{"name":"New Mexico","abbreviation":"NM"},{"name":"New York","abbreviation":"NY"},{"name":"North Carolina","abbreviation":"NC"},{"name":"North Dakota","abbreviation":"ND"},{"name":"Northern Mariana Islands","abbreviation":"MP"},{"name":"Ohio","abbreviation":"OH"},{"name":"Oklahoma","abbreviation":"OK"},{"name":"Oregon","abbreviation":"OR"},{"name":"Palau","abbreviation":"PW"},{"name":"Pennsylvania","abbreviation":"PA"},{"name":"Puerto Rico","abbreviation":"PR"},{"name":"Rhode Island","abbreviation":"RI"},{"name":"South Carolina","abbreviation":"SC"},{"name":"South Dakota","abbreviation":"SD"},{"name":"Tennessee","abbreviation":"TN"},{"name":"Texas","abbreviation":"TX"},{"name":"Utah","abbreviation":"UT"},{"name":"Vermont","abbreviation":"VT"},{"name":"Virgin Islands","abbreviation":"VI"},{"name":"Virginia","abbreviation":"VA"},{"name":"Washington","abbreviation":"WA"},{"name":"West Virginia","abbreviation":"WV"},{"name":"Wisconsin","abbreviation":"WI"},{"name":"Wyoming","abbreviation":"WY"}]);
 
+//This module is not packaged with the other code in this file.
+var GeoLocation = (function() {
+    function googleCoding(lat, lng){
+        var pos = new google.maps.LatLng(lat, lng);
+        geocoder = new google.maps.Geocoder();
+        geocoder.geocode({'latLng': pos}, function(results, status) {
+            if (status === google.maps.GeocoderStatus.OK) {
+                for (var i = 0; i<results[0].address_components.length; i++) {
+                    if(results[0].address_components[i].types[0] === 'postal_code'){
+                        zipcode = results[0].address_components[i].short_name;
+                    }
+                }
+            }
+        });
+    }
+
+    function shirleyCoding(lat, lng){
+        $.ajax({
+            url: "//askshirley.org/zip/api/geocode/pD5ltovTQHNvhP32e2zQ/"+lat+"/"+lng,
+            dataType: 'text',
+            complete: function(jqXHR, status){
+                switch (status){
+                    case 'success':
+                        var data = JSON.parse(jqXHR.responseText);
+                        if(data.error || data.error_msg){
+                            console.log("There was a problem with your request. Please try again later");
+                        }
+                        else {
+                            zipcode = data.zip_codes[0].zip_code;
+                        }
+                        break;
+                    default:
+                        console.log("There was an error. Please try again.");
+                        break;
+                } 
+            }
+        });
+    }
+    
+    function handleNoGeolocation(errorFlag) {
+        if (errorFlag) {
+            console.log('Error: The Geolocation service failed.');
+        } else {
+            console.log('Error: Your browser doesn\'t support geolocation.');
+        }
+
+    }
+    
+    function init(){
+        // Try HTML5 geolocation
+        if(getCookie('cms_user_zip_code') === null){
+            console.log('success');
+            if(navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(function(position) {
+                    googleCoding(position.coords.latitude, position.coords.longitude);
+                    shirleyCoding(position.coords.latitude, position.coords.longitude);
+                }, function() {
+                    handleNoGeolocation(true);
+                });
+            } else {
+                // Browser doesn't support Geolocation
+                handleNoGeolocation(false);
+            }
+            console.log(zipcode);
+        }
+    }
+    
+    var
+        zipcode,
+        geocoder,
+        
+        //Where should any errors be displayed? 
+        //Add a default popup if no option is entered?
+        $error,
+
+        publicAPI = {
+            init: init,
+            zipcode: zipcode
+        }
+    ;
+
+    return publicAPI;
+})();
+
 $(window).on('load resize',function(e){
     if(e.type === "load") {
+        //GeoLocation.init();
         MapManager.init({
             mapform: "#mapform",
             results : "#results",
@@ -721,4 +806,4 @@ $(window).on('load resize',function(e){
     } else if (e.type === "resize" && MapManager.loaded) {
         MapManager.isMobile();
     }
-});  
+});
