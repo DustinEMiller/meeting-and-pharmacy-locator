@@ -603,7 +603,6 @@ MapManager.prototype.handleResultsLocation = function(evt) {
 };
 
 MapManager.prototype.init = function(opts) {
-    console.log('init');
     this.geocoder = new google.maps.Geocoder();
     this.map = new google.maps.Map(document.getElementById('map-canvas'), {
             center: new google.maps.LatLng(34.9983818,-99.99967040000001),
@@ -692,7 +691,7 @@ function queryPacker(res) {
 }
 
 $(window).on('load resize',function(e){
-    if(!loaded){
+    if(!loaded && typeof theMap !== 'undefined'){
         theMap.init({
             mapform: "#mapform",
             results : "#results"
