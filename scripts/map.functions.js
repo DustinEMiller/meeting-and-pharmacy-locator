@@ -619,7 +619,7 @@ var MapManager = (function(){
     }
     
     function loadStates(data) {
-        states.push(data);
+        states = data;
     }
     
     function init(opts) {
@@ -651,10 +651,12 @@ var MapManager = (function(){
         
         //listen for clicks on direction buttons
         $locations.on("click touch",".direction-links .button",handleDirections.bind(this));  
+        
+        console.log(states);
     }
     
     var
-        states = [],
+        states,
         origin,
         allMarkers = [],
         nextAddress = 0,
