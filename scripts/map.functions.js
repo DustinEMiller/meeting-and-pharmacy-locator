@@ -629,6 +629,7 @@ var MapManager = (function(){
         $locations = $(opts.locations);
         $mapwrapper = $(opts.mapwrapper);
         $directions = $(opts.directions);
+        $locbutton = $(opts.locbutton);
         
         loaded = true;
         isMobile();
@@ -718,7 +719,7 @@ var GeoLocation = (function() {
             if (status === google.maps.GeocoderStatus.OK) {
                 for (var i = 0; i<results[0].address_components.length; i++) {
                     if(results[0].address_components[i].types[0] === 'postal_code'){
-                        zipcode = results[0].address_components[i].short_name;
+                        completionCallback(results[0].address_components[i].short_name);
                     }
                 }
             }
@@ -757,14 +758,14 @@ var GeoLocation = (function() {
 
     }
     
-    function init(){
+    function init(cb){
         // Try HTML5 geolocation
         if(getCookie('cms_user_zip_code') === null){
-            console.log('success');
+            completionCallback = cb;
             if(navigator.geolocation) {
                 navigator.geolocation.getCurrentPosition(function(position) {
                     googleCoding(position.coords.latitude, position.coords.longitude);
-                    shirleyCoding(position.coords.latitude, position.coords.longitude);
+                    //shirleyCoding(position.coords.latitude, position.coords.longitude, cb);
                 }, function() {
                     handleNoGeolocation(true);
                 });
@@ -772,13 +773,13 @@ var GeoLocation = (function() {
                 // Browser doesn't support Geolocation
                 handleNoGeolocation(false);
             }
-            console.log(zipcode);
         }
     }
     
     var
         zipcode,
         geocoder,
+        completionCallback,
         
         //Where should any errors be displayed? 
         //Add a default popup if no option is entered?
@@ -795,13 +796,17 @@ var GeoLocation = (function() {
 
 $(window).on('load resize',function(e){
     if(e.type === "load") {
-        //GeoLocation.init();
+        var cb = function(){
+            $("[name=location]").val(arguments[0]);
+        };
+        GeoLocation.init(cb);
         MapManager.init({
             mapform: "#mapform",
             results : "#results",
             locations : "#locations",
             mapwrapper : "#map-wrapper",
-            directions: "#directions"
+            directions: "#directions",
+            locbutton: "#current-loc"
         });
     } else if (e.type === "resize" && MapManager.loaded) {
         MapManager.isMobile();
