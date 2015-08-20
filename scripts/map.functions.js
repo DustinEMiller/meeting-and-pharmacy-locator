@@ -38,7 +38,7 @@ var MapManager = (function(){
                 allMarkers.push(marker);
 
                 var bounds = new google.maps.LatLngBounds();
-                for(i=0;i< allMarkers.length;i++) {
+                for(var i=0;i< allMarkers.length;i++) {
                     bounds.extend(allMarkers[i].getPosition());
                 }
                 map.setCenter(bounds.getCenter());
@@ -51,7 +51,7 @@ var MapManager = (function(){
 
             var template = Handlebars.compile(templateScript);
 
-            switch ($("#mapform").data("map-type")) {
+            switch ($mapform.data("map-type")) {
                 case "pharmacy":
                     var context = {
                         index: nextAddress,
@@ -89,7 +89,7 @@ var MapManager = (function(){
 
             if(mobile){
                 var root;
-                if($("#mapform").data("map-type") === "pharmacy") {
+                if($mapform.data("map-type") === "pharmacy") {
                     root = "maps.google.com?saddr="+origin+"&daddr="+context['name']+" "+context['address']+" "+context['city']+" "+context['state'];
                 }
                 else {
@@ -102,11 +102,10 @@ var MapManager = (function(){
                 context['drive'] = encodeURI(root+"&directionsmode=drive");
             }
 
-            $("#locations").append(template(context));
+            $locations.append(template(context));
 
         } else {
             if (status == google.maps.GeocoderStatus.OVER_QUERY_LIMIT) {
-                console.log('delay');
                 nextAddress--;
                 delay++;
               } else {
@@ -134,7 +133,7 @@ var MapManager = (function(){
                         var data = JSON.parse(jqXHR.responseText);
 
                         if(data.error || data.error_msg){
-                            messageHandler("There was a problem with your request. Please try again later", "#mapform", "error", false);
+                            messageHandler("There was a problem with your request. Please try again later", $mapform, "error", false);
                             codeWrapper();
                         }
                         else {
@@ -142,15 +141,15 @@ var MapManager = (function(){
                         }
                         break;
                     case 'timeout':
-                        messageHandler("The request took too long to complete. Please try again.", "#mapform", "error", false);
+                        messageHandler("The request took too long to complete. Please try again.", $mapform, "error", false);
                         codeWrapper();
                         break;
                     case 'nocontent':
-                        messageHandler("There was no content to process. Please try again.", "#mapform", "error", false);
+                        messageHandler("There was no content to process. Please try again.", $mapform, "error", false);
                         codeWrapper();
                         break;
                     default:
-                        messageHandler("There was an error. Please try again.", "#mapform", "error", false);
+                        messageHandler("There was an error. Please try again.", $mapform, "error", false);
                         codeWrapper();
                         break;
                 } 
@@ -164,7 +163,7 @@ var MapManager = (function(){
         script.async = true;
         script.src = encodeURI(queryurl+'&tq='+selectClause + whereClauses[nextClause]+'&tqx=responseHandler:MapManager.queryPacker');
         script.onerror = function() {
-            messageHandler("There was an error, please try again.", "#mapform", "error", false);
+            messageHandler("There was an error, please try again.", $mapform, "error", false);
             codeWrapper();
         };
         var done = false;
@@ -182,7 +181,7 @@ var MapManager = (function(){
     }
 
     function queryHandler() {
-        switch ($("#mapform").data("map-type")) {
+        switch ($mapform.data("map-type")) {
             case "pharmacy":
                 places = packedResults.map(function(row){
                     var place = {
@@ -257,7 +256,7 @@ var MapManager = (function(){
         var templateScript = $("#result-list").html();
         var template = Handlebars.compile(templateScript);
 
-        $("#results").prepend(template(context));
+        $results.prepend(template(context));
 
         theNext();
     }
@@ -268,7 +267,7 @@ var MapManager = (function(){
             if (nextAddress < 10){
                 delay = 100;
             }
-            setTimeout(codeAddress(theNext), delay);  
+            setTimeout('MapManager.codeAddress(MapManager.theNext)', delay);  
         } else {
             codeWrapper();
         }
@@ -308,7 +307,7 @@ var MapManager = (function(){
         directionsService.route(request, function(result, status) {
 
             if (status == google.maps.DirectionsStatus.OK) {
-                $("#directions").html('');
+                $directions.html('');
                 directionsDisplay.setDirections(result);
                 showSteps(result);
             }
@@ -364,7 +363,7 @@ var MapManager = (function(){
         context['steps'].push(step);
       }
 
-      $("#directions").append(template(context));
+      $directions.append(template(context));
       messageHandler(directionResult.routes[0].warnings, '#starting-loc', 'warning', false);
     }
 
@@ -377,7 +376,7 @@ var MapManager = (function(){
         queryurl = '';
         selectClause = '';
 
-        switch ($("#mapform").data("map-type")) {
+        switch ($mapform.data("map-type")) {
             case "pharmacy":
                 if($("[name=pharmacy]:checked").val() === "pharm"){
                     queryurl = pharmurl;
@@ -396,8 +395,9 @@ var MapManager = (function(){
         }
 
         //This is broken up into multiple queries because of freaking IE (character limit on jsonp scripts)
-        for(var i = 0; i < zipcodes.zip_codes.length; i++){
-            if(i == 0 || ($.support.cors && i%41 === 0)) {
+        for(var i = 0; i < zipcodes.zip_codes.length; i++){  
+            
+            if(i === 0 || ($.support.cors && i%41 === 0)) {
                 whereClause = " WHERE "+zipColumn+" = " + zipcodes.zip_codes[i].zip_code;
             }
             else {
@@ -460,12 +460,29 @@ var MapManager = (function(){
             $("<div class='message message-label default-message-box "+messageType+"' role='alert'>"+message+"</div>").insertAfter(selector);
         }
     }
-
+    
+    function isMobile() {
+        mobile = $mapwrapper.css('display') === 'none' ? true : false;
+    }
+    
+    //Can put this in a namespace to keep it from polluting the global space
+    function queryPacker(res) {
+        for(var i = 0; i < res.table.rows.length; i++){
+            packedResults.push(res.table.rows[i]);
+        }
+        nextClause++;
+        if(nextClause < whereClauses.length) {
+            scriptInsertion(encodeURI(queryurl+'&tq='+selectClause + whereClauses[nextClause]+'&tqx=responseHandler:MapManager.queryPacker'));
+        } else {       
+            queryHandler();
+        }
+    }
+    
     function handleMapForm(evt) {
         codeWrapper();
 
         var radius = $("[name=radius]:checked").val();
-        var location = $("[name=location]").val()
+        var location = $("[name=location]").val();
         origin = location;
         allMarkers = [];  
         nextAddress = 0;
@@ -475,20 +492,21 @@ var MapManager = (function(){
             allMarkers[i].setMap(null);
         }
 
-        $("#locations, #directions").html("");
+        $directions.html("");
+        $locations.html("");
         $("#finished h2, .message, #number-results").remove();
         $(".error, .warning").removeClass("error warning");
         $("[aria-invalid=true]").attr("aria-invalid", "false");
 
 
         if($mapform.data("map-type") === 'pharmacy' && !$("[name=pharmacy]:checked").val()) {
-            messageHandler("Please select a pharmacy type.", "#mapform", "error", false);
+            messageHandler("Please select a pharmacy type.", $mapform, "error", false);
             codeWrapper();
             return;
         }
 
         if (!radius){
-            messageHandler("Please select a radius.", "#mapform", "error", false);
+            messageHandler("Please select a radius.", $mapform, "error", false);
             codeWrapper();
             return;
         }
@@ -543,27 +561,27 @@ var MapManager = (function(){
                                     var data = JSON.parse(jqXHR.responseText);
 
                                     if(data.error || data.error_msg){
-                                        messageHandler("There was a problem with your request. Please try again later", "#mapform", "error", false);
+                                        messageHandler("There was a problem with your request. Please try again later", $mapform, "error", false);
                                         codeWrapper();
                                     }
                                     else if(data.zip_codes.length > 0) {
                                         zipRadius(data.zip_codes[0], radius);
                                     }
                                     else {
-                                        messageHandler("There was no data for your location. Please try a different city/state combination.", "#mapform", "error", false);
+                                        messageHandler("There was no data for your location. Please try a different city/state combination.", $mapform, "error", false);
                                         codeWrapper();
                                     };
                                     break;
                                 case 'timeout':
-                                    messageHandler("The request took to long to complete. Please try again.", "#mapform", "error", false);
+                                    messageHandler("The request took to long to complete. Please try again.", $mapform, "error", false);
                                     codeWrapper();
                                     break;
                                 case 'nocontent':
-                                    messageHandler("There was no content to process. Please try again.", "#mapform", "error", false);
+                                    messageHandler("There was no content to process. Please try again.", $mapform, "error", false);
                                     codeWrapper();
                                     break;
                                 default:
-                                    messageHandler("There was an error. Please try again.", "#mapform", "error", false);
+                                    messageHandler("There was an error. Please try again.", $mapform, "error", false);
                                     codeWrapper();
                                     break;
                             } 
@@ -582,25 +600,22 @@ var MapManager = (function(){
             }
         }   
     }
-    
-    //Can put this in a namespace to keep it from polluting the global space
-    function queryPacker(res) {
-        for(var i = 0; i < res.table.rows.length; i++){
-            packedResults.push(res.table.rows[i]);
-        }
-        nextClause++;
-        if(nextClause < whereClauses.length) {
-            scriptInsertion(encodeURI(queryurl+'&tq='+selectClause + whereClauses[nextClause]+'&tqx=responseHandler:MapManager.queryPacker'));
-        } else {       
-            queryHandler();
-        }
-    }
 
     function handleResultsLocation(evt) {
         $('.default-message-box').remove();
         $('.message').remove();
         var type = $('.direction-links .button.active').attr("class").replace(' active', '').replace(' button', '');;
         requestDirections(type, $('.direction-links .button.active').parent().attr("data-marker-index"), 'starting-loc');
+    }
+    
+    function handleDirections(evt) {
+        if(!mobile){
+            $('.default-message-box').remove();
+            $('.direction-links .button.active').removeClass('active');
+            var type = $(evt.currentTarget).attr("class").replace(' active', '').replace(' button', '');;
+            $(evt.currentTarget).addClass('active');
+            requestDirections(type, $(evt.currentTarget).parent().attr("data-marker-index"), 'directions-button');
+        }
     }
     
     function loadStates(data) {
@@ -611,14 +626,12 @@ var MapManager = (function(){
         
         $mapform = $(opts.mapform);
         $results = $(opts.results);
-
-        //TODO:Clean
-        if($('#map-wrapper').css('display') === 'none'){
-            mobile = true;
-        }
-        else {
-           mobile = false;
-        }
+        $locations = $(opts.locations);
+        $mapwrapper = $(opts.mapwrapper);
+        $directions = $(opts.directions);
+        
+        loaded = true;
+        isMobile();
 
         if('XDomainRequest' in window && window.XDomainRequest !== null) {
             useShirley = true;
@@ -635,22 +648,13 @@ var MapManager = (function(){
 
         //listen for clicks on starting location button
         $results.on("click touch","#starting-loc button",handleResultsLocation.bind(this));
-
-        //add handler
-        if(!mobile){
-            $('#locations').on('click touch', '.direction-links .button', function(){
-                $('.default-message-box').remove();
-                $('.direction-links .button.active').removeClass('active');
-                var type = $(this).attr("class").replace(' active', '').replace(' button', '');;
-                $(this).addClass('active');
-                requestDirections(type, $(this).parent().attr("data-marker-index"), 'directions-button');
-            });
-        }
+        
+        //listen for clicks on direction buttons
+        $locations.on("click touch",".direction-links .button",handleDirections.bind(this));  
     }
     
     var
         states = [],
-        service,
         origin,
         allMarkers = [],
         nextAddress = 0,
@@ -677,13 +681,24 @@ var MapManager = (function(){
         pharmplusurl = "//spreadsheets.google.com/a/google.com/tq?key=14du8qyaID-DmqTHMEfIpy_W6l2dmOluzq8qfVfIdsbg",
         semurl = "//spreadsheets.google.com/a/google.com/tq?key=15R_yJWOph16dwxWtzfnWCCt6z8DjFiId3MVu-KLuF7g",
         mobile = false,
+        loaded = false,
         
         //Dom References
         $mapform,
         $results,
+        $locations,
+        $mapwrapper,
+        $directions,
         
         publicAPI = {
+            //I really don't want to expose these 3 methods to the public space, 
+            //but I can't think of a way to get around max call stack errors or 
+            //JSONP calls
+            codeAddress: codeAddress,
+            theNext: theNext,
             queryPacker: queryPacker,
+            isMobile: isMobile,
+            loaded: loaded,
             loadStates: loadStates,
             init: init
         }
@@ -694,9 +709,16 @@ var MapManager = (function(){
 
 MapManager.loadStates([{"name":"Alabama","abbreviation":"AL"},{"name":"Alaska","abbreviation":"AK"},{"name":"American Samoa","abbreviation":"AS"},{"name":"Arizona","abbreviation":"AZ"},{"name":"Arkansas","abbreviation":"AR"},{"name":"California","abbreviation":"CA"},{"name":"Colorado","abbreviation":"CO"},{"name":"Connecticut","abbreviation":"CT"},{"name":"Delaware","abbreviation":"DE"},{"name":"District Of Columbia","abbreviation":"DC"},{"name":"Federated States Of Micronesia","abbreviation":"FM"},{"name":"Florida","abbreviation":"FL"},{"name":"Georgia","abbreviation":"GA"},{"name":"Guam","abbreviation":"GU"},{"name":"Hawaii","abbreviation":"HI"},{"name":"Idaho","abbreviation":"ID"},{"name":"Illinois","abbreviation":"IL"},{"name":"Indiana","abbreviation":"IN"},{"name":"Iowa","abbreviation":"IA"},{"name":"Kansas","abbreviation":"KS"},{"name":"Kentucky","abbreviation":"KY"},{"name":"Louisiana","abbreviation":"LA"},{"name":"Maine","abbreviation":"ME"},{"name":"Marshall Islands","abbreviation":"MH"},{"name":"Maryland","abbreviation":"MD"},{"name":"Massachusetts","abbreviation":"MA"},{"name":"Michigan","abbreviation":"MI"},{"name":"Minnesota","abbreviation":"MN"},{"name":"Mississippi","abbreviation":"MS"},{"name":"Missouri","abbreviation":"MO"},{"name":"Montana","abbreviation":"MT"},{"name":"Nebraska","abbreviation":"NE"},{"name":"Nevada","abbreviation":"NV"},{"name":"New Hampshire","abbreviation":"NH"},{"name":"New Jersey","abbreviation":"NJ"},{"name":"New Mexico","abbreviation":"NM"},{"name":"New York","abbreviation":"NY"},{"name":"North Carolina","abbreviation":"NC"},{"name":"North Dakota","abbreviation":"ND"},{"name":"Northern Mariana Islands","abbreviation":"MP"},{"name":"Ohio","abbreviation":"OH"},{"name":"Oklahoma","abbreviation":"OK"},{"name":"Oregon","abbreviation":"OR"},{"name":"Palau","abbreviation":"PW"},{"name":"Pennsylvania","abbreviation":"PA"},{"name":"Puerto Rico","abbreviation":"PR"},{"name":"Rhode Island","abbreviation":"RI"},{"name":"South Carolina","abbreviation":"SC"},{"name":"South Dakota","abbreviation":"SD"},{"name":"Tennessee","abbreviation":"TN"},{"name":"Texas","abbreviation":"TX"},{"name":"Utah","abbreviation":"UT"},{"name":"Vermont","abbreviation":"VT"},{"name":"Virgin Islands","abbreviation":"VI"},{"name":"Virginia","abbreviation":"VA"},{"name":"Washington","abbreviation":"WA"},{"name":"West Virginia","abbreviation":"WV"},{"name":"Wisconsin","abbreviation":"WI"},{"name":"Wyoming","abbreviation":"WY"}]);
 
-$(window).on('load',function(e){
-    MapManager.init({
-        mapform: "#mapform",
-        results : "#results"
-    });
+$(window).on('load resize',function(e){
+    if(e.type === "load") {
+        MapManager.init({
+            mapform: "#mapform",
+            results : "#results",
+            locations : "#locations",
+            mapwrapper : "#map-wrapper",
+            directions: "#directions"
+        });
+    } else if (e.type === "resize" && MapManager.loaded) {
+        MapManager.isMobile();
+    }
 });  
