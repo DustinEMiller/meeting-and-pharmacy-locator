@@ -629,7 +629,6 @@ var MapManager = (function(){
         $locations = $(opts.locations);
         $mapwrapper = $(opts.mapwrapper);
         $directions = $(opts.directions);
-        $locbutton = $(opts.locbutton);
         
         loaded = true;
         isMobile();
@@ -713,17 +712,23 @@ MapManager.loadStates([{"name":"Alabama","abbreviation":"AL"},{"name":"Alaska","
 //This module is not packaged with the other code in this file.
 var GeoLocation = (function() {
     function googleCoding(lat, lng){
+        var isSuccessful = true;
         var pos = new google.maps.LatLng(lat, lng);
         geocoder = new google.maps.Geocoder();
         geocoder.geocode({'latLng': pos}, function(results, status) {
             if (status === google.maps.GeocoderStatus.OK) {
+                console.log(results[0]);
                 for (var i = 0; i<results[0].address_components.length; i++) {
                     if(results[0].address_components[i].types[0] === 'postal_code'){
                         completionCallback(results[0].address_components[i].short_name);
                     }
                 }
             }
+            else {
+                isSuccessful = false;
+            }
         });
+        return isSuccessful;
     }
 
     function shirleyCoding(lat, lng){
@@ -759,14 +764,18 @@ var GeoLocation = (function() {
     }
     
     function init(cb){
-        // Try HTML5 geolocation
+        //$error = opts.error
+        
         if(getCookie('cms_user_zip_code') === null){
             completionCallback = cb;
             if(navigator.geolocation) {
                 navigator.geolocation.getCurrentPosition(function(position) {
-                    googleCoding(position.coords.latitude, position.coords.longitude);
-                    //shirleyCoding(position.coords.latitude, position.coords.longitude, cb);
+                    if(!googleCoding(position.coords.latitude, position.coords.longitude))
+                        if(!shirleyCoding(position.coords.latitude, position.coords.longitude, cb)){
+                            console.log('Error: We sux.');
+                        }
                 }, function() {
+                    //Geolocation bit the big one and failed
                     handleNoGeolocation(true);
                 });
             } else {
@@ -786,8 +795,7 @@ var GeoLocation = (function() {
         $error,
 
         publicAPI = {
-            init: init,
-            zipcode: zipcode
+            init: init
         }
     ;
 
@@ -796,10 +804,9 @@ var GeoLocation = (function() {
 
 $(window).on('load resize',function(e){
     if(e.type === "load") {
-        var cb = function(){
-            $("[name=location]").val(arguments[0]);
-        };
-        GeoLocation.init(cb);
+        GeoLocation.init(function(){
+                            $("[name=location]").val(arguments[0]);
+                        });
         MapManager.init({
             mapform: "#mapform",
             results : "#results",
