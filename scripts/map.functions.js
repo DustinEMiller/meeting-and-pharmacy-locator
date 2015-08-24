@@ -34,9 +34,10 @@ var MapManager = (function(){
                 allMarkers.push(marker);
 
                 var bounds = new google.maps.LatLngBounds();
-                for(var i=0;i< allMarkers.length;i+=1) {
-                    bounds.extend(allMarkers[i].getPosition());
-                }
+                
+                allMarkers.map(function(row){
+                    bounds.extend(row.getPosition());
+                });
                 map.setCenter(bounds.getCenter());
                 map.fitBounds(bounds);
                 templateScript = $('#location-list').html();
@@ -196,17 +197,18 @@ var MapManager = (function(){
                 break;
             case 'seminar':
                 var seminars = 0;
-
-                for(var i = 0; i < packedResults.length; i+=1) {
-                    var row = packedResults[i];
-
+                
+                packedResults.filter(function(row){
                     var semDate = new Date(row['c'][4].v);
                     var now = new Date();
 
                     if(Date.parse(now.toDateString()) > Date.parse(semDate.toDateString())){
-                        continue;
+                        return false;
                     }
-
+                    return true;
+                }).map(function(row){
+                    var semDate = new Date(row['c'][4].v);
+                    
                     var event = {
                         date: semDate.toDateString(),
                         time: semDate.toLocaleTimeString(navigator.language, {hour: '2-digit', minute:'2-digit'})
@@ -231,7 +233,7 @@ var MapManager = (function(){
                         seminars+=1;
                         places.push(place);
                     }
-                }
+                });
 
                 var msgLoc = places.length+" Different Locations";
 
@@ -350,14 +352,15 @@ var MapManager = (function(){
             steps: []
         };
 
-      for (var i = 0; i < route.steps.length; i+=1) {
-        var step = {
-            instructions: route.steps[i].instructions,
-            distance: route.steps[i].distance.text,
-            duration: route.steps[i].duration.text
-        };
-        context['steps'].push(step);
-      }
+        route.steps.map(function(row){
+            var step = {
+                instructions: row.instructions,
+                distance: row.distance.text,
+                duration: row.duration.text
+            };
+            context['steps'].push(step);
+        });
+
 
       $directions.append(template(context));
       messageHandler(directionResult.routes[0].warnings, '#starting-loc', 'warning', false);
@@ -391,21 +394,20 @@ var MapManager = (function(){
         }
 
         //This is broken up into multiple queries because of freaking IE (character limit on jsonp scripts)
-        for(var i = 0; i < zipcodes.zip_codes.length; i+=1){  
-            
-            if(i === 0 || ($.support.cors && i%41 === 0)) {
-                whereClause = ' WHERE '+zipColumn+' = ' + zipcodes.zip_codes[i].zip_code;
+        zipcodes.zip_codes.map(function(row, index){
+            if(index === 0 || ($.support.cors && index%41 === 0)) {
+                whereClause = ' WHERE '+zipColumn+' = ' + row.zip_code;
             }
             else {
-                whereClause += ' OR '+zipColumn+' = ' + zipcodes.zip_codes[i].zip_code;
+                whereClause += ' OR '+zipColumn+' = ' + row.zip_code;
             }
 
-            if($.support.cors && i%40 === 0 && i !== 0){
+            if($.support.cors && index%40 === 0 && index !== 0){
                 whereClauses.push(whereClause);
-            } else if (i === zipcodes.zip_codes.length-1) {
+            } else if (index === zipcodes.zip_codes.length-1) {
                 whereClauses.push(whereClause);
             }
-        } 
+        });
 
         scriptInsertion();
     }
@@ -463,9 +465,9 @@ var MapManager = (function(){
     
     //Can put this in a namespace to keep it from polluting the global space
     function queryPacker(res) {
-        for(var i = 0; i < res.table.rows.length; i+=1){
-            packedResults.push(res.table.rows[i]);
-        }
+        res.table.rows.map(function(row){
+            packedResults.push(row);
+        });
         nextClause+=1;
         if(nextClause < whereClauses.length) {
             scriptInsertion(encodeURI(queryurl+'&tq='+selectClause + whereClauses[nextClause]+'&tqx=responseHandler:MapManager.queryPacker'));
@@ -483,9 +485,9 @@ var MapManager = (function(){
         nextAddress = 0;
         delay = 0;
 
-        for (var i = 0; i < allMarkers.length; i+=1) {
-            allMarkers[i].setMap(null);
-        }
+        allMarkers.map(function(row){
+            row.setMap(null);
+        });
         
         allMarkers = []; 
 
@@ -532,9 +534,9 @@ var MapManager = (function(){
                 return;
             }
 
-            for(var i = 0; i < location.length; i+=1){
-                location[i] = location[i].trim();
-            }  
+            location = location.map(function(row){
+                return row.trim();
+            });
 
             var found = false;
 
@@ -714,11 +716,11 @@ var GeoLocation = (function() {
         geocoder = new google.maps.Geocoder();
         geocoder.geocode({'latLng': pos}, function(results, status) {
             if (status === google.maps.GeocoderStatus.OK) {
-                for (var i = 0; i<results[0].address_components.length; i+=1) {
-                    if(results[0].address_components[i].types[0] === 'postal_code'){
-                        completionCallback(results[0].address_components[i].short_name);
+                results[0].address_components.map(function(row){
+                    if(row.types[0] === 'postal_code'){
+                        completionCallback(row.short_name);
                     }
-                }
+                });
             }
             else {
                 isSuccessful = false;
@@ -759,15 +761,15 @@ var GeoLocation = (function() {
 
     }
     
-    function init(cb){
+    function init(opts){
         //$error = opts.error
         
         if(getCookie('cms_user_zip_code') === null){
-            completionCallback = cb;
+            completionCallback = opts.completionCallback;
             if(navigator.geolocation) {
                 navigator.geolocation.getCurrentPosition(function(position) {
                     if(!googleCoding(position.coords.latitude, position.coords.longitude))
-                        if(!shirleyCoding(position.coords.latitude, position.coords.longitude, cb)){
+                        if(!shirleyCoding(position.coords.latitude, position.coords.longitude)){
                             console.log('Error: We sux.');
                         }
                 }, function() {
@@ -800,9 +802,9 @@ var GeoLocation = (function() {
 
 $(window).on('load resize',function(e){
     if(e.type === 'load') {
-        GeoLocation.init(function(){
+        GeoLocation.init({completionCallback:function(){
                             $('[name=location]').val(arguments[0]);
-                        });
+                        }});
         MapManager.init({
             mapform: '#mapform',
             results : '#results',
