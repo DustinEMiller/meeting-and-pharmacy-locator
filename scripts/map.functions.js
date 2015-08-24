@@ -53,31 +53,31 @@ var MapManager = (function(){
                     var context = {
                         index: nextAddress,
                         number: number,
-                        name: toTitleCase(places[nextAddress]['name']),
-                        address: toTitleCase(places[nextAddress]['address']),
-                        city: toTitleCase(places[nextAddress]['city']),
-                        state: places[nextAddress]['state'],
-                        zip: places[nextAddress]['zip'],
-                        nabp: places[nextAddress]['nabp']
+                        name: toTitleCase(places[nextAddress].name),
+                        address: toTitleCase(places[nextAddress].address),
+                        city: toTitleCase(places[nextAddress].city),
+                        state: places[nextAddress].state,
+                        zip: places[nextAddress].zip,
+                        nabp: places[nextAddress].nabp
                     };
                     break;
                 case 'seminar':  
                     var context = {
                         index: nextAddress,
                         number: number,
-                        name: toTitleCase(places[nextAddress]['name']),
-                        address: toTitleCase(places[nextAddress]['address']),
-                        city: toTitleCase(places[nextAddress]['city']),
-                        state: places[nextAddress]['state'],
-                        zip: places[nextAddress]['zip'],
+                        name: toTitleCase(places[nextAddress].name),
+                        address: toTitleCase(places[nextAddress].address),
+                        city: toTitleCase(places[nextAddress].city),
+                        state: places[nextAddress].state,
+                        zip: places[nextAddress].zip,
                         events: []
                     };
 
-                    context['events'] = places[nextAddress]['events'].map(function(row,index){
+                    context['events'] = places[nextAddress].events.map(function(row,index){
                         var event = {
                             number: index+1,
-                            date: row['date'],
-                            time: row['time']
+                            date: row.date,
+                            time: row.time
                         };
                         return event;
                     });
@@ -87,10 +87,10 @@ var MapManager = (function(){
             if(mobile){
                 var root;
                 if($mapform.data('map-type') === 'pharmacy') {
-                    root = 'maps.google.com?saddr='+origin+'&daddr='+context['name']+' '+context['address']+' '+context['city']+' '+context['state'];
+                    root = 'maps.google.com?saddr='+origin+'&daddr='+context.name+' '+context.address+' '+context.city+' '+context.state;
                 }
                 else {
-                    root = 'maps.google.com?saddr='+origin+'&daddr='+context['address']+' '+context['city']+' '+context['state'];
+                    root = 'maps.google.com?saddr='+origin+'&daddr='+context.address+' '+context.city+' '+context.state;
                 }
 
                 context['walk'] = encodeURI(root+'&directionsmode=walk');
@@ -182,12 +182,12 @@ var MapManager = (function(){
             case 'pharmacy':
                 places = packedResults.map(function(row){
                     var place = {
-                        nabp: row['c'][0].v,
-                        name: row['c'][1].v,
-                        address: row['c'][2].v,
-                        city: row['c'][3].v,
-                        state: row['c'][4].v,
-                        zip: row['c'][5].v
+                        nabp: row.c[0].v,
+                        name: row.c[1].v,
+                        address: row.c[2].v,
+                        city: row.c[3].v,
+                        state: row.c[4].v,
+                        zip: row.c[5].v
                     };
                     return place;
                 });
@@ -199,7 +199,7 @@ var MapManager = (function(){
                 var seminars = 0;
                 
                 packedResults.filter(function(row){
-                    var semDate = new Date(row['c'][4].v);
+                    var semDate = new Date(row.c[4].v);
                     var now = new Date();
 
                     if(Date.parse(now.toDateString()) > Date.parse(semDate.toDateString())){
@@ -207,29 +207,29 @@ var MapManager = (function(){
                     }
                     return true;
                 }).map(function(row){
-                    var semDate = new Date(row['c'][4].v);
+                    var semDate = new Date(row.c[4].v);
                     
                     var event = {
                         date: semDate.toDateString(),
                         time: semDate.toLocaleTimeString(navigator.language, {hour: '2-digit', minute:'2-digit'})
                     };
 
-                    var index = getKeyByAddress(places, row['c'][1].v);
+                    var index = getKeyByAddress(places, row.c[1].v);
 
                     if(index !== -1) {
-                        places[index]['events'].push(event);
+                        places[index].events.push(event);
                         seminars+=1;
                     }
                     else {
                         var place = {
-                            name: row['c'][0].v,
-                            address: row['c'][1].v,
-                            city: row['c'][2].v,
-                            state: row['c'][5].v,
-                            zip: row['c'][3].v,
+                            name: row.c[0].v,
+                            address: row.c[1].v,
+                            city: row.c[2].v,
+                            state: row.c[5].v,
+                            zip: row.c[3].v,
                             events:[]
                         };
-                        place['events'].push(event);
+                        place.events.push(event);
                         seminars+=1;
                         places.push(place);
                     }
@@ -279,7 +279,7 @@ var MapManager = (function(){
             origin = $('[name=starting-location]').val();
         } 
 
-        var end = allMarkers[locationID]['title'];
+        var end = allMarkers[locationID].title;
 
         //TODO:Clean
         switch (type) {
