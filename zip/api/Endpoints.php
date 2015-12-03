@@ -152,9 +152,5 @@
                 throw new Exception('Bad method type');
             }
         }
-
-        protected function callAPI() {
-
-        }
     }
 ?>
