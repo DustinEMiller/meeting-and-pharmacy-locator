@@ -1,22 +1,27 @@
 // TODO: LINK UP TO SOCIAL MEDIA/GOOGLE PLACES TO ADD HOURS/PICTURES OF BUSINESS
 // TODO: IE8 DESIGN TWEAKS?
+// TODO: State machine implementation
+// Has tight coupling with LocationManager.
 var MapManager = (function(){
     function codeAddress(next){
         var location = toTitleCase(places[nextAddress].name) + ' ' + toTitleCase(places[nextAddress].address) + ' ' + 
                 toTitleCase(places[nextAddress].city) + ' ' + places[nextAddress].state + ' ' 
-                + places[nextAddress].zip;
-        var templateScript;
+                + places[nextAddress].zip,
+            geoAddress = toTitleCase(places[nextAddress].address) + ',' + 
+                toTitleCase(places[nextAddress].city) + ',' + places[nextAddress].state + ',' 
+                + places[nextAddress].zip,
+            templateScript,
+            number = nextAddress + 1;
 
-        var number = nextAddress + 1;
-        geocoder.geocode( { address: location }, function(results, status) {
-
+        geocoder.geocode( { address: geoAddress }, function(results, status) {
+                     
         if (status === google.maps.GeocoderStatus.OK) {
 
             if(!mobile){
                map.setCenter(results[0].geometry.location);
 
                 var iconImage = {
-                    url: '//askshirley.org/images/green/marker'+number+'.png',
+                    url: '//www.healthalliance.org/marker'+number+'.png',
                     size: new google.maps.Size(32, 32),
                     origin: new google.maps.Point(0,0),
                     anchor: new google.maps.Point(10, 33)
@@ -28,7 +33,16 @@ var MapManager = (function(){
                     icon:iconImage,
                     title:location,
                     optimized: false,
-                    zIndex: (nextAddress + 1)
+                    zIndex: (nextAddress + 1),
+                    index: nextAddress
+                });
+
+                google.maps.event.addListener(marker, 'click', function() {
+                    var evt = { 
+                        marker: true,
+                        dataIndex: this.index
+                    };
+                    handleDirections(evt);    
                 });
 
                 allMarkers.push(marker);
@@ -61,6 +75,35 @@ var MapManager = (function(){
                         nabp: places[nextAddress].nabp
                     };
                     break;
+                case 'event': 
+                    var context = {
+                        index: nextAddress,
+                        number: number,
+                        name: toTitleCase(places[nextAddress].name),
+                        address: toTitleCase(places[nextAddress].address),
+                        city: toTitleCase(places[nextAddress].city),
+                        state: places[nextAddress].state,
+                        zip: places[nextAddress].zip,
+                        events:[]
+                    };
+
+                    places[nextAddress].events.sort(function(a,b){
+                        return new Date(a.fullDate).getTime() - new Date(b.fullDate).getTime();
+                    });
+
+                    context.events = places[nextAddress].events.map(function(row,index){
+                        var event = {
+                            number: index+1,
+                            date: row.date,
+                            name: toTitleCase(row.name),
+                            roomName: toTitleCase(row.roomName),
+                            startTime: row.startTime,
+                            endTime: row.endTime
+                        };
+                        return event;
+                    });
+
+                    break;
                 case 'seminar':  
                     var context = {
                         index: nextAddress,
@@ -73,6 +116,10 @@ var MapManager = (function(){
                         events: []
                     };
 
+                    places[nextAddress].events.sort(function(a,b){
+                        return new Date(a.fullDate).getTime() - new Date(b.fullDate).getTime();
+                    });
+
                     context.events = places[nextAddress].events.map(function(row,index){
                         var event = {
                             number: index+1,
@@ -81,6 +128,7 @@ var MapManager = (function(){
                         };
                         return event;
                     });
+
                     break;
             }
 
@@ -106,7 +154,7 @@ var MapManager = (function(){
                 nextAddress--;
                 delay+=1;
               } else {
-                messageHandler("There was an external error, please try again", '#number-results', 'error', false);
+                messageHandler("There was an external error, please try again", '#number-results', 'error', true);
             } 
         }
         nextAddress+=1;
@@ -114,80 +162,17 @@ var MapManager = (function(){
       });
     }
 
-   function zipRadius(zipcode, radius) {
-        var url = '//www.zipcodeapi.com/rest/'+clientKey+'/radius.json/'+zipcode+'/'+radius+'/mile';
-
-        if(useShirley){
-            url = '//askshirley.org/zip/api/radius/'+clientKey+'/'+zipcode+'/'+radius;
-        }
-
-        $.ajax({
-            url: url,
-            dataType: 'text',
-            complete: function(jqXHR, status){
-                switch (status){
-                    case 'success':
-                        var data = JSON.parse(jqXHR.responseText);
-
-                        if(data.error || data.error_msg){
-                            messageHandler("There was a problem with your request. Please try again later", $mapform, 'error', false);
-                            codeWrapper();
-                        }
-                        else {
-                            findPlaces(data);
-                        }
-                        break;
-                    case 'timeout':
-                        messageHandler("The request took too long to complete. Please try again.", $mapform, 'error', false);
-                        codeWrapper();
-                        break;
-                    case 'nocontent':
-                        messageHandler("There was no content to process. Please try again.", $mapform, 'error', false);
-                        codeWrapper();
-                        break;
-                    default:
-                        messageHandler("There was an error. Please try again.", $mapform, 'error', false);
-                        codeWrapper();
-                        break;
-                } 
-            }
-        });
-    }
-
-    function scriptInsertion(){
-        var script = window.document.createElement('script');
-
-        script.async = true;
-        script.src = encodeURI(queryurl+'&tq='+selectClause + whereClauses[nextClause]+'&tqx=responseHandler:MapManager.queryPacker');
-        script.onerror = function() {
-            messageHandler("There was an error, please try again.", $mapform, 'error', false);
-            codeWrapper();
-        };
-        var done = false;
-        script.onload = script.onreadystatechange = function() {
-            if (!done && (!this.readyState || this.readyState === 'loaded' || this.readyState === 'complete')) {
-                done = true;
-                script.onload = script.onreadystatechange = null;
-
-                if (script.parentNode) {
-                    return script.parentNode.removeChild(script);
-                }
-            }
-        };
-        window.document.getElementsByTagName('head')[0].appendChild(script);
-    }
-
-    function queryHandler() {
+    function queryHandler(results) {
         switch ($mapform.data('map-type')) {
             case 'pharmacy':
-                places = packedResults.map(function(row){
+                places = results.map(function(row){
                     var place = {
-                        nabp: row.c[0].v,
-                        name: row.c[1].v,
-                        address: row.c[2].v,
-                        city: row.c[3].v,
-                        state: row.c[4].v,
-                        zip: row.c[5].v
+                        nabp: row.nabp,
+                        name: row.pharmacy_name,
+                        address: row.address,
+                        city: row.city,
+                        state: row.state,
+                        zip: row.zip
                     };
                     return place;
                 });
@@ -195,26 +180,93 @@ var MapManager = (function(){
                     number: places.length
                 };
                 break;
+            case 'event':
+                var events = 0;
+                
+                results.filter(function(row){
+                    var eventDate = new Date(row.start_time),
+                        now = new Date();
+
+                    if(Date.parse(now.toDateString()) > Date.parse(eventDate.toDateString())){
+                        return false;
+                    }
+                    return true;
+                }).map(function(row){
+                    var startTime = new Date(row.start_time),
+                        endTime = new Date(row.end_time),
+                        roomName = '';
+
+                    if (row.room_name !== null){
+                        roomName = row.room_name;
+                    }
+                    
+                    var event = {
+                        date: startTime.toDateString(),
+                        startTime: startTime.toLocaleTimeString(navigator.language, {hour: '2-digit', minute:'2-digit'}),
+                        endTime: endTime.toLocaleTimeString(navigator.language, {hour: '2-digit', minute:'2-digit'}),
+                        name: row.event_name,
+                        roomName: roomName,
+                        fullDate: row.start_time
+                    };
+
+                    var index = getKeyByAddress(places, row.address);
+
+                    if(index !== -1) {
+                        places[index].events.push(event);
+                        events+=1;
+                    }
+                    else {
+                        var place = {
+                            name: row.venue_name,
+                            address: row.address,
+                            city: row.city,
+                            state: row.state,
+                            zip: row.zip,
+                            events:[]
+                        };
+                        place.events.push(event);
+                        events+=1;
+                        places.push(place);
+                    }
+                });
+
+                var msgLoc = " at " + places.length+" Different Locations";
+
+                if(places.length === 0){
+                    msgLoc = "";
+                }
+                else if (places.length === 1) {
+                    msgLoc = " at 1 Location";
+                }
+
+                var context = {
+                    locations: msgLoc,
+                    number: events
+                };
+                break;
             case 'seminar':
                 var seminars = 0;
                 
-                packedResults.filter(function(row){
-                    var semDate = new Date(row.c[4].v);
-                    var now = new Date();
+                results.filter(function(row){
+                    var t = (row.start_date + ' ' + convertToMilitary(row.time)).split(/[- :]/);
+                    var semDate = new Date(t[0], t[1]-1, t[2], t[3], t[4], '00'),
+                        now = new Date();
 
                     if(Date.parse(now.toDateString()) > Date.parse(semDate.toDateString())){
                         return false;
                     }
                     return true;
                 }).map(function(row){
-                    var semDate = new Date(row.c[4].v);
+                    var t = (row.start_date + ' ' + convertToMilitary(row.time)).split(/[- :]/);
+                    var semDate = new Date(t[0], t[1]-1, t[2], t[3], t[4], '00')
                     
                     var event = {
                         date: semDate.toDateString(),
-                        time: semDate.toLocaleTimeString(navigator.language, {hour: '2-digit', minute:'2-digit'})
+                        time: semDate.toLocaleTimeString(navigator.language, {hour: '2-digit', minute:'2-digit'}),
+                        fullDate: semDate
                     };
 
-                    var index = getKeyByAddress(places, row.c[1].v);
+                    var index = getKeyByAddress(places, row.address);
 
                     if(index !== -1) {
                         places[index].events.push(event);
@@ -222,11 +274,11 @@ var MapManager = (function(){
                     }
                     else {
                         var place = {
-                            name: row.c[0].v,
-                            address: row.c[1].v,
-                            city: row.c[2].v,
-                            state: row.c[5].v,
-                            zip: row.c[3].v,
+                            name: row.location,
+                            address: row.address,
+                            city: row.city,
+                            state: row.state,
+                            zip: row.zip,
                             events:[]
                         };
                         place.events.push(event);
@@ -235,13 +287,13 @@ var MapManager = (function(){
                     }
                 });
 
-                var msgLoc = places.length+" Different Locations";
+                var msgLoc = " at " + places.length+" Different Locations";
 
-                if(places.length === 0){
-                    msgLoc = "0 Locations";
+                if(places.length === 0) {
+                    msgLoc = "";
                 }
                 else if (places.length === 1) {
-                    msgLoc = "1 Location";
+                    msgLoc = " at 1 Location";
                 }
 
                 var context = {
@@ -251,12 +303,27 @@ var MapManager = (function(){
                 break;
         }    
 
-        var templateScript = $('#result-list').html();
-        var template = Handlebars.compile(templateScript);
+        var templateScript = $('#result-list').html(),
+            template = Handlebars.compile(templateScript);
 
-        $results.prepend(template(context));
+        if(!mobile) {
+            $('#loading').toggle();
+        }
+
+        $(template(context)).insertAfter('#loading');
 
         theNext();
+    }
+
+    function convertToMilitary(time) {
+        var hours = parseInt(time.substr(0, 2));
+        if((time.indexOf('am') != -1 || time.indexOf('AM') != -1) && hours == 12) {
+            time = time.replace('12', '0');
+        }
+        if((time.indexOf('pm')  != -1 || time.indexOf('PM') != -1) && hours < 12) {
+            time = time.replace(hours, (hours + 12));
+        }
+        return time.replace(/(am|pm|AM|PM)/, '');
     }
 
     function theNext() {
@@ -265,21 +332,23 @@ var MapManager = (function(){
             if (nextAddress < 10){
                 delay = 100;
             }
+            //This is a no no. Find a better solution.
+            //Maximum call stack error
             setTimeout('MapManager.codeAddress(MapManager.theNext)', delay);  
         } else {
-            codeWrapper();
+            loadingHandler();
         }
     }
 
     function requestDirections(type, locationID, caller) { 
-        var statusMessage = '';
-        var element = 'none';
+        var statusMessage = '',
+            element = 'none',
+            end = allMarkers[locationID].title,
+            request = {};
 
         if($('[name=starting-location]').length > 0) {
             origin = $('[name=starting-location]').val();
         } 
-
-        var end = allMarkers[locationID].title;
 
         //TODO:Clean
         switch (type) {
@@ -297,11 +366,12 @@ var MapManager = (function(){
                 break;   
         }
 
-        var request = {
+        request = {
           origin:origin,
           destination:end,
           travelMode: type
         };
+
         directionsService.route(request, function(result, status) {
 
             if (status === google.maps.DirectionsStatus.OK) {
@@ -341,16 +411,15 @@ var MapManager = (function(){
     }
 
     function showSteps(directionResult) {
-        var route = directionResult.routes[0].legs[0];
-        var templateScript = $('#direction-steps').html();
-        var template = Handlebars.compile(templateScript);
-
-        var context = {
-            origin: origin,
-            distance: route.distance.text,
-            duration: route.duration.text,
-            steps: []
-        };
+        var route = directionResult.routes[0].legs[0],
+            templateScript = $('#direction-steps').html(),
+            template = Handlebars.compile(templateScript),
+            context = {
+                origin: origin,
+                distance: route.distance.text,
+                duration: route.duration.text,
+                steps: []
+            };
 
         route.steps.map(function(row){
             var step = {
@@ -363,65 +432,24 @@ var MapManager = (function(){
 
 
       $directions.append(template(context));
-      messageHandler(directionResult.routes[0].warnings, '#starting-loc', 'warning', false);
+      messageHandler(directionResult.routes[0].warnings, '#back-locations', 'warning', false);
     }
 
-    function findPlaces(zipcodes) {
-        var whereClause, zipColumn;
-        places = [];
-        packedResults = [];
-        whereClauses = [];
-        nextClause = 0;
-        queryurl = '';
-        selectClause = '';
-
-        switch ($mapform.data('map-type')) {
-            case 'pharmacy':
-                if($('[name=pharmacy]:checked').val() === 'pharm'){
-                    queryurl = pharmurl;
-                }
-                else {
-                    queryurl = pharmplusurl;
-                }
-                selectClause = 'SELECT A, B, C, D, E, F';
-                zipColumn = 'F';
-                break;
-            case 'seminar':
-                queryurl = semurl;
-                selectClause = 'SELECT B, C, D, E, F, I';
-                zipColumn = 'E';
-                break;
+    function loadingHandler() {
+        submitState.disabled = !submitState.disabled;
+        if (submitState.disabled) {
+            $submitButton.attr('value', 'Loading');
+            $submitButton.attr('role', 'alert');
+            $submitButton.css('width', submitState.width);   
+            $submitButton.addClass('gray-pulse');    
+        } else {
+            $submitButton.attr('value', submitState.label);
+            $submitButton.css('width', 'auto');
+            $submitButton.removeAttr('role');
+            $submitButton.removeClass('gray-pulse'); 
         }
 
-        //This is broken up into multiple queries because of freaking IE (character limit on jsonp scripts)
-        zipcodes.zip_codes.map(function(row, index){
-            if(index === 0 || ($.support.cors && index%41 === 0)) {
-                whereClause = ' WHERE '+zipColumn+' = ' + row.zip_code;
-            }
-            else {
-                whereClause += ' OR '+zipColumn+' = ' + row.zip_code;
-            }
-
-            if($.support.cors && index%40 === 0 && index !== 0){
-                whereClauses.push(whereClause);
-            } else if (index === zipcodes.zip_codes.length-1) {
-                whereClauses.push(whereClause);
-            }
-        });
-
-        scriptInsertion();
-    }
-
-    function codeWrapper() {
-        $('#loading').toggle();
-
-        if($('#loading').is(':visible')) {
-            var i = 0;
-            setInterval(function() {
-                i = ++i % 4;
-                $('#loading').html("Loading"+Array(i+1).join('.'));
-            }, 500);
-        }
+        $submitButton.prop('disabled', submitState.disabled);
     }
 
     function isInt(value) {
@@ -449,9 +477,18 @@ var MapManager = (function(){
     }
 
     function messageHandler(message, selector, messageType, isForm) {  
+        if (selector === $mapform || selector === '[name=location]') {
+            loadingHandler();
+            if(!mobile) {
+                $('#loading').toggle();
+            }
+        }
+
         if (isForm) {
-            $("<div class='message message-label' role='alert'>"+message+"</div>").insertAfter(selector);
-            $(selector).parent().parent().addClass(messageType);
+            $results.append("<div class='message message-label "+messageType+"' role='alert'>"+message+"</div>");
+            if (selector !== $mapform ) {
+                $(selector).parent().parent().addClass(messageType);
+            }
             $(selector).attr('aria-invalid', 'true');
         }
         else {
@@ -459,28 +496,23 @@ var MapManager = (function(){
         }
     }
     
-    function isMobile() {
+    function setMobileStatus() {
         mobile = $mapwrapper.css('display') === 'none' ? true : false;
     }
     
-    //Can put this in a namespace to keep it from polluting the global space
-    function queryPacker(res) {
-        res.table.rows.map(function(row){
-            packedResults.push(row);
-        });
-        nextClause+=1;
-        if(nextClause < whereClauses.length) {
-            scriptInsertion(encodeURI(queryurl+'&tq='+selectClause + whereClauses[nextClause]+'&tqx=responseHandler:MapManager.queryPacker'));
-        } else {       
-            queryHandler();
-        }
-    }
-    
     function handleMapForm(evt) {
-        codeWrapper();
+        loadingHandler();
+        if(!mobile) {
+            $('#loading').toggle();
+        }
 
-        var radius = $('[name=radius]:checked').val();
-        var location = $('[name=location]').val();
+        var radius = $("#radius option:selected").val(),
+            location = $('[name=location]').val(),
+            url = '//askshirley.org/zip/api/',
+            locationType = 'meeting/'+$mapform.data('map-type')+'/',
+            searchArguments
+            endpoint = 'zipcode/';
+
         origin = location;
         nextAddress = 0;
         delay = 0;
@@ -490,114 +522,105 @@ var MapManager = (function(){
         });
         
         allMarkers = []; 
+        places = [];
 
         $directions.html("");
         $locations.html("");
+        $directions.css("right", "100%");
+        $locations.show();  
         $('#finished h2, .message, #number-results').remove();
         $('.error, .warning').removeClass('error warning');
         $('[aria-invalid=true]').attr('aria-invalid', 'false');
 
 
-        if($mapform.data('map-type') === 'pharmacy' && !$('[name=pharmacy]:checked').val()) {
-            messageHandler("Please select a pharmacy type.", $mapform, 'error', false);
-            codeWrapper();
+        if($mapform.data('map-type') === 'pharmacy' && !$("#pharmacy option:selected").val()) {
+            messageHandler("Please select a pharmacy type.", $mapform, 'error', true);
             return;
         }
 
         if (!radius){
-            messageHandler("Please select a radius.", $mapform, 'error', false);
-            codeWrapper();
+            messageHandler("Please select a radius.", $mapform, 'error', true);
             return;
         }
 
-        if(isInt(location)) {
+        if(location === ''){
+            messageHandler("That is not a valid ZIP or City, State combo", '[name=location]', 'error', true);
+            return;
+        } else if (isInt(location)) {
             if(/(^\d{5}$)/.test(location)) {
-                zipRadius(location, radius);
+                searchArguments = location+'/'+radius;
             } 
             else {
                 messageHandler("That is not a valid zipcode", '[name=location]', 'error', true);
-                codeWrapper();
-            }
-        } 
-        else {
-            if(location === ''){
-                messageHandler("That is not a valid ZIP or City, State combo", '[name=location]', 'error', true);
-                codeWrapper();
                 return;
             }
-
+        } else {
             location = location.split(',');
 
             if(location.length !== 2){
                 messageHandler("That is not a valid City, State combo", '[name=location]', 'error', true);
-                codeWrapper();
                 return;
             }
 
             location = location.map(function(row){
                 return row.trim();
             });
-
-            var found = false;
-
-            $.each(states, function(i, v) {
-                if (v.name.search(new RegExp(location[1], "i")) !== -1 || v.abbreviation.search(new RegExp(location[1], "i")) !== -1) {
-                    found = true;
-                    location[1] = v.abbreviation;
-
-                    var url = '//www.zipcodeapi.com/rest/'+clientKey+'/city-zips.json/'+location[0]+'/'+location[1];
-
-                    if(useShirley){
-                        url = '//askshirley.org/zip/api/cityzips/'+clientKey+'/'+location[0]+'/'+location[1];
-                    }
-
-                    $.ajax({
-                        url: url,
-                        dataType: 'text',
-                        complete: function(jqXHR, status){
-                            switch (status){
-                                case 'success':
-                                    var data = JSON.parse(jqXHR.responseText);
-
-                                    if(data.error || data.error_msg){
-                                        messageHandler("There was a problem with your request. Please try again later", $mapform, 'error', false);
-                                        codeWrapper();
-                                    }
-                                    else if(data.zip_codes.length > 0) {
-                                        zipRadius(data.zip_codes[0], radius);
-                                    }
-                                    else {
-                                        messageHandler("There was no data for your location. Please try a different city/state combination.", $mapform, 'error', false);
-                                        codeWrapper();
-                                    }
-                                    break;
-                                case 'timeout':
-                                    messageHandler("The request took to long to complete. Please try again.", $mapform, 'error', false);
-                                    codeWrapper();
-                                    break;
-                                case 'nocontent':
-                                    messageHandler("There was no content to process. Please try again.", $mapform, 'error', false);
-                                    codeWrapper();
-                                    break;
-                                default:
-                                    messageHandler("There was an error. Please try again.", $mapform, 'error', false);
-                                    codeWrapper();
-                                    break;
-                            } 
-                        }
-                    });
+        
+            var state = states.filter(function ( obj ) {
+                if (obj.name.toLowerCase() === location[1].toLowerCase() || 
+                        obj.abbreviation.toLowerCase() === location[1].toLowerCase()) {
+                    return obj;
                 }
-             });
+            })[0];
 
-            if(!found){
-                if(location[1].length === 2) {
-                    messageHandler("Incorrect State Abbreviation", '[name=location]', 'error', true);
-                }
-                else {
-                    messageHandler("Incorrect State Name", '[name=location]', 'error', true);
-                }
+            if(!state && location[1].length === 2) {
+                messageHandler("Incorrect State Abbreviation", '[name=location]', 'error', true);
+                return;
             }
-        }   
+            else if(!state) {
+                messageHandler("Incorrect State Name", '[name=location]', 'error', true);
+                return;
+            }
+
+            location[1] = state.abbreviation.toUpperCase();
+            searchArguments = location[0]+'/'+location[1]+'/'+radius;
+            endpoint = 'cityState/';
+        }
+
+        if($mapform.data('map-type') === 'pharmacy') {
+            locationType = 'pharmacy/'+$("#pharmacy option:selected").val()+'/';
+        }
+
+        $.ajax({
+            url: url+endpoint+clientKey+'/'+locationType+searchArguments,
+            dataType: 'text',
+            complete: function(jqXHR, status){
+                switch (status) {
+                    case 'success':
+                        var data = JSON.parse(jqXHR.responseText);
+
+                        if(data.error || data.error_msg){
+                            messageHandler("There was a problem with your request. Please try again later", $mapform, 'error', true);
+                        }
+                        else if(data.results.length > 0) {
+                            queryHandler(data.results);
+                        }
+                        else {
+                            messageHandler("There was no data for your location. Please try a different city/state combination.", $mapform, 'error', true);
+                        }
+                        break;
+                    case 'timeout':
+                        messageHandler("The request took to long to complete. Please try again.", $mapform, 'error', true);
+                        break;
+                    case 'nocontent':
+                        messageHandler("There was no content to process. Please try again.", $mapform, 'error', true);
+                        break;
+                    default:
+                        messageHandler("There was an error. Please try again.", $mapform, 'error', true);
+                        break;
+                } 
+            }
+        });
     }
 
     function handleResultsLocation(evt) {
@@ -609,12 +632,32 @@ var MapManager = (function(){
     
     function handleDirections(evt) {
         if(!mobile){
+            var type,
+                index;
+
             $('.default-message-box').remove();
-            $('.direction-links .button.active').removeClass('active');
-            var type = $(evt.currentTarget).attr('class').replace(' active', '').replace(' button', '');
-            $(evt.currentTarget).addClass('active');
-            requestDirections(type, $(evt.currentTarget).parent().attr('data-marker-index'), 'directions-button');
+
+            if (evt.marker) {
+                type = 'drive';
+                index = evt.dataIndex;
+            } else {
+                type = $(evt.currentTarget).attr('class').replace(' active', '').replace(' button', '');
+                index = $(evt.currentTarget).parent().attr('data-marker-index');
+                $('.direction-links .button.active').removeClass('active');
+                $(evt.currentTarget).addClass('active');
+            }
+
+            $directions.animate({right: 0}, 300, function() {
+                $locations.hide();   
+            });
+            
+            requestDirections(type, index, 'directions-button');
         }
+    }
+
+    function handleBacklink(evt) {
+        $locations.show();
+        $directions.animate({right: '100%'}, 300);
     }
     
     function loadStates(data) {
@@ -628,18 +671,39 @@ var MapManager = (function(){
         $locations = $(opts.locations);
         $mapwrapper = $(opts.mapwrapper);
         $directions = $(opts.directions);
-        
-        loaded = true;
-        isMobile();
+        $submitButton = $(opts.submitButton);
 
-        if('XDomainRequest' in window && window.XDomainRequest !== null) {
-            useShirley = true;
-            $.support.cors = true;
-            clientKey = 'pD5ltovTQHNvhP32e2zQ';
+        submitState.label = $submitButton.attr('value');
+        submitState.width = $submitButton.innerWidth();
+        submitState.disabled = false;
+
+        loaded = true;
+
+        ga('require', 'linker');
+        ga('linker:autoLink', ['switchtohealthalliance.com'] );
+
+        columnHeight = document.documentElement.clientHeight - ($('header').outerHeight(true) + parseInt($("main").css("padding-bottom")) + 
+            $('#menu-bar').outerHeight(true) + $('#type-title').outerHeight(true) + $('#type-form').outerHeight(true));
+        columnHeight = columnHeight < 450 ? 450 : columnHeight;
+        
+        if ($mapwrapper.css('display') !== 'none') {
+            $('#map-canvas, #results').css("height", columnHeight);    
+            google.maps.event.trigger(map, "resize");
         }
 
-        if(getCookie('cms_user_zip_code') !== null){
-            $('[name=location]').val(getCookie('cms_user_zip_code'));
+        setMobileStatus();
+
+        if('XDomainRequest' in window && window.XDomainRequest !== null) {
+            $.support.cors = true;
+        }
+        
+        if ($mapform.data('map-type') === 'pharmacy') {
+            //ga('send', 'pageview',{'page':'/find-a-pharmacy/','title':'Find a Pharmacy'});
+        } else if ($mapform.data('map-type') === 'event') {
+            //ga('send', 'pageview',{'page':'/find-a-meeting/','title':'Find a Meeting'});
+        } else if ($mapform.data('map-type') === 'seminar') {
+            ga('send', 'pageview',{'page':'/switch-to-health-alliance/find-a-meeting/','title':'Find a Meeting'});
+
         }
 
         //listen for map form submit
@@ -649,21 +713,30 @@ var MapManager = (function(){
         $results.on('click touch','#starting-loc button',handleResultsLocation.bind(this));
         
         //listen for clicks on direction buttons
-        $locations.on('click touch','.direction-links .button',handleDirections.bind(this));  
+        $locations.on('click touch','.direction-links .button',handleDirections.bind(this)); 
+
+        //listen for clicks on back link
+        $directions.on('click touch','#back-locations',handleBacklink.bind(this)); 
+
+        if(LocationManager.getCookie('cms_user_zip_code') !== null){
+            $('[name=location]').val(LocationManager.getCookie('cms_user_zip_code'));
+            var type = $mapform.data('map-type');
+
+            if ((type === "event" || type === "seminar") && !mobile) {
+                $submitButton.trigger('click');    
+            }
+        }  
     }
     
     var
         states,
         origin,
+        columnHeight,
         allMarkers = [],
         nextAddress = 0,
-        nextClause = 0,
-        whereClauses = [],
-        queryurl,
-        selectClause,
+        submitState = {},
         delay = 0,
         places = [],
-        packedResults = [],
         geocoder = new google.maps.Geocoder(),
         map = new google.maps.Map(document.getElementById('map-canvas'), {
             center: new google.maps.LatLng(34.9983818,-99.99967040000001),
@@ -674,11 +747,7 @@ var MapManager = (function(){
         directionsDisplay = new google.maps.DirectionsRenderer({
             map: map
         }),
-        useShirley = false,
-        clientKey = 'js-k0p09YraX0SYvCu2lCxAcVLcBxZMbEhwEGwNEYXCYQAut4xOH4oTZa6AH6nTKEqp',
-        pharmurl = '//spreadsheets.google.com/a/google.com/tq?key=1X2y2MVq82sgCXznHMdJEbyqIheL-SJ1dq2xxMO7kUkY',
-        pharmplusurl = '//spreadsheets.google.com/a/google.com/tq?key=14du8qyaID-DmqTHMEfIpy_W6l2dmOluzq8qfVfIdsbg',
-        semurl = '//spreadsheets.google.com/a/google.com/tq?key=15R_yJWOph16dwxWtzfnWCCt6z8DjFiId3MVu-KLuF7g',
+        clientKey = 'pD5ltovTQHNvhP32e2zQ',
         mobile = false,
         loaded = false,
         
@@ -688,6 +757,7 @@ var MapManager = (function(){
         $locations,
         $mapwrapper,
         $directions,
+        $submitButton,
         
         publicAPI = {
             //I really don't want to expose these 3 methods to the public space, 
@@ -695,8 +765,7 @@ var MapManager = (function(){
             //JSONP calls
             codeAddress: codeAddress,
             theNext: theNext,
-            queryPacker: queryPacker,
-            isMobile: isMobile,
+            setMobileStatus: setMobileStatus,
             loaded: loaded,
             loadStates: loadStates,
             init: init
@@ -709,111 +778,19 @@ var MapManager = (function(){
 MapManager.loadStates([{name:'Alabama',abbreviation:'AL'},{name:'Alaska',abbreviation:'AK'},{name:'American Samoa',abbreviation:'AS'},{name:'Arizona',abbreviation:'AZ'},{name:'Arkansas',abbreviation:'AR'},{name:'California',abbreviation:'CA'},{name:'Colorado',abbreviation:'CO'},{name:'Connecticut',abbreviation:'CT'},{name:'Delaware',abbreviation:'DE'},{name:'District Of Columbia',abbreviation:'DC'},{name:'Federated States Of Micronesia',abbreviation:'FM'},{name:'Florida',abbreviation:'FL'},{name:'Georgia',abbreviation:'GA'},{name:'Guam',abbreviation:'GU'},{name:'Hawaii',abbreviation:'HI'},{name:'Idaho',abbreviation:'ID'},{name:'Illinois',abbreviation:'IL'},{name:'Indiana',abbreviation:'IN'},{name:'Iowa',abbreviation:'IA'},{name:'Kansas',abbreviation:'KS'},{name:'Kentucky',abbreviation:'KY'},{name:'Louisiana',abbreviation:'LA'},{name:'Maine',abbreviation:'ME'},{name:'Marshall Islands',abbreviation:'MH'},{name:'Maryland',abbreviation:'MD'},{name:'Massachusetts',abbreviation:'MA'},{name:'Michigan',abbreviation:'MI'},{name:'Minnesota',abbreviation:'MN'},{name:'Mississippi',abbreviation:'MS'},{name:'Missouri',abbreviation:'MO'},{name:'Montana',abbreviation:'MT'},{name:'Nebraska',abbreviation:'NE'},{name:'Nevada',abbreviation:'NV'},{name:'New Hampshire',abbreviation:'NH'},{name:'New Jersey',abbreviation:'NJ'},{name:'New Mexico',abbreviation:'NM'},{name:'New York',abbreviation:'NY'},{name:'North Carolina',abbreviation:'NC'},{name:'North Dakota',abbreviation:'ND'},{name:'Northern Mariana Islands',abbreviation:'MP'},{name:'Ohio',abbreviation:'OH'},{name:'Oklahoma',abbreviation:'OK'},{name:'Oregon',abbreviation:'OR'},{name:'Palau',abbreviation:'PW'},{name:'Pennsylvania',abbreviation:'PA'},{name:'Puerto Rico',abbreviation:'PR'},{name:'Rhode Island',abbreviation:'RI'},{name:'South Carolina',abbreviation:'SC'},{name:'South Dakota',abbreviation:'SD'},{name:'Tennessee',abbreviation:'TN'},{name:'Texas',abbreviation:'TX'},{name:'Utah',abbreviation:'UT'},{name:'Vermont',abbreviation:'VT'},{name:'Virgin Islands',abbreviation:'VI'},{name:'Virginia',abbreviation:'VA'},{name:'Washington',abbreviation:'WA'},{name:'West Virginia',abbreviation:'WV'},{name:'Wisconsin',abbreviation:'WI'},{name:'Wyoming',abbreviation:'WY'}]);
 
 //This module is not packaged with the other code in this file.
-var GeoLocation = (function() {
-    function googleCoding(lat, lng){
-        var isSuccessful = true;
-        var pos = new google.maps.LatLng(lat, lng);
-        geocoder = new google.maps.Geocoder();
-        geocoder.geocode({'latLng': pos}, function(results, status) {
-            if (status === google.maps.GeocoderStatus.OK) {
-                results[0].address_components.map(function(row){
-                    if(row.types[0] === 'postal_code'){
-                        completionCallback(row.short_name);
-                    }
-                });
-            }
-            else {
-                isSuccessful = false;
-            }
-        });
-        return isSuccessful;
-    }
+$(window).on('load',function(){
+    MapManager.init({
+        mapform: '#mapform',
+        results : '#results',
+        locations : '#locations',
+        mapwrapper : '#map-wrapper',
+        directions: '#directions',
+        submitButton: '#filter'
+    });
+});
 
-    function shirleyCoding(lat, lng){
-        $.ajax({
-            url: '//askshirley.org/zip/api/geocode/pD5ltovTQHNvhP32e2zQ/'+lat+'/'+lng,
-            dataType: 'text',
-            complete: function(jqXHR, status){
-                switch (status){
-                    case 'success':
-                        var data = JSON.parse(jqXHR.responseText);
-                        if(data.error || data.error_msg){
-                            console.log("There was a problem with your request. Please try again later");
-                        }
-                        else {
-                            zipcode = data.zip_codes[0].zip_code;
-                        }
-                        break;
-                    default:
-                        console.log("There was an error. Please try again.");
-                        break;
-                } 
-            }
-        });
-    }
-    
-    function handleNoGeolocation(errorFlag) {
-        if (errorFlag) {
-            console.log("Error: The Geolocation service failed.");
-        } else {
-            console.log("Error: Your browser doesn\'t support geolocation.");
-        }
-
-    }
-    
-    function init(opts){
-        //$error = opts.error
-        
-        if(getCookie('cms_user_zip_code') === null){
-            completionCallback = opts.completionCallback;
-            if(navigator.geolocation) {
-                navigator.geolocation.getCurrentPosition(function(position) {
-                    if(!googleCoding(position.coords.latitude, position.coords.longitude))
-                        if(!shirleyCoding(position.coords.latitude, position.coords.longitude)){
-                            console.log('Error: We sux.');
-                        }
-                }, function() {
-                    //Geolocation bit the big one and failed
-                    handleNoGeolocation(true);
-                });
-            } else {
-                // Browser doesn't support Geolocation
-                handleNoGeolocation(false);
-            }
-        }
-    }
-    
-    var
-        zipcode,
-        geocoder,
-        completionCallback,
-        
-        //Where should any errors be displayed? 
-        //Add a default popup if no option is entered?
-        $error,
-
-        publicAPI = {
-            init: init
-        }
-    ;
-
-    return publicAPI;
-})();
-
-$(window).on('load resize',function(e){
-    if(e.type === 'load') {
-        GeoLocation.init({completionCallback:function(){
-                            $('[name=location]').val(arguments[0]);
-                        }});
-        MapManager.init({
-            mapform: '#mapform',
-            results : '#results',
-            locations : '#locations',
-            mapwrapper : '#map-wrapper',
-            directions: '#directions',
-            locbutton: '#current-loc'
-        });
-    } else if (e.type === 'resize' && MapManager.loaded) {
-        MapManager.isMobile();
+$(window).on('resize',function(){
+    if (MapManager.loaded) {
+        MapManager.setMobileStatus();
     }
 });

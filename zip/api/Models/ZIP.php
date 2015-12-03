@@ -85,7 +85,7 @@ class ZIP {
         $row = $qry->fetch();
         
         if(empty($row)) {
-            return 'Error: Please try a different zip code.';
+            throw new Exception('Please try a different zip code.');
         }
         
         $latitude = 0;
@@ -112,6 +112,7 @@ class ZIP {
         $qry->execute();
         
         $result['zip_codes'] = $qry->fetchAll();
+
         return($result);
     }
     
@@ -133,7 +134,7 @@ class ZIP {
     
     public function cityzips()
     {
-        $qry = $this->_db->prepare('SELECT zip_code FROM city_zips WHERE city like :city AND state like :state');
+        $qry = $this->_db->prepare('SELECT latitude, longitude, zip_code FROM city_zips WHERE city like :city AND state like :state');
         $qry->bindParam(':city', $this->args[0]);
         
         if(strlen($this->args[1]) > 2){
@@ -142,17 +143,36 @@ class ZIP {
         
         $qry->bindParam(':state', $this->args[1]);
         $qry->execute();
-        $r = $qry->fetchAll(PDO::FETCH_NUM);
-        $arr = array();
+        $row = $qry->fetch();
         
-        foreach ($r as &$v) {
-            foreach ($v as &$i) {
-                $arr[] = $i;
-            }
+        if(empty($row)) {
+            throw new Exception('Incorrect location combination.');
         }
         
-        $result['zip_codes'] = $arr;
+        $latitude = 0;
+        $longitude = 0;
         
+        do {
+            $latitude += $row['latitude'];
+            $longitude += $row['longitude'];
+
+        } while ($row = $qry->fetch());
+
+        $latitude = ($latitude/$qry->rowCount());
+        $longitude = ($longitude/$qry->rowCount());
+        
+        $qry = $this->_db->prepare('SELECT zip_code, ROUND(( 3959 * acos( cos( radians(:lat) ) * 
+            cos( radians(latitude) ) * cos( radians(longitude) - radians(:lng) ) + 
+            sin( radians(:lat) ) * sin(radians(latitude)) ) ), 3) AS distance, city, state 
+            FROM askshirley.city_zips
+            HAVING distance <= :radius 
+            ORDER BY distance');
+        $qry->bindParam(':lat', $latitude);
+        $qry->bindParam(':lng', $longitude);
+        $qry->bindParam(':radius', $this->args[2]);
+        $qry->execute();
+        $result['zip_codes'] = $qry->fetchAll();
+
         return($result);
     }
 }

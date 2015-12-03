@@ -29,7 +29,7 @@ class APIKey {
         return (!empty($results));
     }
     
-    //Caching, not implemented yet
+    //Caching
     public function find($id)
     {
         if (!isset($this->userCache[$id])) {

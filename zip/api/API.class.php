@@ -18,6 +18,11 @@ abstract class API
      */
     protected $key = '';
     /**
+     * Property: locationSettings
+     * Holds the location type and location subtype
+     */
+    protected $locationSettings = Array();
+    /**
      * Property: args
      * Any additional URI components after the endpoint and key have been removed, in our
      * eg: /<endpoint>/<verb>/<arg0>/<arg1> or /<endpoint>/<arg0>
@@ -27,7 +32,7 @@ abstract class API
      * Property: file
      * Stores the input of the PUT request
      */
-     protected $file = Null;
+    protected $file = Null;
 
     /**
      * Constructor: __construct
@@ -43,8 +48,15 @@ abstract class API
         $this->args = explode('/', rtrim($request, '/'));
         $this->args = $this->_cleanInputs($this->args);
         $this->endpoint = array_shift($this->args);
+
         if (array_key_exists(0, $this->args) && !is_numeric($this->args[0])) {
             $this->key = array_shift($this->args);
+        }
+
+        if (array_key_exists(0, $this->args) && !is_numeric($this->args[0]) && 
+            ($this->args[0] === 'pharmacy' || $this->args[0] === 'meeting')) {
+            $this->locationSettings = array_slice($this->args, 0, 2);
+            array_splice($this->args, 0, 2);
         }
 
         $this->method = $_SERVER['REQUEST_METHOD'];
@@ -98,6 +110,7 @@ abstract class API
         } else {
             $clean_input = trim(strip_tags($data));
         }
+
         return $clean_input;
     }
 
