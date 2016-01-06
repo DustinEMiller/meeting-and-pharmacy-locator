@@ -124,7 +124,8 @@ var MapManager = (function(){
                         var event = {
                             number: index+1,
                             date: row.date,
-                            time: row.time
+                            time: row.time,
+                            room: row.room
                         };
                         return event;
                     });
@@ -258,12 +259,18 @@ var MapManager = (function(){
                     return true;
                 }).map(function(row){
                     var t = (row.start_date + ' ' + convertToMilitary(row.time)).split(/[- :]/);
-                    var semDate = new Date(t[0], t[1]-1, t[2], t[3], t[4], '00')
+                    var semDate = new Date(t[0], t[1]-1, t[2], t[3], t[4], '00'),
+                    room = '';
+
+                    if (row.room !== null){
+                        room = row.room;
+                    }
                     
                     var event = {
                         date: semDate.toDateString(),
                         time: semDate.toLocaleTimeString(navigator.language, {hour: '2-digit', minute:'2-digit'}),
-                        fullDate: semDate
+                        fullDate: semDate,
+                        room: room
                     };
 
                     var index = getKeyByAddress(places, row.address);
