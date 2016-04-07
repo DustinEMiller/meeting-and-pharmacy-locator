@@ -15,6 +15,7 @@
         } else {
             $domain = $_SERVER['HTTP_ORIGIN'];
         }
+        
         $API = new Endpoints($_REQUEST['request'], $domain);
         echo $API->processAPI();
     } catch (Exception $e) {

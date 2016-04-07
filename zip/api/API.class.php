@@ -40,10 +40,17 @@ abstract class API
      */
         
     public function __construct($request) {
-        header("Access-Control-Allow-Orgin: *");
-        header("Access-Control-Allow-Methods: *");
-        header("Content-Type: application/json charset=utf-8");
-        
+	$http_origin = $_SERVER['HTTP_ORIGIN'];
+	if($http_origin === "http://medicare.healthalliance.org" || $http_origin === "http://healthalliance.org"
+	|| $http_origin === "http://www.healthalliance.org" || $http_origin === "http://devhealthalliance") {
+        	header("Access-Control-Allow-Origin: ".$_SERVER['HTTP_ORIGIN']);
+        	header("Access-Control-Allow-Methods: GET");
+        	header("Content-Type: application/json charset=utf-8");
+	}
+      /* header("Access-Control-Allow-Origin: ".$_SERVER['HTTP_ORIGIN']);
+       header("Access-Control-Allow-Methods: GET");
+       header("Content-Type: application/json charset=utf-8");*/
+
 
         $this->args = explode('/', rtrim($request, '/'));
         $this->args = $this->_cleanInputs($this->args);

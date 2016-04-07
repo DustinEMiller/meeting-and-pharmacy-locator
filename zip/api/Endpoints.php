@@ -1,10 +1,10 @@
 <?php
     require_once 'API.class.php';
-    require_once 'Models\APIKey.php';
-    require_once 'Models\ZIP.php';
-    require_once 'Models\Pharmacy.php';
-    require_once 'Models\Meeting.php';
-    require_once 'Helpers\Cxn.php';
+    require_once 'Models/APIKey.php';
+    require_once 'Models/ZIP.php';
+    require_once 'Models/Pharmacy.php';
+    require_once 'Models/Meeting.php';
+    require_once __DIR__ . '/../../Helpers/Cxn.php';
     
     class Endpoints extends API
     {
@@ -100,13 +100,13 @@
                     $zipcodes = $zip->radius();
 
                     if(array_key_exists(0, $this->locationSettings) && $this->locationSettings[0] === 'pharmacy') {
-                        $location = new Pharmacy(new Cxn("shirley"), $this->locationSettings, $zipcodes);
+                    	$location = new Pharmacy(new Cxn("shirley"), $this->locationSettings, $zipcodes);
                     }
                     else if(array_key_exists(0, $this->locationSettings) && $this->locationSettings[0] === 'meeting') {
-                        $location = new Meeting(new Cxn("shirley"), $this->locationSettings, $zipcodes);
+                    	$location = new Meeting(new Cxn("shirley"), $this->locationSettings, $zipcodes);
                     }
                     else {
-                        throw new Exception('Bad location request');
+						throw new Exception('Bad location request');
                     }
 
                     if(array_key_exists('callback', $this->args)) {
