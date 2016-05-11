@@ -1,17 +1,23 @@
 // TODO: LINK UP TO SOCIAL MEDIA/GOOGLE PLACES TO ADD HOURS/PICTURES OF BUSINESS
-// TODO: IE8 DESIGN TWEAKS?
-// TODO: State machine implementation
 // Has tight coupling with LocationManager.
 var MapManager = (function(){
     function codeAddress(next){
-        var location = toTitleCase(places[nextAddress].name) + ' ' + toTitleCase(places[nextAddress].address) + ' ' + 
-                toTitleCase(places[nextAddress].city) + ' ' + places[nextAddress].state + ' ' 
-                + places[nextAddress].zip,
+        var location,
             geoAddress = toTitleCase(places[nextAddress].address) + ',' + 
                 toTitleCase(places[nextAddress].city) + ',' + places[nextAddress].state + ',' 
                 + places[nextAddress].zip,
             templateScript,
-            number = nextAddress + 1;
+            number = nextAddress + 1
+
+        if($mapform.data('map-type') === 'event') {
+            location = toTitleCase(places[nextAddress].venueName) + ' ' + toTitleCase(places[nextAddress].address) + ' ' + 
+                toTitleCase(places[nextAddress].city) + ' ' + places[nextAddress].state + ' ' 
+                + places[nextAddress].zip;
+        } else {
+            location = toTitleCase(places[nextAddress].name) + ' ' + toTitleCase(places[nextAddress].address) + ' ' + 
+                toTitleCase(places[nextAddress].city) + ' ' + places[nextAddress].state + ' ' 
+                + places[nextAddress].zip    
+        }
 
         geocoder.geocode( { address: geoAddress }, function(results, status) {
                      
@@ -27,9 +33,22 @@ var MapManager = (function(){
                     anchor: new google.maps.Point(10, 33)
                 };
 
+                var finalLatLng = results[0].geometry.location;
+
+                if (allMarkers.length !== 0) {
+                    allMarkers.map(function(row, index){
+                        if (finalLatLng.equals(row.getPosition())) {
+                            //update the position of the coincident marker by applying a small multipler to its coordinates
+                            var newLat = finalLatLng.lat() + (Math.random() - 1.5) / 1500;// * (Math.random() * (max - min) + min);
+                            var newLng = finalLatLng.lng() + (Math.random() - 1.5) / 1500;
+                            finalLatLng = new google.maps.LatLng(newLat,newLng);
+                        }
+                    });
+                }
+
                 var marker = new google.maps.Marker({
                     map: map,
-                    position: results[0].geometry.location,
+                    position: finalLatLng,
                     icon:iconImage,
                     title:location,
                     optimized: false,
@@ -84,24 +103,13 @@ var MapManager = (function(){
                         city: toTitleCase(places[nextAddress].city),
                         state: places[nextAddress].state,
                         zip: places[nextAddress].zip,
-                        events:[]
+                        venueName: toTitleCase(places[nextAddress].venueName),
+                        date: places[nextAddress].date,
+                        name: toTitleCase(places[nextAddress].name),
+                        roomName: toTitleCase(places[nextAddress].roomName),
+                        startTime: places[nextAddress].startTime,
+                        endTime: places[nextAddress].endTime
                     };
-
-                    places[nextAddress].events.sort(function(a,b){
-                        return new Date(a.fullDate).getTime() - new Date(b.fullDate).getTime();
-                    });
-
-                    context.events = places[nextAddress].events.map(function(row,index){
-                        var event = {
-                            number: index+1,
-                            date: row.date,
-                            name: toTitleCase(row.name),
-                            roomName: toTitleCase(row.roomName),
-                            startTime: row.startTime,
-                            endTime: row.endTime
-                        };
-                        return event;
-                    });
 
                     break;
                 case 'seminar':  
@@ -182,9 +190,8 @@ var MapManager = (function(){
                 };
                 break;
             case 'event':
-                var events = 0;
                 
-                results.filter(function(row){
+                places = results.filter(function(row){
                     var eventDate = new Date(row.start_time),
                         now = new Date();
 
@@ -200,50 +207,41 @@ var MapManager = (function(){
                     if (row.room_name !== null){
                         roomName = row.room_name;
                     }
-                    
-                    var event = {
+                  
+                    var place = {
+                        name: row.event_name,
+                        venueName: row.venue_name,
+                        address: row.address,
+                        city: row.city,
+                        state: row.state,
+                        zip: row.zip,
                         date: startTime.toDateString(),
                         startTime: startTime.toLocaleTimeString(navigator.language, {hour: '2-digit', minute:'2-digit'}),
                         endTime: endTime.toLocaleTimeString(navigator.language, {hour: '2-digit', minute:'2-digit'}),
-                        name: row.event_name,
                         roomName: roomName,
                         fullDate: row.start_time
                     };
 
-                    var index = getKeyByAddress(places, row.address);
-
-                    if(index !== -1) {
-                        places[index].events.push(event);
-                        events+=1;
-                    }
-                    else {
-                        var place = {
-                            name: row.venue_name,
-                            address: row.address,
-                            city: row.city,
-                            state: row.state,
-                            zip: row.zip,
-                            events:[]
-                        };
-                        place.events.push(event);
-                        events+=1;
-                        places.push(place);
-                    }
+                    return place
                 });
 
-                var msgLoc = " at " + places.length+" Different Locations";
+                var results = places.length + " Events Found";
 
                 if(places.length === 0){
-                    msgLoc = "";
+                    results = "No Events Found";
                 }
                 else if (places.length === 1) {
-                    msgLoc = " at 1 Location";
+                    results = places.length + " Event Found";
                 }
 
                 var context = {
-                    locations: msgLoc,
-                    number: events
+                    results: results
                 };
+
+                places.sort(function(a,b){
+                    return new Date(a.fullDate) - new Date(b.fullDate);
+                });
+
                 break;
             case 'seminar':
                 gkvIframeInsert();
