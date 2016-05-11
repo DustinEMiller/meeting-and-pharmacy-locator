@@ -100,13 +100,13 @@
                     $zipcodes = $zip->radius();
 
                     if(array_key_exists(0, $this->locationSettings) && $this->locationSettings[0] === 'pharmacy') {
-                    	$location = new Pharmacy(new Cxn("shirley"), $this->locationSettings, $zipcodes);
+                        $location = new Pharmacy(new Cxn("shirley"), $this->locationSettings, $zipcodes);
                     }
                     else if(array_key_exists(0, $this->locationSettings) && $this->locationSettings[0] === 'meeting') {
-                    	$location = new Meeting(new Cxn("shirley"), $this->locationSettings, $zipcodes);
+                        $location = new Meeting(new Cxn("shirley"), $this->locationSettings, $zipcodes);
                     }
                     else {
-						throw new Exception('Bad location request');
+                        throw new Exception('Bad location request');
                     }
 
                     if(array_key_exists('callback', $this->args)) {
