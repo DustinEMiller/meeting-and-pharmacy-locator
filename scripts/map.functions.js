@@ -731,6 +731,9 @@ var MapManager = (function(){
         //listen for clicks on direction buttons
         $locations.on('click touch','.direction-links .button',handleDirections.bind(this)); 
 
+        //listen for clicks on register button
+        $locations.on('click touch','.register.button',handleRegister.bind(this)); 
+
         //listen for clicks on back link
         $directions.on('click touch','#back-locations',handleBacklink.bind(this)); 
 
