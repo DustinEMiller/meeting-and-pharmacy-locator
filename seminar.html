@@ -8,7 +8,7 @@
     <div class='large-12 columns form-wrapper'>
         <h2>Seminar Registration</h2>
         <div class="row">
-            <div class='small-6 columns'>
+            <div class='large-6 columns'>
                 <p>
                     <div>Date: {{date}}</div>
                     <div>Time: {{time}}</div>
@@ -17,7 +17,7 @@
                     {{/if}}
                 </p>
             </div>
-            <div class='small-6 columns'>
+            <div class='large-6 columns'>
                 <p>{{name}}<br>{{address}}<br>{{city}}, {{state}} {{zip}}</p>
             </div>
         </div>
@@ -54,7 +54,7 @@
         {{#if room}}
             <div>Room: {{room}}</div>
         {{/if}}
-        <div><a class='register button' role='button' aria-label='Register' data-seminar-id='{{campaignId}}' data-event-index='{{@index}}' data-place-index='{{number}}'>Register</a></div>
+        <div><a class='register button' role='button' aria-label='Register' data-seminar-id='{{campaignId}}' data-event-index='{{@index}}' data-place-index='{{placeIndex}}'>Register</a></div>
     {{/each}}
 </script>
 <script id="location-list-mobile" type="text/x-handlebars-template">

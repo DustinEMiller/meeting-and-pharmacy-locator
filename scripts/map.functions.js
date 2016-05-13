@@ -134,7 +134,8 @@ var MapManager = (function(){
                             date: row.date,
                             time: row.time,
                             room: row.room,
-                            campaignId: row.campaignId
+                            campaignId: row.campaignId,
+                            placeIndex: row.placeIndex
                         };
                         return event;
                     });
@@ -265,19 +266,24 @@ var MapManager = (function(){
                     if (row.address2 !== null){
                         room = row.address2;
                     }
+
+                    var idx = getKeyByAddress(places, row.address);
+
+                    var index = idx >= 0 ? idx : places.length;
                     
                     var event = {
                         date: semDate.toDateString(),
                         time: semDate.toLocaleTimeString(navigator.language, {hour: '2-digit', minute:'2-digit'}),
                         fullDate: semDate,
                         room: room,
-                        campaignId: row.campaign_id
+                        campaignId: row.campaign_id,
+                        placeIndex: index
                     };
 
-                    var index = getKeyByAddress(places, row.address);
+                    var idx = getKeyByAddress(places, row.address);
 
-                    if(index !== -1) {
-                        places[index].events.push(event);
+                    if(idx !== -1) {
+                        places[idx].events.push(event);
                         seminars+=1;
                     }
                     else {
@@ -677,7 +683,7 @@ var MapManager = (function(){
         $('#formModal .row').html('');
         var template = Handlebars.compile($('#register-form').html()),
             context,
-        placeI = $(evt.target).attr('data-place-index')-1,
+        placeI = $(evt.target).attr('data-place-index'),
         eventI = $(evt.target).attr('data-event-index');
 
         var context = {
