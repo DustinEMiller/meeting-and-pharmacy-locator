@@ -133,7 +133,8 @@ var MapManager = (function(){
                             number: index+1,
                             date: row.date,
                             time: row.time,
-                            room: row.room
+                            room: row.room,
+                            campaignId: row.campaignId
                         };
                         return event;
                     });
@@ -269,7 +270,8 @@ var MapManager = (function(){
                         date: semDate.toDateString(),
                         time: semDate.toLocaleTimeString(navigator.language, {hour: '2-digit', minute:'2-digit'}),
                         fullDate: semDate,
-                        room: room
+                        room: room,
+                        campaignId: row.campaign_id
                     };
 
                     var index = getKeyByAddress(places, row.address);
@@ -669,6 +671,29 @@ var MapManager = (function(){
             
             requestDirections(type, index, 'directions-button');
         }
+    }
+
+    function handleRegister(evt) {
+        $('#formModal .row').html('');
+        var template = Handlebars.compile($('#register-form').html()),
+            context,
+        placeI = $(evt.target).attr('data-place-index')-1,
+        eventI = $(evt.target).attr('data-event-index');
+
+        var context = {
+            campaignId: $(evt.target).attr('data-seminar-id'),
+            address:places[placeI].address,
+            city:places[placeI].city,
+            state:places[placeI].state,
+            zip:places[placeI].zip,
+            date:places[placeI].events[eventI].date,
+            time:places[placeI].events[eventI].time,
+            room:places[placeI].events[eventI].room,
+            name:places[placeI].name
+        } 
+
+        $('#formModal .row').append(template(context));
+        $('#formModal').foundation('reveal', 'open');
     }
 
     function handleBacklink(evt) {
