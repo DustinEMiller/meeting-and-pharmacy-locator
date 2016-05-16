@@ -449,7 +449,7 @@ var MapManager = (function(){
       messageHandler(directionResult.routes[0].warnings, '#back-locations', 'warning', false);
     }
 
-     function gkvIframeInsert() {
+    function gkvIframeInsert() {
         var tag_url="http://fls.doubleclick.net/activityi;src=5218519;type=age-i0;cat=finda00;ord=1;num="+Math.floor(Math.random()*999999)+"?";
         if(document.getElementById("DCLK_FLDiv")){var flDiv=document.getElementById("DCLK_FLDiv");}
         else{var flDiv=document.body.appendChild(document.createElement("div"));flDiv.id="DCLK_FLDiv";flDiv.style.display="none";}
@@ -681,7 +681,7 @@ var MapManager = (function(){
 
     function handleRegister(evt) {
         $('#formModal .row').html('');
-        var template = Handlebars.compile($('#register-form').html()),
+        var template = Handlebars.compile($('register-form').html()),
             context,
         placeI = $(evt.target).attr('data-place-index'),
         eventI = $(evt.target).attr('data-event-index');
@@ -719,6 +719,7 @@ var MapManager = (function(){
         $mapwrapper = $(opts.mapwrapper);
         $directions = $(opts.directions);
         $submitButton = $(opts.submitButton);
+        $registrationForm = $(opts.registrationForm);
 
         submitState.label = $submitButton.attr('value');
         submitState.width = $submitButton.innerWidth();
@@ -750,7 +751,11 @@ var MapManager = (function(){
             //ga('send', 'pageview',{'page':'/find-a-meeting/','title':'Find a Meeting'});
         } else if ($mapform.data('map-type') === 'seminar') {
             ga('send', 'pageview',{'page':'/switch-to-health-alliance/find-a-meeting/','title':'Find a Meeting'});
-
+            $registrationForm.validate({
+                rules: {
+                    name: "required"
+                }
+            });
         }
 
         //listen for map form submit
@@ -807,6 +812,7 @@ var MapManager = (function(){
         $locations,
         $mapwrapper,
         $directions,
+        $registrationForm,
         $submitButton,
         
         publicAPI = {
@@ -835,7 +841,8 @@ $(window).on('load',function(){
         locations : '#locations',
         mapwrapper : '#map-wrapper',
         directions: '#directions',
-        submitButton: '#filter'
+        submitButton: '#filter',
+        registrationForm: '#event-registration-request'
     });
 });
 

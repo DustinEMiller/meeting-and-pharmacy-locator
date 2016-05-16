@@ -22,10 +22,10 @@
             </div>
         </div>
         
-        <form name="seminarRequest" id="seminar-registration-request" target="_self" method="post" role="form" action="/NotificationForm/Index" role="form">
+        <form name="eventRegistration" id="event-registration-request" target="_self" method="post" role="form" action="/NotificationForm/Index" role="form">
         <div><label for="name">Name <span style="color: red;">*</span></label> <input required="" aria-invalid="true" value="" name="name" id="name" type="text" /></div>
         <p><input type="hidden" name="ReturnUrl" value="/submission-thank-you" /> 
-        <input type="hidden" name="MessageType" value="seminarRegistration" />
+        <input type="hidden" name="MessageType" value="EventRegistration" />
         <input type="hidden" name="CampaignId" value="{{campaignId}}" />
         <input aria-label="Submit" class="button" value="Submit" id="submit" type="submit" /></p>
         </form>
