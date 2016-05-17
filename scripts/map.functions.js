@@ -681,7 +681,7 @@ var MapManager = (function(){
 
     function handleRegister(evt) {
         $('#formModal .row').html('');
-        var template = Handlebars.compile($('register-form').html()),
+        var template = Handlebars.compile($('#register-form').html()),
             context,
         placeI = $(evt.target).attr('data-place-index'),
         eventI = $(evt.target).attr('data-event-index');
