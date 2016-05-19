@@ -700,6 +700,37 @@ var MapManager = (function(){
 
         $('#formModal .row').append(template(context));
         $('#formModal').foundation('reveal', 'open');
+        $registrationForm = $(registrationForm);
+        console.log(registrationForm);
+        $registrationForm.validate({
+            rules: {
+                name: "required"
+            }
+        });
+
+        $registrationForm.on('submit',handleEventRegistration.bind(this));
+        console.log($registrationForm);
+        console.log($mapform);
+    }
+
+    function handleEventRegistration(evt) {
+        console.log('oh thats tender');
+        evt.preventDefault();
+
+        if($registrationForm.valid()) {
+            $.ajax({
+                url: $registrationForm.attr('action'),
+                type: 'POST',
+                data: $registrationForm.serialize()
+            }).always(function (jqXHR) {
+                if(jqXHR.status === 200) {
+
+                } else if(jqXHR.status === 500) {
+                    
+                }
+                console.log(jqXHR.status);
+            });    
+        }     
     }
 
     function handleBacklink(evt) {
@@ -719,7 +750,7 @@ var MapManager = (function(){
         $mapwrapper = $(opts.mapwrapper);
         $directions = $(opts.directions);
         $submitButton = $(opts.submitButton);
-        $registrationForm = $(opts.registrationForm);
+        registrationForm = opts.registrationForm
 
         submitState.label = $submitButton.attr('value');
         submitState.width = $submitButton.innerWidth();
@@ -751,11 +782,6 @@ var MapManager = (function(){
             //ga('send', 'pageview',{'page':'/find-a-meeting/','title':'Find a Meeting'});
         } else if ($mapform.data('map-type') === 'seminar') {
             ga('send', 'pageview',{'page':'/switch-to-health-alliance/find-a-meeting/','title':'Find a Meeting'});
-            $registrationForm.validate({
-                rules: {
-                    name: "required"
-                }
-            });
         }
 
         //listen for map form submit
@@ -805,6 +831,7 @@ var MapManager = (function(){
         clientKey = 'pD5ltovTQHNvhP32e2zQ',
         mobile = false,
         loaded = false,
+        registrationForm,
         
         //Dom References
         $mapform,
@@ -812,8 +839,8 @@ var MapManager = (function(){
         $locations,
         $mapwrapper,
         $directions,
-        $registrationForm,
         $submitButton,
+        $registrationForm,
         
         publicAPI = {
             //I really don't want to expose these 3 methods to the public space, 
