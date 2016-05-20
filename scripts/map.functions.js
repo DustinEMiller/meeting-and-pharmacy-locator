@@ -709,28 +709,30 @@ var MapManager = (function(){
         });
 
         $registrationForm.on('submit',handleEventRegistration.bind(this));
-        console.log($registrationForm);
-        console.log($mapform);
     }
 
     function handleEventRegistration(evt) {
-        console.log('oh thats tender');
         evt.preventDefault();
 
         if($registrationForm.valid()) {
+            $('#form-loading').toggle();
+            $('#form-wrapper').hide();
             $.ajax({
                 url: $registrationForm.attr('action'),
                 type: 'POST',
                 data: $registrationForm.serialize()
-            }).always(function (jqXHR) {
-                if(jqXHR.status === 200) {
-
-                } else if(jqXHR.status === 500) {
-                    
+            }).always(function (data, status, response) {
+                $('#form-loading').toggle();
+                if(response.status < 400) {
+                    $('#form-message-title').text('Thank You');
+                    $('#form-message').text('Your registration was submitted successfully.');
+                } else {
+                    $('#form-message-title').text('Error');
+                    $('#form-message').text('We\'re sorry, but there was an error with your submission. Please try again later.');      
                 }
-                console.log(jqXHR.status);
+                $('#form-message-wrapper').toggle();
             });    
-        }     
+        }   
     }
 
     function handleBacklink(evt) {
