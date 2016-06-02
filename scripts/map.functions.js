@@ -135,6 +135,7 @@ var MapManager = (function(){
                             time: row.time,
                             room: row.room,
                             campaignId: row.campaignId,
+                            campaignName: row.campaignName,
                             placeIndex: row.placeIndex
                         };
                         return event;
@@ -277,6 +278,7 @@ var MapManager = (function(){
                         fullDate: semDate,
                         room: room,
                         campaignId: row.campaign_id,
+                        campaignName: row.campaign_name,
                         placeIndex: index
                     };
 
@@ -687,11 +689,12 @@ var MapManager = (function(){
         eventI = $(evt.target).attr('data-event-index');
 
         var context = {
-            campaignId: $(evt.target).attr('data-seminar-id'),
+            campaignId: places[placeI].events[eventI].campaignId,
             address:places[placeI].address,
             city:places[placeI].city,
             state:places[placeI].state,
             zip:places[placeI].zip,
+            campaignName: places[placeI].events[eventI].campaignName,
             date:places[placeI].events[eventI].date,
             time:places[placeI].events[eventI].time,
             room:places[placeI].events[eventI].room,
@@ -701,10 +704,66 @@ var MapManager = (function(){
         $('#formModal .row').append(template(context));
         $('#formModal').foundation('reveal', 'open');
         $registrationForm = $(registrationForm);
-        console.log(registrationForm);
+
+        $.validator.addMethod("dateFormat",function ValidateCustomDate(d, e) {
+            var match = /^(\d{2})\/(\d{2})\/(\d{4})$/.exec(d);
+
+            if (d === '') {
+                return true;
+            }
+
+            if (!match) {
+                // pattern matching failed hence the date is syntactically incorrect
+                return false;
+            }
+            var month = parseInt(match[1], 10) - 1; // months are 0-11, not 1-12
+            var day   = parseInt(match[2], 10);
+            var year  = parseInt(match[3], 10);
+            var date  = new Date(year, month, day);
+            // now, Date() will happily accept invalid values and convert them to valid ones
+            // therefore you should compare input month/day/year with generated month/day/year
+            return date.getDate() == day && date.getMonth() == month && date.getFullYear() == year;
+        },"Please enter a date in the format MM/DD/YYYY.");
+
+        $.validator.addMethod("withTwoStrings",function(value, element) {
+            howManyWords = value.trim();
+            howManyWords = howManyWords.replace(/\s{2,}/g, ' '); //remove extra spaces
+            howManyWords = howManyWords.split(' ');
+
+            if(howManyWords.length == 2){
+                return true;
+            }
+            else{
+                return false;
+            }
+        e.preventDefault();
+        },"Please Include First and Last Name.");
+
         $registrationForm.validate({
             rules: {
-                name: "required"
+                name: {
+                    required:true,
+                    withTwoStrings:true
+                },
+                email: {
+                    email:true
+                },
+                phoneNumber: {
+                    phoneUS: true,
+                    required: true
+                },
+                city: "required",
+                state: {
+                    required:true,
+                    stateUS:true       
+                },
+                zip: {
+                    required:true,
+                    zipcodeUS:true       
+                },
+                birthday: {
+                    dateFormat:true
+                }
             }
         });
 
