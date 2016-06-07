@@ -88,10 +88,13 @@ var MapManager = (function(){
                         number: number,
                         name: toTitleCase(places[nextAddress].name),
                         address: toTitleCase(places[nextAddress].address),
+                        address_2: toTitleCase(places[nextAddress].address_2),
                         city: toTitleCase(places[nextAddress].city),
                         state: places[nextAddress].state,
                         zip: places[nextAddress].zip,
-                        nabp: places[nextAddress].nabp
+                        nabp: places[nextAddress].nabp,
+                        phone: places[nextAddress].phone,
+                        fax: places[nextAddress].fax.replace(/(\r\n|\n|\r)/gm,"")
                     };
                     break;
                 case 'event': 
@@ -502,7 +505,9 @@ var MapManager = (function(){
     }
 
     function toTitleCase(str) {
-        return str.replace(/\w\S*/g, function(txt){return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase();});
+        if(str) {
+            return str.replace(/\w\S*/g, function(txt){return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase();});
+        }
     }
 
     function messageHandler(message, selector, messageType, isForm) {  
