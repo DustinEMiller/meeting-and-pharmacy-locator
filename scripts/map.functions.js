@@ -180,11 +180,15 @@ var MapManager = (function(){
                 places = results.map(function(row){
                     var place = {
                         nabp: row.nabp,
+                        npi: row.npi,
                         name: row.pharmacy_name,
                         address: row.address,
+                        address_2: row.address_2,
                         city: row.city,
                         state: row.state,
-                        zip: row.zip
+                        zip: row.zip,
+                        phone: row.phone,
+                        fax: row.fax
                     };
                     return place;
                 });
@@ -193,7 +197,6 @@ var MapManager = (function(){
                 };
                 break;
             case 'event':
-                
                 places = results.filter(function(row){
                     var eventDate = new Date(row.start_time),
                         now = new Date();

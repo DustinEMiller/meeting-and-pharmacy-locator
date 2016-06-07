@@ -67,7 +67,7 @@ class Pharmacy {
     private function preferred()
     {
         $inParams = implode(',', array_fill(0, count($this->zipCodes), '?'));
-        $qry = $this->_db->prepare('SELECT nabp, pharmacy_name, address, city, state, zip 
+        $qry = $this->_db->prepare('SELECT nabp, npi, pharmacy_name, address, address_2, city, state, zip, phone, fax 
             FROM askshirley.preferred_pharmacies where zip IN ('.$inParams.')');
 
         foreach ($this->zipCodes as $k => $zipCode) {
@@ -82,7 +82,7 @@ class Pharmacy {
     private function preferredPlus()
     {
         $inParams = implode(',', array_fill(0, count($this->zipCodes), '?'));
-        $qry = $this->_db->prepare('SELECT nabp, pharmacy_name, address, city, state, zip 
+        $qry = $this->_db->prepare('SELECT nabp, npi, pharmacy_name, address, address_2, city, state, zip, phone, fax 
             FROM askshirley.preferred_plus_pharmacies where zip IN ('.$inParams.')');
 
         foreach ($this->zipCodes as $k => $zipCode) {
