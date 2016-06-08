@@ -47,10 +47,10 @@ class Pharmacy {
                 break;
             case 'medicare':
                 return $this->medicare('No');
-                break
+                break;
             case 'medicare-preferred':
                 return $this->medicare('Yes');
-                break
+                break;
             default:
                 throw new Exception('Bad location sub type used.');
         }
