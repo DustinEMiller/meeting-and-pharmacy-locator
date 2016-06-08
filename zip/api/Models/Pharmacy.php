@@ -42,6 +42,15 @@ class Pharmacy {
             case 'preferred-plus':
                 return $this->preferredPlus();
                 break;
+            case 'medicaid':
+                return $this->medicaid();
+                break;
+            case 'medicare':
+                return $this->medicare('No');
+                break
+            case 'medicare-preferred':
+                return $this->medicare('Yes');
+                break
             default:
                 throw new Exception('Bad location sub type used.');
         }
@@ -87,6 +96,38 @@ class Pharmacy {
 
         foreach ($this->zipCodes as $k => $zipCode) {
             $qry->bindValue(($k+1), $zipCode);
+        }
+
+        $qry->execute();
+        $result['results'] = $qry->fetchAll();
+        return($result);     
+    }
+
+    private function medicaid()
+    {
+        $inParams = implode(',', array_fill(0, count($this->zipCodes), '?'));
+        $qry = $this->_db->prepare('SELECT npi, pharmacy_name, address, address_2, city, state, zip, type, county 
+            FROM askshirley.medicaid_pharmacies where zip IN ('.$inParams.')');
+
+        foreach ($this->zipCodes as $k => $zipCode) {
+            $qry->bindValue(($k+1), $zipCode);
+        }
+
+        $qry->execute();
+        $result['results'] = $qry->fetchAll();
+        return($result);     
+    }
+
+    private function medicare($preferred)
+    {
+        $inParams = implode(',', array_fill(0, count($this->zipCodes), '?'));
+        $qry = $this->_db->prepare('SELECT nabp, npi, pharmacy_name, address, address_2, city, state, zip, phone, fax 
+            FROM askshirley.medicare_pharmacies where preferred = ? AND zip IN ('.$inParams.')');
+
+        $qry->bindValue(1, $preferred);
+
+        foreach ($this->zipCodes as $k => $zipCode) {
+            $qry->bindValue(($k+2), $zipCode);
         }
 
         $qry->execute();
