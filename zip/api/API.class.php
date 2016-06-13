@@ -43,7 +43,7 @@ abstract class API
     $http_origin = $_SERVER['HTTP_ORIGIN'];
     if($http_origin === "http://medicare.healthalliance.org" || $http_origin === "http://healthalliance.org"
     || $http_origin === "http://www.healthalliance.org" || $http_origin === "http://devhealthalliance" || 
-    $http_origin === "http://devmedicare") {
+    $http_origin === "http://devmedicare" || $http_origin === "http://testmedicare" || $http_origin === "http://testhealthalliance" )  {
             header("Access-Control-Allow-Origin: ".$_SERVER['HTTP_ORIGIN']);
             header("Access-Control-Allow-Methods: GET");
             header("Content-Type: application/json charset=utf-8");
