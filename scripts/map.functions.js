@@ -39,7 +39,7 @@ var MapManager = (function(){
                     allMarkers.map(function(row, index){
                         if (finalLatLng.equals(row.getPosition())) {
                             //update the position of the coincident marker by applying a small multipler to its coordinates
-                            var newLat = finalLatLng.lat() + (Math.random() - 1.5) / 1500;// * (Math.random() * (max - min) + min);
+                            var newLat = finalLatLng.lat() + (Math.random() - 1.5) / 1500;
                             var newLng = finalLatLng.lng() + (Math.random() - 1.5) / 1500;
                             finalLatLng = new google.maps.LatLng(newLat,newLng);
                         }
@@ -143,7 +143,6 @@ var MapManager = (function(){
                         };
                         return event;
                     });
-
                     break;
             }
 
@@ -544,7 +543,7 @@ var MapManager = (function(){
             location = $('[name=location]').val(),
             url = '//askshirley.org/zip/api/',
             locationType = 'meeting/'+$mapform.data('map-type')+'/',
-            searchArguments
+            searchArguments,
             endpoint = 'zipcode/';
 
         origin = location;
@@ -771,6 +770,9 @@ var MapManager = (function(){
                 },
                 birthday: {
                     dateFormat:true
+                },
+                attendees: {
+                    number: true
                 }
             }
         });
@@ -798,6 +800,7 @@ var MapManager = (function(){
                     $('#form-message').text('We\'re sorry, but there was an error with your submission. Please try again later.');      
                 }
                 $('#form-message-wrapper').toggle();
+                $('html, body').animate({scrollTop:$('#formModal').position().top}, 'slow');
             });    
         }   
     }
@@ -845,11 +848,7 @@ var MapManager = (function(){
             $.support.cors = true;
         }
         
-        if ($mapform.data('map-type') === 'pharmacy') {
-            //ga('send', 'pageview',{'page':'/find-a-pharmacy/','title':'Find a Pharmacy'});
-        } else if ($mapform.data('map-type') === 'event') {
-            //ga('send', 'pageview',{'page':'/find-a-meeting/','title':'Find a Meeting'});
-        } else if ($mapform.data('map-type') === 'seminar') {
+        if ($mapform.data('map-type') === 'seminar') {
             ga('send', 'pageview',{'page':'/switch-to-health-alliance/find-a-meeting/','title':'Find a Meeting'});
         }
 
