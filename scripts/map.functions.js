@@ -821,6 +821,7 @@ var MapManager = (function(){
                     $('#form-message').text('We\'re sorry, but there was an error with your submission. Please try again later.');      
                 }
                 $('#form-message-wrapper').toggle();
+                $(publicAPI).trigger('registered');
                 $('html, body').animate({scrollTop:$('#formModal').position().top}, 'slow');
             });    
         }   
@@ -889,7 +890,7 @@ var MapManager = (function(){
         //listen for clicks on back link
         $directions.on('click touch','#back-locations',handleBacklink.bind(this)); 
 
-        $(publicAPI).trigger("loaded");
+        $(publicAPI).trigger('loaded');
     }
     
     var
