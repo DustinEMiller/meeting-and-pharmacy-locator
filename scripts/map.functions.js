@@ -83,6 +83,20 @@ var MapManager = (function(){
 
             switch ($mapform.data('map-type')) {
                 case 'pharmacy':
+                    var fax = places[nextAddress].fax,
+                        phone = places[nextAddress].phone;
+                    //TODO: Length tests are just temporary until better data is pulled in for the numbers. Tired of keeping functionality in dev while I wait for stuff.
+                    if (fax) {
+                        fax = fax.replace(/(\r\n|\n|\r)/gm,"");
+                        if(fax.length === 10) {
+                            fax = null;
+                        }
+                    }
+
+                    if(phone && phone.length === 10) {
+                        phone = null;
+                    }
+
                     var context = {
                         index: nextAddress,
                         number: number,
@@ -93,8 +107,8 @@ var MapManager = (function(){
                         state: places[nextAddress].state,
                         zip: places[nextAddress].zip,
                         nabp: places[nextAddress].nabp,
-                        phone: places[nextAddress].phone,
-                        fax: places[nextAddress].fax.replace(/(\r\n|\n|\r)/gm,"")
+                        phone: phone,
+                        fax: fax
                     };
                     break;
                 case 'event': 
@@ -180,6 +194,13 @@ var MapManager = (function(){
         switch ($mapform.data('map-type')) {
             case 'pharmacy':
                 places = results.map(function(row){
+                    var phone = '', fax = '';
+                    if (row.phone !== null){
+                        phone = row.phone;
+                    }
+                    if (row.fax !== null){
+                        fax = row.fax;
+                    }
                     var place = {
                         nabp: row.nabp,
                         npi: row.npi,
@@ -189,8 +210,8 @@ var MapManager = (function(){
                         city: row.city,
                         state: row.state,
                         zip: row.zip,
-                        phone: row.phone,
-                        fax: row.fax
+                        phone: phone,
+                        fax: fax
                     };
                     return place;
                 });
@@ -813,6 +834,14 @@ var MapManager = (function(){
     function loadStates(data) {
         states = data;
     }
+
+    function getMobileStatus() {
+        return mobile;;
+    }
+
+    function getSubmitButton() {
+        return $submitButton;
+    }
     
     function init(opts) {
         
@@ -830,9 +859,6 @@ var MapManager = (function(){
 
         loaded = true;
 
-        ga('require', 'linker');
-        ga('linker:autoLink', ['switchtohealthalliance.com'] );
-
         columnHeight = document.documentElement.clientHeight - ($('header').outerHeight(true) + parseInt($("main").css("padding-bottom")) + 
             $('#menu-bar').outerHeight(true) + $('#type-title').outerHeight(true) + $('#type-form').outerHeight(true));
         columnHeight = columnHeight < 450 ? 450 : columnHeight;
@@ -846,10 +872,6 @@ var MapManager = (function(){
 
         if('XDomainRequest' in window && window.XDomainRequest !== null) {
             $.support.cors = true;
-        }
-        
-        if ($mapform.data('map-type') === 'seminar') {
-            ga('send', 'pageview',{'page':'/switch-to-health-alliance/find-a-meeting/','title':'Find a Meeting'});
         }
 
         //listen for map form submit
@@ -867,14 +889,7 @@ var MapManager = (function(){
         //listen for clicks on back link
         $directions.on('click touch','#back-locations',handleBacklink.bind(this)); 
 
-        if(LocationManager.getCookie('cms_user_zip_code') !== null){
-            $('[name=location]').val(LocationManager.getCookie('cms_user_zip_code'));
-            var type = $mapform.data('map-type');
-
-            if ((type === "event" || type === "seminar") && !mobile) {
-                $submitButton.trigger('click');    
-            }
-        }  
+        $(publicAPI).trigger("loaded");
     }
     
     var
@@ -917,6 +932,8 @@ var MapManager = (function(){
             codeAddress: codeAddress,
             theNext: theNext,
             setMobileStatus: setMobileStatus,
+            getMobileStatus: getMobileStatus,
+            getSubmitButton: getSubmitButton,
             loaded: loaded,
             loadStates: loadStates,
             init: init
