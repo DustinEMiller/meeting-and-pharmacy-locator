@@ -106,7 +106,7 @@ class Pharmacy {
     private function medicaid()
     {
         $inParams = implode(',', array_fill(0, count($this->zipCodes), '?'));
-        $qry = $this->_db->prepare('SELECT npi, pharmacy_name, address, address_2, city, state, zip, type, county, phone, fax 
+        $qry = $this->_db->prepare('SELECT npi, pharmacy_name, address, address_2, city, state, zip, type, county 
             FROM askshirley.medicaid_pharmacies where zip IN ('.$inParams.')');
 
         foreach ($this->zipCodes as $k => $zipCode) {
