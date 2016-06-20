@@ -85,17 +85,11 @@ var MapManager = (function(){
                 case 'pharmacy':
                     var fax = places[nextAddress].fax,
                         phone = places[nextAddress].phone;
-                    //TODO: Length tests are just temporary until better data is pulled in for the numbers. Tired of keeping functionality in dev while I wait for stuff.
+                    
                     if (fax) {
                         fax = fax.replace(/(\r\n|\n|\r)/gm,"");
-                        if(fax.length === 10) {
-                            fax = null;
-                        }
                     }
 
-                    if(phone && phone.length === 10) {
-                        phone = null;
-                    }
 
                     var context = {
                         index: nextAddress,
