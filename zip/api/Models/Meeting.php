@@ -68,7 +68,7 @@ class Meeting {
         $upperBound = new DateTime('Oct 1');
         $lowerBound = new DateTime('Dec 31');
 
-        if($now >== $upperBound && $now <== $lowerBound) {
+        if($now >= $upperBound && $now <= $lowerBound) {
             $qry = $this->_db->prepare('SELECT location, campaign_name, address, address2, city, zip, start_date, 
                 time, state, campaign_id FROM askshirley.seminars where zip IN ('.$inParams.') ORDER BY start_date, time ASC' );
         } else {
