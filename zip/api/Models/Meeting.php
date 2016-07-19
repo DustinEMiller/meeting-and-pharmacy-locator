@@ -65,7 +65,7 @@ class Meeting {
     {
         $inParams = implode(',', array_fill(0, count($this->zipCodes), '?'));
         $now = new DateTime('now');
-        $upperBound = new DateTime('Jul 1');
+        $upperBound = new DateTime('Oct 1');
         $lowerBound = new DateTime('Dec 31');
 
         if($now >= $upperBound && $now <= $lowerBound) {
