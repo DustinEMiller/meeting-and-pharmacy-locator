@@ -23,7 +23,7 @@
 	
     	}
 		curl_close($curl);
-
+		
 		$_SESSION['access_token'] = $jsonResponse['access_token'];
 		$_SESSION['instance_url'] = $jsonResponse['instance_url'];
 
@@ -42,19 +42,21 @@
 
 	function syncData() {
 		$token = $_SESSION['access_token'];
-		$curl = curl_init('https://na12.salesforce.com/services/data/v34.0/analytics/reports/00OU0000003HwP3');
+		
+		$curl = curl_init($_SESSION['instance_url'].'/services/data/v34.0/analytics/reports/00OU0000003HwP3');
 		curl_setopt($curl, CURLOPT_HEADER, false);
 		curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
-		curl_setopt($curl, CURLOPT_HTTPHEADER, array("Authorization: Bearer $token"));
+		curl_setopt($curl, CURLOPT_HTTPHEADER, array("Authorization: Bearer ". $token));
 		$jsonResponse = json_decode(curl_exec($curl));
-		//
-		$status = curl_getinfo($curl, CURLINFO_HTTP_CODE); 
+		
+		$status = curl_getinfo($curl, CURLINFO_HTTP_CODE);
+                
+                if ( $status != 200 ) {
+                writeToLog('Error: call failed with status' .  $status . ', response '. $jsonResponse . ', curl_error ' . curl_error($curl));
+                die();
+        }
+ 
 		curl_close($curl);
-
-		if ( $status != 200 ) {
-        	writeToLog('Error: call failed with status $status, response $json_response, curl_error ' . curl_error($curl) . ', curl_errno ' . curl_errno($curl));
-        	die();
-    	}
 
 		$fieldClause = "";
 		$valueClause = "";
