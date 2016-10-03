@@ -93,14 +93,26 @@
 
         protected function zipcode() {
             if ($this->method == 'GET') {
-                if (count($this->args) !== 2 || !is_numeric($this->args[0]) || !is_numeric($this->args[1])) {
+                if (count($this->locationSettings) !== 2 || !is_numeric($this->args[0]) || !is_numeric($this->args[1])) {
                     throw new Exception('Incorrect URI structure for this endpoint');
                 } else {
                     $zip = new ZIP(new Cxn("shirley"),$this->args);
                     $zipcodes = $zip->radius();
 
                     if(array_key_exists(0, $this->locationSettings) && $this->locationSettings[0] === 'pharmacy') {
-                        $location = new Pharmacy(new Cxn("shirley"), $this->locationSettings, $zipcodes);
+                        if($this->locationSettings[0] === 'medicare' || $this->locationSettings[0] === 'medicare-preferred'){
+                            if(count($this->args) !== 3 || !is_numeric($this->args[2])) {
+                                throw new Exception('Incorrect URI structure for this endpoint');   
+                            } else {
+                                $location = new Pharmacy(new Cxn("shirley"), $this->locationSettings, $zipcodes, $this->args[2]);    
+                            }
+                        } else {
+                            if(count($this->args) !== 2) {
+                                throw new Exception('Incorrect URI structure for this endpoint');   
+                            } else {
+                                $location = new Pharmacy(new Cxn("shirley"), $this->locationSettings, $zipcodes);    
+                            }    
+                        }
                     }
                     else if(array_key_exists(0, $this->locationSettings) && $this->locationSettings[0] === 'meeting') {
                         $location = new Meeting(new Cxn("shirley"), $this->locationSettings, $zipcodes);
@@ -124,14 +136,26 @@
         
         protected function cityState() {
             if ($this->method == 'GET') {
-                if (count($this->args) !== 3 || !is_numeric($this->args[2])) {
+                if (count($this->locationSettings) !== 2 || !is_numeric($this->args[2])) {
                     throw new Exception('Incorrect URI structure for this endpoint');
                 } else {
                     $zip = new ZIP(new Cxn("shirley"),$this->args);
                     $zipcodes = $zip->cityzips();
 
                     if(array_key_exists(0, $this->locationSettings) && $this->locationSettings[0] === 'pharmacy') {
-                        $location = new Pharmacy(new Cxn("shirley"), $this->locationSettings, $zipcodes);
+                        if($this->locationSettings[0] === 'medicare' || $this->locationSettings[0] === 'medicare-preferred'){
+                            if(count($this->args) !== 4 || !is_numeric($this->args[3])) {
+                                throw new Exception('Incorrect URI structure for this endpoint');   
+                            } else {
+                                $location = new Pharmacy(new Cxn("shirley"), $this->locationSettings, $zipcodes, $this->args[3]);    
+                            }
+                        } else {
+                            if(count($this->args) !== 3) {
+                                throw new Exception('Incorrect URI structure for this endpoint');   
+                            } else {
+                                $location = new Pharmacy(new Cxn("shirley"), $this->locationSettings, $zipcodes);    
+                            }    
+                        }
                     }
                     else if(array_key_exists(0, $this->locationSettings) && $this->locationSettings[0] === 'meeting') {
                         $location = new Meeting(new Cxn("shirley"), $this->locationSettings, $zipcodes);
