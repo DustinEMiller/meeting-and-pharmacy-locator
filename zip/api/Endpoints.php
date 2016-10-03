@@ -100,7 +100,7 @@
                     $zipcodes = $zip->radius();
 
                     if(array_key_exists(0, $this->locationSettings) && $this->locationSettings[0] === 'pharmacy') {
-                        if($this->locationSettings[0] === 'medicare' || $this->locationSettings[0] === 'medicare-preferred'){
+                        if($this->locationSettings[1] === 'medicare' || $this->locationSettings[1] === 'medicare-preferred'){
                             if(count($this->args) !== 3 || !is_numeric($this->args[2])) {
                                 throw new Exception('Incorrect URI structure for this endpoint');   
                             } else {
@@ -143,7 +143,7 @@
                     $zipcodes = $zip->cityzips();
 
                     if(array_key_exists(0, $this->locationSettings) && $this->locationSettings[0] === 'pharmacy') {
-                        if($this->locationSettings[0] === 'medicare' || $this->locationSettings[0] === 'medicare-preferred'){
+                        if($this->locationSettings[1] === 'medicare' || $this->locationSettings[1] === 'medicare-preferred'){
                             if(count($this->args) !== 4 || !is_numeric($this->args[3])) {
                                 throw new Exception('Incorrect URI structure for this endpoint');   
                             } else {
