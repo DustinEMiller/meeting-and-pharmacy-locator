@@ -17,8 +17,9 @@
 		$jsonResponse = json_decode(curl_exec($curl), true);
 		$status = curl_getinfo($curl, CURLINFO_HTTP_CODE); 
 
-		if ( $status != 200 ) {
-			writeToLog('Error: call failed with status '.$status.', response '. $jsonResponse .', curl_error ' . curl_error($curl) . ', curl_errno ' . curl_errno($curl));
+		if ( $status != 200 ) {			
+writeToLog('Error: call failed with status '.$status.', response '. $jsonResponse .', curl_error ' . curl_error($curl) . ', curl_errno ' . curl_errno($curl));
+//print_r($jsonResponse);
         	die();
 	
     	}
