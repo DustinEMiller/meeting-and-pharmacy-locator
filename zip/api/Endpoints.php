@@ -34,6 +34,13 @@
          * custom api. Collect the zip codes then ship off to the appropriate model.
          * Should we just use our custom api?
          */
+
+        protected function seminarRegistration() {
+            if ($this->method === 'POST') {
+
+            }
+        }
+
         protected function radius() {
             if ($this->method == 'GET') {
                 if (count($this->args) != 2) {

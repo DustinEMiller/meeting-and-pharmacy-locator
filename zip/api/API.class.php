@@ -68,16 +68,13 @@ abstract class API
                 $this->method = 'DELETE';
             } else if ($_SERVER['HTTP_X_HTTP_METHOD'] == 'PUT') {
                 $this->method = 'PUT';
-            } else {
-                throw new Exception("Unexpected Header");
             }
         }
 
-        //This api is only for retrieving data
         switch($this->method) {
         //case 'DELETE':
         case 'POST':
-            $this->request = $this->_cleanInputs($_POST);
+            //$this->request = $this->_cleanInputs($_POST);
             break;
         case 'GET':
             $this->request = $this->_cleanInputs($_GET);
