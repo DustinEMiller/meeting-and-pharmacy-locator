@@ -41,7 +41,7 @@
                 $register = new SeminarRegistration();
 
                 if ($register->validated()) {
-                    return $register->addLead();
+                    //Do Add Lead
                 } else {
                     //return json errors
                 }
