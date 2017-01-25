@@ -4,6 +4,7 @@
     require_once 'Models/ZIP.php';
     require_once 'Models/Pharmacy.php';
     require_once 'Models/Meeting.php';
+    require_once 'Models/SeminarRegistration.php';
     require_once __DIR__ . '/../../Helpers/Cxn.php';
     
     class Endpoints extends API
@@ -37,7 +38,13 @@
 
         protected function seminarRegistration() {
             if ($this->method === 'POST') {
+                $register = new SeminarRegistration();
 
+                if ($register->validated()) {
+                    //Do Add Lead
+                } else {
+                    //return json errors
+                }
             }
         }
 

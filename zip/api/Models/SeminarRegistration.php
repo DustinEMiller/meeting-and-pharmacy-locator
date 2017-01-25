@@ -9,7 +9,7 @@
     	{
 	        $this->postData = $gump->sanitize($data);
 
-	        $gump->validation_rules(array(
+	        $validation = array(
 	        	'name' => 'required|alpha|max_len,100|min_len,6',
 	        	'address' => 'required|alpha_numeric|max_len,100|min_len,3',
 	        	'city' => 'required|alpha|max_len,100|min_len,3',
@@ -17,19 +17,35 @@
 	        	'zip' => 'required|exact_len,6|numeric',
 	        	'phoneNumber' => '',
 	        	'email' => 'valid_email',
-	        	'birthday' => '',
+	        	'birthday' => 'date',
 	        	'attendees' => 'numeric'
-        	));
+        	);
 
-        	$gump->filter_rules(array(
+        	$filters = array(
 			    'name' => 'trim|sanitize_string',
 			    'address' => 'trim|sanitize_string',
 			    'city' => 'trim|sanitize_string',
 			    'state' => 'trim|sanitize_string',
-			    'email'    => 'trim|sanitize_email',
-			    'gender'   => 'trim',
-			    'bio'      => 'noise_words'
-			));
+			    'email'    => 'trim|sanitize_email'
+			);
+
+			$this->postData = $gump->filter($this->postData, $filters);
+
+			$this->$validated = $gump->validate($this->postData, $validation);
+    	}
+
+    	public function validated()
+    	{
+    		if ($this->validated) {
+    			return $this->validated;
+    		} else {
+    			return $gump->get_readable_errors(true);
+    		}
+    	}
+
+    	public function addLead() 
+    	{
+
     	}
 	}
 ?>
