@@ -7,21 +7,24 @@
 	ini_set('display_errors', 'On');
 
 	function login() {
+		//This needs to go into a class that then utilizes a config class
 		$curl = curl_init('https://login.salesforce.com/services/oauth2/token');
 		curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
 		curl_setopt($curl, CURLOPT_POST, true);
-		curl_setopt($curl, CURLOPT_POSTFIELDS, http_build_query(array('grant_type' => 'password', 'client_id' => get_cfg_var('salesforce.clientid'), 
-			'client_secret' => get_cfg_var('salesforce.clientsecret'), 'username' => get_cfg_var('salesforce.username'), 
+		curl_setopt($curl, CURLOPT_POSTFIELDS, http_build_query(array(
+			'grant_type' => 'password', 
+			'client_id' => get_cfg_var('salesforce.clientid'), 
+			'client_secret' => get_cfg_var('salesforce.clientsecret'), 
+			'username' => get_cfg_var('salesforce.username'), 
 			'password' => get_cfg_var('salesforce.pwd') . get_cfg_var('salesforce.securitytoken'))));
 		curl_setopt($curl, CURLOPT_HTTPHEADER, array('Content-Type' => 'application/x-www-form-urlencoded'));
 		$jsonResponse = json_decode(curl_exec($curl), true);
 		$status = curl_getinfo($curl, CURLINFO_HTTP_CODE); 
 
 		if ( $status != 200 ) {			
-writeToLog('Error: call failed with status '.$status.', response '. $jsonResponse .', curl_error ' . curl_error($curl) . ', curl_errno ' . curl_errno($curl));
+			writeToLog('Error: call failed with status '.$status.', response '. $jsonResponse .', curl_error ' . curl_error($curl) . ', curl_errno ' . curl_errno($curl));
 //print_r($jsonResponse);
         	die();
-	
     	}
 		curl_close($curl);
 		
