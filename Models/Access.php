@@ -1,10 +1,7 @@
 <?php
 
-//Should use data mapper or data repository pattern in the models, but I 
-//just want to get this up and running, not too worried about theory and agonizing
-//over proper design patterns.
-
-class APIKey {
+//Should use data mapper or data repository pattern in the models
+class Access {
     protected $_connection;
     protected $_db;
     private $queryCache = array();

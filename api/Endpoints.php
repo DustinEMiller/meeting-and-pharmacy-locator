@@ -15,13 +15,6 @@
 
             $APIKey = new APIKey(new Cxn("shirley"));
             
-            //Old way using query string
-            /*if (!array_key_exists('apiKey', $this->request)) {
-                throw new Exception('No API Key provided');
-            } else if (!$APIKey->verifyKey($this->request['apiKey'], $origin)) {
-                throw new Exception('Invalid API Key');
-            }*/
-            
             if (!$this->key) {
                 throw new Exception('No API Key provided');
             } else if (!$APIKey->verifyKey($this->key, $origin)) {

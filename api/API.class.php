@@ -34,6 +34,21 @@ abstract class API
      */
     protected $file = Null;
 
+    private $allowedOrigins = Array(
+            "http://medicare.healthalliance.org",
+            "http://healthalliance.org",
+            "http://www.healthalliance.org",
+            "http://medicaid.healthalliance.org",
+            "https://www.healthalliance.org",
+            "http://devhealthalliance",
+            "http://devmedicare",
+            "http://devmedicaid",
+            "http://testmedicare",
+            "http://testhealthalliance", 
+            "http://devmedicaid", 
+            "http://52.11.174.73"
+        );
+
     /**
      * Constructor: __construct
      * Allow for CORS, assemble and pre-process the data
@@ -41,8 +56,9 @@ abstract class API
         
     public function __construct($request) {
         $http_origin = $_SERVER['HTTP_ORIGIN'];
-        $allowedOrigins = array("http://medicare.healthalliance.org", "http://healthalliance.org", "http://www.healthalliance.org", "http://medicaid.healthalliance.org", "https://www.healthalliance.org", "http://devhealthalliance", "http://devmedicare", "http://devmedicaid", "http://testmedicare", "http://testhealthalliance", "http://devmedicaid", "http://52.11.174.73");
-        if(in_array($http_origin, $allowedOrigins)) {
+
+
+        if(in_array($http_origin, $this->allowedOrigins)) {
                 header("Access-Control-Allow-Origin: ".$_SERVER['HTTP_ORIGIN']);
                 header("Access-Control-Allow-Methods: GET");
                 header("Content-Type: application/json charset=utf-8");
