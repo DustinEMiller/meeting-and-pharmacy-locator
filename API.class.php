@@ -60,7 +60,7 @@ abstract class API
 
         if(in_array($http_origin, $this->allowedOrigins)) {
                 header("Access-Control-Allow-Origin: ".$_SERVER['HTTP_ORIGIN']);
-                header("Access-Control-Allow-Methods: GET");
+                header("Access-Control-Allow-Methods: GET, POST");
                 header("Content-Type: application/json charset=utf-8");
         }
 
@@ -105,7 +105,7 @@ abstract class API
         }
     }
     
-     public function processAPI() {
+     public function executeAction() {
         if (method_exists($this, $this->endpoint)) {
             return $this->_response($this->{$this->endpoint}($this->args));
         }

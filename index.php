@@ -12,12 +12,17 @@
     try {
         if (substr($_SERVER['HTTP_ORIGIN'], 0, 7) == 'http://') {
             $domain = substr($_SERVER['HTTP_ORIGIN'], 7);
+        } else if (substr($_SERVER['HTTP_ORIGIN'], 0, 8) == 'https://') {
+            $domain = substr($_SERVER['HTTP_ORIGIN'], 8);
         } else {
             $domain = $_SERVER['HTTP_ORIGIN'];
         }
         
-        $API = new Endpoints($_REQUEST['request'], $domain);
-        echo $API->processAPI();
+        $loader = new Loader($_REQUEST['request'], $domain);
+        $controller = $loader->createController();
+        echo $controller->executeAction();
+        //$API = new Endpoints($_REQUEST['request'], $domain);
+       // echo $API->executeAction();
     } catch (Exception $e) {
         echo json_encode(Array('error' => $e->getMessage()));
     }

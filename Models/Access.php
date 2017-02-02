@@ -12,6 +12,19 @@ class Access {
         $this->_db = $this->_connection->getDb();
     }
 
+    public function verifyDomain($domain)
+    {
+        $qry = $this->_db->prepare('
+            SELECT d.* FROM domains as d WHERE d.domain = :domain
+        ');
+
+        $qry->bindParam(':domain', $domain);
+        $qry->execute();
+        $results = $qry->fetch();
+
+        return (!empty($results));
+    }
+
     public function verifyKey($key, $origin)
     {
         $qry = $this->_db->prepare('
