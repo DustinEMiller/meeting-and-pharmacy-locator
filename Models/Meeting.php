@@ -19,7 +19,7 @@ class Meeting {
     private $zipCodes = array();
     private $meetingType = array();
 
-    public function __construct($pdo, $locationSettings, $zipCodes)
+    public function __construct($pdo, $zipCodes)
     {
         $this->_connection = $pdo;
         $this->_db = $this->_connection->getDb();
@@ -30,23 +30,8 @@ class Meeting {
         } 
     }
 
-    public function results()
-    {
-        switch ($this->meetingType[1]) {
-            case 'event':
-                return $this->event();
-                break;
-            case 'seminar':
-                return $this->seminar();
-                break;
-            default:
-                throw new Exception('Bad location sub type used.');
-        }
-
-    }
-
     //Add 'order by' that is linked fto nearest to furthest zip code
-    private function event()
+    public function events()
     {
         $inParams = implode(',', array_fill(0, count($this->zipCodes), '?'));
         $qry = $this->_db->prepare('SELECT event_name, start_time, end_time, venue_name, room_name, address, city, state, zip 
@@ -61,7 +46,7 @@ class Meeting {
         return($result);  
     }
 
-    private function seminar()
+    public function seminars()
     {
         $inParams = implode(',', array_fill(0, count($this->zipCodes), '?'));
         $now = new DateTime('now');

@@ -74,17 +74,31 @@ abstract class BaseController {
 
     }
 
-    protected function locationVerification($locationType) {
+    protected function locationVerification($locationType,
+        $args) {
+
+        print_r($args);
+        print_r($this->args);
 
         if (strtolower($locationType) === 'zipcode') {
             if (count($this->locationSettings) !== 2 || 
                 !is_numeric($this->args[0]) || 
                 !is_numeric($this->args[1])) {
                     throw new Exception('Incorrect URI structure for this endpoint');
+            } else {
+                $zip = new ZIP(new Cxn("shirley"),$this->args);
+                return $zip->radius();
             }
-        }
+        } else if (strtolower($locationType) === 'cityState') {
+            if (count($this->locationSettings) !== 2 || !is_numeric($this->args[2])) {
+                throw new Exception('Incorrect URI structure for this endpoint');
+            } else {
+                $zip = new ZIP(new Cxn("shirley"),$this->args);
+                retrun $zip->cityzips();       
+            }
 
-        
+        }
+    
     }
 
     private function _response($data, $status = 200) {
