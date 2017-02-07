@@ -20,6 +20,7 @@ class Access {
 
         $qry->bindParam(':domain', $domain);
         $qry->execute();
+
         $results = $qry->fetch();
 
         return (!empty($results));
@@ -27,13 +28,14 @@ class Access {
 
     public function verifyKey($key, $origin)
     {
-        $qry = $this->_db->prepare('
-        SELECT k.*, d.* FROM api_keys as k INNER JOIN domains as d on 
-        k.id = d.key_id WHERE k.key = :key AND domain = :domain
-        ');
+        $qry = $this->_db
+            ->prepare('SELECT k.*, d.* FROM api_keys as k INNER JOIN 
+                domains as d on k.id = d.key_id WHERE k.key = :key AND domain = :domain');
+
         $qry->bindParam(':key', $key);
         $qry->bindParam(':domain', $origin);
         $qry->execute();
+        
         $results = $qry->fetch();
 
         return (!empty($results));
@@ -43,9 +45,8 @@ class Access {
     public function find($id)
     {
         if (!isset($this->userCache[$id])) {
-            $userCache[$id] = $this->dao->query('
-                SELECT * FROM users WHERE id = ' . (int)$id . '
-            ');
+            $userCache[$id] = $this->dao
+                ->query('SELECT * FROM users WHERE id = ' . (int)$id . '');
         }
         return $userCache[$id];
     }

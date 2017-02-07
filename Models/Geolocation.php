@@ -11,7 +11,7 @@
  *
  * @author dumiller
  */
-class ZIP {
+class Geolocation {
     
     protected $_connection;
     protected $_db;
@@ -100,12 +100,14 @@ class ZIP {
         $latitude = ($latitude/$qry->rowCount());
         $longitude = ($longitude/$qry->rowCount());
         
-        $qry = $this->_db->prepare('SELECT zip_code, ROUND(( 3959 * acos( cos( radians(:lat) ) * 
+        $qry = $this->_db
+            ->prepare('SELECT zip_code, ROUND(( 3959 * acos( cos( radians(:lat) ) * 
             cos( radians(latitude) ) * cos( radians(longitude) - radians(:lng) ) + 
             sin( radians(:lat) ) * sin(radians(latitude)) ) ), 3) AS distance, city, state 
             FROM askshirley.city_zips
             HAVING distance <= :radius 
             ORDER BY distance');
+
         $qry->bindParam(':lat', $latitude);
         $qry->bindParam(':lng', $longitude);
         $qry->bindParam(':radius', $this->args[1]);
@@ -118,12 +120,14 @@ class ZIP {
     
     public function geocode()
     {
-        $qry = $this->_db->prepare('SELECT zip_code, ROUND(( 3959 * acos( cos( radians(:lat) ) * 
+        $qry = $this->_db
+            ->prepare('SELECT zip_code, ROUND(( 3959 * acos( cos( radians(:lat) ) * 
             cos( radians(latitude) ) * cos( radians(longitude) - radians(:lng) ) + 
             sin( radians(:lat) ) * sin(radians(latitude)) ) ), 3) AS distance, city, state 
             FROM askshirley.city_zips
             ORDER BY distance
             LIMIT 1');
+
         $qry->bindParam(':lat', $this->args[0]);
         $qry->bindParam(':lng', $this->args[1]);
         $qry->execute();
@@ -167,9 +171,11 @@ class ZIP {
             FROM askshirley.city_zips
             HAVING distance <= :radius 
             ORDER BY distance');
+
         $qry->bindParam(':lat', $latitude);
         $qry->bindParam(':lng', $longitude);
         $qry->bindParam(':radius', $this->args[2]);
+        
         $qry->execute();
         $result['zip_codes'] = $qry->fetchAll();
 

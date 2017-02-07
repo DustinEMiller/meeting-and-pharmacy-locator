@@ -1,6 +1,20 @@
 <?php
+require_once __DIR__ . '/../Helpers/Access.php';
+require_once __DIR__ . '/../Helpers/Cxn.php';
 
 abstract class BaseController {
+
+    /**
+     * Property: method
+     * The HTTP method this request was made in, either GET, POST, PUT or DELETE
+     */
+    protected $method = '';
+
+    /**
+     * Property: endpoint
+     * The Model requested in the URI. eg: /files
+     */
+    protected $endpoint = '';
 
 	/**
      * Property: key
@@ -8,14 +22,47 @@ abstract class BaseController {
      */
     protected $key = '';
 
-	public function __construct($args, $action, $domain) {
+    /**
+     * Property: args
+     * Any additional URI components after the endpoint and key have been removed, in our
+     * eg: /<endpoint>/<verb>/<arg0>/<arg1> or /<endpoint>/<arg0>
+     */
+    protected $args = Array();
+
+    /**
+     * Property: method
+     * The HTTP method this request was made in, either GET, POST, PUT or DELETE
+     */
+    protected $method = '';
+
+	public function __construct($args, $endpoint, $domain) {
+        $this->args = $args;
+        $this->endpoint = $endpoint;
+
+        if (array_key_exists(0, $this->args) && !is_numeric($this->args[0])) {
+            $this->key = array_shift($this->args);
+        }
+
 		$verification = new Access(new Cxn("shirley"));
+
+        if($verification->verifyDomain($domain)) {
+            header("Access-Control-Allow-Origin: ".$_SERVER['HTTP_ORIGIN']);
+            header("Access-Control-Allow-Methods: GET, POST");
+            header("Content-Type: application/json charset=utf-8");    
+        }
 		
 		if (!$this->key) {
             throw new Exception('No API Key provided');
-        } else if (!$APIKey->verifyKey($this->key, $origin)) {
+        } else if (!$verification->verifyKey($this->key, $domain)) {
             throw new Exception('Invalid API Key');
-        }	
+        }
+
+        $this->method = $_SERVER['REQUEST_METHOD'];
+
+        if($this->method !== 'POST' || $this->method !== 'GET') {
+            $this->_response('Invalid Method', 405);
+        }
+
 	}
 
 	public function executeAction() {
@@ -25,6 +72,14 @@ abstract class BaseController {
         }
         return $this->_response("Error: No Endpoint: $this->endpoint", 404);
 
+    }
+
+    protected function locationsVerification() {
+        if (count($this->locationSettings) !== 2 || 
+            !is_numeric($this->args[0]) || 
+            !is_numeric($this->args[1])) {
+                throw new Exception('Incorrect URI structure for this endpoint');
+        }
     }
 
     private function _response($data, $status = 200) {

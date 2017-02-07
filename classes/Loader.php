@@ -4,9 +4,9 @@ class Loader {
     
     private $controllerName;
     private $controllerClass;
-    private $action;
-    private $urlValues;
-    protected $args = Array();
+    private $endpoint;
+    private $domain;
+    private $args = Array();
     
     //store the URL request values on object creation
     public function __construct($request, $domain) {
@@ -14,10 +14,12 @@ class Loader {
         $this->args = explode('/', rtrim($request, '/'));
         $this->args = $this->_cleanInputs($this->args);
 
-        $this->controllerName = strtolower(array_shift($this->args));
-        $this->controllerClass = ucfirst(strtolower($this->urlValues['controller'])) . "Controller";
+        $this->domain = $domain;
 
-        $this->action = strtolower(array_shift($this->args));
+        $this->controllerName = strtolower(array_shift($this->args));
+        $this->controllerClass = ucfirst(strtolower($this->controllerName)) . "Controller";
+
+        $this->endpoint = strtolower(array_shift($this->args));
 
     }
                   
@@ -38,7 +40,7 @@ class Loader {
             if (in_array("BaseController",$parents)) {   
                 //does the requested class contain the requested action as a method?
                 if (method_exists($this->controllerClass, $this->action)) {
-                    return new $this->controllerClass($this->args, $this->action, $domain);
+                    return new $this->controllerClass($this->endpoint, $this->action, $this->domain);
                 } else {
                     throw new Exception('Action does not exist');
                 }
