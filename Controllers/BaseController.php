@@ -35,8 +35,6 @@ abstract class BaseController {
      */
     protected $method = '';
 
-    protected $zips = Array();
-
 	public function __construct($args, $endpoint, $domain) {
         $this->args = $args;
         $this->endpoint = $endpoint;
@@ -76,12 +74,17 @@ abstract class BaseController {
 
     }
 
-    protected function locationsVerification() {
-        if (count($this->locationSettings) !== 2 || 
-            !is_numeric($this->args[0]) || 
-            !is_numeric($this->args[1])) {
-                throw new Exception('Incorrect URI structure for this endpoint');
+    protected function locationVerification($locationType) {
+
+        if (strtolower($locationType) === 'zipcode') {
+            if (count($this->locationSettings) !== 2 || 
+                !is_numeric($this->args[0]) || 
+                !is_numeric($this->args[1])) {
+                    throw new Exception('Incorrect URI structure for this endpoint');
+            }
         }
+
+        
     }
 
     private function _response($data, $status = 200) {
