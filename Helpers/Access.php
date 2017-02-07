@@ -40,16 +40,5 @@ class Access {
 
         return (!empty($results));
     }
-    
-    //Caching
-    public function find($id)
-    {
-        if (!isset($this->userCache[$id])) {
-            $userCache[$id] = $this->dao
-                ->query('SELECT * FROM users WHERE id = ' . (int)$id . '');
-        }
-        return $userCache[$id];
-    }
-    //End caching
 }
 ?>

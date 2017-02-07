@@ -35,6 +35,8 @@ abstract class BaseController {
      */
     protected $method = '';
 
+    protected $zips = Array();
+
 	public function __construct($args, $endpoint, $domain) {
         $this->args = $args;
         $this->endpoint = $endpoint;
