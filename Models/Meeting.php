@@ -11,19 +11,18 @@
  *
  * @author dumiller
  */
-class Meeting {
+class Meeting 
+{
     
     protected $_connection;
     protected $_db;
     private $queryCache = array();
     private $zipCodes = array();
-    private $meetingType = array();
 
     public function __construct($pdo, $zipCodes)
     {
         $this->_connection = $pdo;
         $this->_db = $this->_connection->getDb();
-        $this->meetingType = $locationSettings;
 
         foreach ($zipCodes['zip_codes'] as $v) {
             $this->zipCodes[] = $v['zip_code'];
@@ -31,6 +30,7 @@ class Meeting {
     }
 
     //Add 'order by' that is linked fto nearest to furthest zip code
+    //Should add where condition dor data of meeting
     public function events()
     {
         $inParams = implode(',', array_fill(0, count($this->zipCodes), '?'));

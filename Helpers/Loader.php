@@ -17,7 +17,7 @@ class Loader {
         $this->domain = $domain;
 
         $this->controllerName = strtolower(array_shift($this->args));
-        $this->controllerClass = ucfirst(strtolower($this->controllerName)) . "Controller";
+        $this->controllerClass = ucfirst(strtolower($this->controllerName)) . 'Controller';
 
         $this->endpoint = strtolower(array_shift($this->args));
 
@@ -39,8 +39,8 @@ class Loader {
             //does the class inherit from the BaseController class?
             if (in_array("BaseController",$parents)) {   
                 //does the requested class contain the requested action as a method?
-                if (method_exists($this->controllerClass, $this->action)) {
-                    return new $this->controllerClass($this->endpoint, $this->action, $this->domain);
+                if (method_exists($this->controllerClass, $this->endpoint)) {
+                    return new $this->controllerClass($this->args, $this->endpoint, $this->domain);
                 } else {
                     throw new Exception('Action does not exist');
                 }

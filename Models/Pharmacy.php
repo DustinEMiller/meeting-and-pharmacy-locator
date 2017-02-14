@@ -11,56 +11,26 @@
  *
  * @author dumiller
  */
-class Pharmacy {
+class Pharmacy 
+{
     
     protected $_connection;
     protected $_db;
     private $queryCache = array();
     private $zipCodes = array();
-    private $pharmacyType = array();
-    private $year;
 
-    public function __construct($pdo, $locationSettings, $zipCodes, $year = 0)
+    public function __construct($pdo, $zipCodes)
     {
         $this->_connection = $pdo;
         $this->_db = $this->_connection->getDb();
-        $this->pharmacyType = $locationSettings;
-        $this->year= $year;
 
         foreach ($zipCodes['zip_codes'] as $v) {
             $this->zipCodes[] = $v['zip_code'];
         }  
     }
 
-    public function results()
-    {
-        switch ($this->pharmacyType[1]) {
-            case 'network':
-                return $this->network();
-                break;
-            case 'preferred':
-                return $this->preferred();
-                break;
-            case 'preferred-plus':
-                return $this->preferredPlus();
-                break;
-            case 'medicaid':
-                return $this->medicaid();
-                break;
-            case 'medicare':
-                return $this->medicare('No');
-                break;
-            case 'medicare-preferred':
-                return $this->medicare('Yes');
-                break;
-            default:
-                throw new Exception('Bad location sub type used.');
-        }
-
-    }
-
     //Add 'order by' that is linked fto nearest to furthest zip code
-    private function network()
+    public function network()
     {
         $inParams = implode(',', array_fill(0, count($this->zipCodes), '?'));
         $qry = $this->_db->prepare('SELECT nabp, pharmacy_name, address, city, state, zip, phone, fax, npi 
@@ -75,7 +45,7 @@ class Pharmacy {
         return($result);  
     }
 
-    private function preferred()
+    public function preferred()
     {
         $inParams = implode(',', array_fill(0, count($this->zipCodes), '?'));
         $qry = $this->_db->prepare('SELECT nabp, npi, pharmacy_name, address, address_2, city, state, zip, phone, fax 
@@ -90,7 +60,7 @@ class Pharmacy {
         return($result);     
     }
 
-    private function preferredPlus()
+    public function preferredPlus()
     {
         $inParams = implode(',', array_fill(0, count($this->zipCodes), '?'));
         $qry = $this->_db->prepare('SELECT nabp, npi, pharmacy_name, address, address_2, city, state, zip, phone, fax 
@@ -105,7 +75,7 @@ class Pharmacy {
         return($result);     
     }
 
-    private function medicaid()
+    public function medicaid()
     {
         $inParams = implode(',', array_fill(0, count($this->zipCodes), '?'));
         $qry = $this->_db->prepare('SELECT npi, pharmacy_name, address, address_2, city, state, zip, type, county 
@@ -120,14 +90,14 @@ class Pharmacy {
         return($result);     
     }
 
-    private function medicare($preferred)
+    public function medicare($preferred, $year)
     {
         $inParams = implode(',', array_fill(0, count($this->zipCodes), '?'));
         $qry = $this->_db->prepare('SELECT nabp, npi, pharmacy_name, address, address_2, city, state, zip, phone, fax 
             FROM askshirley.medicare_pharmacies where preferred = ? AND year = ? AND zip IN ('.$inParams.')');
 
-        $qry->bindValue(1, $preferred);
-        $qry->bindValue(2, $this->year);
+        $qry->bindValue(1, $preferred ? 'Yes' : 'No');
+        $qry->bindValue(2, $year);
 
         foreach ($this->zipCodes as $k => $zipCode) {
             $qry->bindValue(($k+3), $zipCode);

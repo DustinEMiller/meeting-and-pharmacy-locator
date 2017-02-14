@@ -11,7 +11,8 @@
  *
  * @author dumiller
  */
-class Geolocation {
+class Geolocation 
+{
     
     protected $_connection;
     protected $_db;

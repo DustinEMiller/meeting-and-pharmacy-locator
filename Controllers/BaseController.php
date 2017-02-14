@@ -1,8 +1,10 @@
 <?php
 require_once __DIR__ . '/../Helpers/Access.php';
 require_once __DIR__ . '/../Helpers/Cxn.php';
+require_once __DIR__ . '/../Models/Geolocation.php';
 
-abstract class BaseController {
+abstract class BaseController 
+{
 
     /**
      * Property: method
@@ -29,13 +31,10 @@ abstract class BaseController {
      */
     protected $args = Array();
 
-    /**
-     * Property: method
-     * The HTTP method this request was made in, either GET, POST, PUT or DELETE
-     */
-    protected $method = '';
+    protected $locationType = '';
 
-	public function __construct($args, $endpoint, $domain) {
+	public function __construct($args, $endpoint, $domain) 
+    {
         $this->args = $args;
         $this->endpoint = $endpoint;
 
@@ -65,7 +64,8 @@ abstract class BaseController {
 
 	}
 
-	public function executeAction() {
+	public function executeAction() 
+    {
 
         if (method_exists($this, $this->endpoint)) {
             return $this->_response($this->{$this->endpoint}($this->args));
@@ -74,39 +74,40 @@ abstract class BaseController {
 
     }
 
-    protected function locationVerification($locationType,
-        $args) {
+    protected function locationVerification() 
+    {
 
-        print_r($args);
-        print_r($this->args);
-
-        if (strtolower($locationType) === 'zipcode') {
-            if (count($this->locationSettings) !== 2 || 
+        if (strtolower($this->locationType) === 'zipcode') {
+            if (count($this->args) < 2 || 
                 !is_numeric($this->args[0]) || 
                 !is_numeric($this->args[1])) {
                     throw new Exception('Incorrect URI structure for this endpoint');
             } else {
-                $zip = new ZIP(new Cxn("shirley"),$this->args);
+                $zip = new Geolocation(new Cxn("shirley"),$this->args);
                 return $zip->radius();
             }
-        } else if (strtolower($locationType) === 'cityState') {
-            if (count($this->locationSettings) !== 2 || !is_numeric($this->args[2])) {
+        } else if (strtolower($this->locationType) === 'citystate') {
+            if (count($this->args) < 3 || !is_numeric($this->args[2])) {
                 throw new Exception('Incorrect URI structure for this endpoint');
             } else {
-                $zip = new ZIP(new Cxn("shirley"),$this->args);
-                retrun $zip->cityzips();       
+                $zip = new Geolocation(new Cxn("shirley"),$this->args);
+                return $zip->cityzips();       
             }
 
+        } else {
+            return $this->_response("Error: No Endpoint: $this->endpoint", 404);
         }
     
     }
 
-    private function _response($data, $status = 200) {
+    private function _response($data, $status = 200) 
+    {
         header("HTTP/1.1 " . $status . " " . $this->_requestStatus($status));
         return json_encode($data);
     }
 
-    private function _requestStatus($code) {
+    private function _requestStatus($code) 
+    {
         $status = array(  
             200 => 'OK',
             404 => 'Not Found',   
