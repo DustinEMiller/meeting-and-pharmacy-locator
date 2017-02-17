@@ -1,7 +1,9 @@
 <?php
 
 //Should use data mapper or data repository pattern in the models
-class Access {
+class Access 
+{
+    
     protected $_connection;
     protected $_db;
     private $queryCache = array();

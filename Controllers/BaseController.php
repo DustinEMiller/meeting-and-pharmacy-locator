@@ -45,8 +45,7 @@ abstract class BaseController
 		$verification = new Access(new Cxn("shirley"));
 
         if($verification->verifyDomain($domain)) {
-            header("Access-Control-Allow-Origin: ".$_SERVER['HTTP_ORIGIN']);
-            header("Access-Control-Allow-Methods: GET, POST");
+            header("Access-Control-Allow-Origin: ".$_SERVER['HTTP_REFERER']);
             header("Content-Type: application/json charset=utf-8");    
         }
 		
@@ -73,6 +72,15 @@ abstract class BaseController
         return $this->_response("Error: No Endpoint: $this->endpoint", 404);
 
     }
+
+    public function setGetAccess() {
+        header("Access-Control-Allow-Methods: GET");
+    }
+
+    public function setPostAccess() {
+        header("Access-Control-Allow-Methods: POST");
+    }
+
 
     protected function locationVerification() 
     {

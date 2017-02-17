@@ -1,0 +1,39 @@
+02/17/2017 09:36:49pm Error: call failed with status 400
+02/17/2017 09:36:49pm Array
+(
+    [error] => invalid_client_id
+    [error_description] => client identifier invalid
+)
+
+02/17/2017 09:36:49pm curl_error 
+02/17/2017 09:38:25pm Error: call failed with status 400
+02/17/2017 09:38:25pm Array
+(
+    [error] => invalid_client_id
+    [error_description] => client identifier invalid
+)
+
+02/17/2017 09:38:25pm curl_error 
+02/17/2017 09:41:27pm Error: call failed with status 400
+02/17/2017 09:41:27pm Array
+(
+    [error] => invalid_client_id
+    [error_description] => client identifier invalid
+)
+
+02/17/2017 09:41:27pm curl_error 
+02/17/2017 09:44:32pm SUCCESS
+02/17/2017 10:27:42pm SUCCESS
+02/17/2017 10:30:21pm SUCCESS
+02/17/2017 10:33:58pm SUCCESS
+02/17/2017 10:34:33pm SUCCESS
+02/17/2017 10:35:06pm SUCCESS
+02/17/2017 10:36:09pm SUCCESS
+02/17/2017 11:03:14pm SUCCESS
+02/17/2017 11:22:47pm SUCCESS
+02/17/2017 11:23:20pm SUCCESS
+02/17/2017 11:23:54pm SUCCESS
+02/17/2017 11:27:13pm SUCCESS
+02/17/2017 11:51:00pm SUCCESS
+02/17/2017 11:51:11pm SUCCESS
+02/17/2017 11:55:49pm SUCCESS

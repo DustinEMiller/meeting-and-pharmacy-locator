@@ -8,14 +8,17 @@
  * @license http://opensource.org/licenses/ISC ISC License
  * @version 0.1
  */
-class Cxn {
+class Cxn 
+{
     protected $db;
      
-    public function __construct( $dbh ) {
+    public function __construct( $dbh ) 
+    {
         $this->connect( $dbh );
     }
      
-    public function getDb() {   
+    public function getDb() 
+    {   
         if ( is_object( $this->db ) ) {
             return $this->db;
         } else {
@@ -23,11 +26,13 @@ class Cxn {
         }
     }
      
-    public function __destruct() {
+    public function __destruct() 
+    {
         $this->db = null;
     }
  
-    private function connect( $dbh ) {
+    private function connect( $dbh ) 
+    {
         if ( !empty( $this->db ) && is_object( $this->db ) ) {
             return;
         }
@@ -51,7 +56,8 @@ class Cxn {
     /**
      * Extract the username and password from the DSN and rebuild
      */
-    private function _dsn( &$dsn, &$username = '', &$password = '' ) {
+    private function _dsn( &$dsn, &$username = '', &$password = '' ) 
+    {
          
         /**
          * No host name with ':' would mean this is a DSN name in php.ini

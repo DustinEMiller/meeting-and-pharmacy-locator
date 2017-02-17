@@ -24,34 +24,41 @@ class PharmacyController extends BaseController
 
 	public function network() 
 	{
+		$this->setGetAccess();
         return $this->pharmacies->network();
 	}
 
 	public function preferredPlus() 
 	{
+		$this->setGetAccess();
 		return $this->pharmacies->preferredPlus() ;	
 	}
 
 	public function medicaid() 
 	{
+		$this->setGetAccess();
 		return $this->pharmacies->medicaid() ;		
 	}
 
 	public function medicare() 
 	{
+		$this->setGetAccess();
 		return $this->pharmacies->medicare(false, $this->extractYear());		
 	}
 
 	public function medicarePreferred() 
 	{
+		$this->setGetAccess();
 		return $this->pharmacies->medicare(true, $this->extractYear());		
 	}
 
 	private function extractYear()
 	{
 		if(count($this->args) === 3 && is_numeric($this->args[2])) {
+			$this->setGetAccess();
 			return $this->args[2];
 		} else if(count($this->args) === 4 && is_numeric($this->args[3])) {
+			$this->setGetAccess();
 			return $this->args[3];	
 		} else {
 			throw new Exception('Incorrect URL Structure');	

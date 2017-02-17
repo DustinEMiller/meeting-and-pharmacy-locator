@@ -31,11 +31,13 @@ class MeetingController extends BaseController
 
     protected function seminars() 
     {
+    	$this->setGetAccess();
         return $this->meetings->seminars();
     }
 
     protected function events() 
     {
+    	$this->setGetAccess();
         return $this->meetings->events();
     }
 

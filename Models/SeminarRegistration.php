@@ -49,45 +49,23 @@
     		/*
     		* Query endpoint for lead type ID
     		* /services/data/v37.0/query?q=select+id,+name+from+recordtype+where+sobjecttype+='lead'+and+name+=+'Medicare'
+    		`/services/data/v37.0/query?q=select+id,+name+from+recordtype+where+sobjecttype+='lead'+and+name+=+'Medicare' `
+
+			`{
+			    "FirstName": "Steve",
+			    "LastName": "Nulwicki",
+			    "Company": "MEDICARE",
+			    "RecordTypeId": "012U0000000UGjoIAG",
+			    "Birthdate_Contact__c": "1981-5-4",
+			    "Marital_Status__c": "U - Unknown",
+			    "Phone": "555-555-5555",
+			    "Email": "myaddress@email.com",
+			    "City": "Tuskiohla"
+			    "State": "IL",
+			    "PostalCode": "61802",
+			    "Street": "1900 19th Street"
+			}`
     		*/
-    	}
-
-    	private function login() 
-    	{
-    		//This needs to go into a class that then utilizes a config class. See also SeminarSync
-    		$curl = curl_init('https://login.salesforce.com/services/oauth2/token');
-    		curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
-			curl_setopt($curl, CURLOPT_POST, true);
-			curl_setopt($curl, CURLOPT_POSTFIELDS, http_build_query(array(
-				'grant_type' => 'password', 
-				'client_id' => get_cfg_var('salesforce.clientid'), 
-				'client_secret' => get_cfg_var('salesforce.clientsecret'), 
-				'username' => get_cfg_var('salesforce.username'), 
-				'password' => get_cfg_var('salesforce.pwd') . get_cfg_var('salesforce.securitytoken')
-			)));
-			curl_setopt($curl, CURLOPT_HTTPHEADER, array('Content-Type' => 'application/x-www-form-urlencoded'));
-			$jsonResponse = json_decode(curl_exec($curl), true);
-			$status = curl_getinfo($curl, CURLINFO_HTTP_CODE); 
-
-			if ( $status !== 200 ) {
-				// Process curl errors and return			
-				return 'errors';
-	    	}
-
-			curl_close($curl);
-			
-			$_SESSION['access_token'] = $jsonResponse['access_token'];
-			$_SESSION['instance_url'] = $jsonResponse['instance_url'];
-
-			$token = $jsonResponse['access_token'];
-
-			if (!$_SESSION['access_token'] || $_SESSION['access_token'] === "") {
-	            return 'Error - access token missing from session!';
-	        }
-
-	        if (!$_SESSION['instance_url'] || $_SESSION['instance_url'] === "") {
-	            return 'Error - instance URL missing from session!';
-	        }
     	}
 
 	}
