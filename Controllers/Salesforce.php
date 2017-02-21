@@ -16,11 +16,13 @@ class SalesforceController extends BaseController
 
 	protected function seminarSync() 
     {
+    	$this->setGetAccess();
         return $this->sf->seminarSync();
     }
 
     protected function seminarRegistration() 
     {
+    	$this->setPostAccess();
         return $this->sf->seminarRegistration();
     }
 

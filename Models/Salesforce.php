@@ -9,12 +9,15 @@ class Salesforce
 	protected $_connection;
     protected $_db;
     protected $sf;
+    protected $attendee;
+    protected $gump;
 
 	public function __construct($pdo)
 	{
 		$this->_connection = $pdo;
         $this->_db = $this->_connection->getDb();	
         $this->sf = new Login();
+        $this->gump = new GUMP();
 	}
 
 	public function seminarSync()
@@ -67,6 +70,7 @@ class Salesforce
 				$qry->execute();
 			}
 		}
+
 		$currentDate = date('Y-m-d');
 
 		$this->sf->writeToLog('SUCCESS');
@@ -76,12 +80,48 @@ class Salesforce
 
     public function seminarRegistration($data)
     {
-    	
+    	if (!$this->gumpValidation()) {
+			return json_encode($gump->get_readable_errors());
+		} 
+		return $this->sf->engageEndpoint('/services/data/v37.0/sobjects/Lead', 'POST', $this->attendee);;
     }
 
     public function passwordExpiration()
     {
 
+    }
+
+    private function gumpValidation() 
+    {
+    	$this->attendee = $gump->sanitize($data);
+
+        $validation = array(
+        	'name' => 'required|alpha|max_len,100|min_len,6',
+        	'address' => 'required|alpha_numeric|max_len,100|min_len,3',
+        	'city' => 'required|alpha|max_len,100|min_len,3',
+        	'state' => 'required|exact_len,2',
+        	'zip' => 'required|exact_len,6|numeric',
+        	'phoneNumber' => 'required|phone_number',
+        	'email' => 'valid_email',
+        	'birthday' => 'date',
+        	'attendees' => 'numeric'
+    	);
+
+    	$filters = array(
+		    'name' => 'trim|sanitize_string',
+		    'address' => 'trim|sanitize_string',
+		    'city' => 'trim|sanitize_string',
+		    'state' => 'trim|sanitize_string',
+		    'zip' => 'trim|sanitize_numbers',
+		    'email'    => 'trim|sanitize_email',
+		    'phoneNumber' => 'trim|sanitize_string',
+		    'birthday' => 'trim|sanitize_string',
+		    'attendees' => 'trim|sanitize_numbers'
+		);
+
+		$this->postData = $gump->filter($this->attendee, $filters);
+
+		return $gump->validate($this->attendee, $validation);
     }
 }
 
