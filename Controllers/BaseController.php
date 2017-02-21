@@ -37,6 +37,7 @@ abstract class BaseController
     {
         $this->args = $args;
         $this->endpoint = $endpoint;
+        $this->method = $_SERVER['REQUEST_METHOD'];
 
         if (array_key_exists(0, $this->args) && !is_numeric($this->args[0])) {
             $this->key = array_shift($this->args);
@@ -57,21 +58,19 @@ abstract class BaseController
 
         $this->method = $_SERVER['REQUEST_METHOD'];
 
-        if($this->method !== 'POST' || $this->method !== 'GET') {
-            $this->_response('Invalid Methodf', 405);
-            print_r('a');
+        if($this->method !== 'POST' && $this->method !== 'GET') {
+            $this->_response('Invalid Method', 405);
+            throw new Exception('Method not allowed');
         }
 
 	}
 
 	public function executeAction() 
     {
-
         if (method_exists($this, $this->endpoint)) {
             return $this->_response($this->{$this->endpoint}($this->args));
         }
-        return $this->_response("Error: No Endpoint: $this->endpoint", 404);
-
+        throw new Exception("No Endpoint: $this->endpoint");
     }
 
     public function setGetAccess() {
@@ -94,7 +93,6 @@ abstract class BaseController
         
     }
 
-
     protected function locationVerification() 
     {
 
@@ -116,7 +114,7 @@ abstract class BaseController
             }
 
         } else {
-            return $this->_response("Error: No Endpoint: $this->endpoint", 404);
+            throw new Exception('Incorrect URI structure for this endpoint');
         }
     
     }

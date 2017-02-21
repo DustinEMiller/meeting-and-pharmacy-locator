@@ -78,23 +78,29 @@ class Salesforce
 		return 'SUCCESS';
     }
 
+
+    //End point for RecordTypeId
+    //services/data/v37.0/query?q=select+id,+name+from+recordtype+where+sobjecttype+='lead'+and+name+=+'Medicare'
+    //End point for LeadStatus
+    //services/data/v37.0/query?q=select+id,+ApiName+from+LeadStatus+where+ApiName+='Open : Campaign Related'
     public function seminarRegistration($data)
     {
+    	$this->attendee = $this->gump->sanitize($data);
+
     	if (!$this->gumpValidation()) {
 			return json_encode($gump->get_readable_errors());
 		} 
-		return $this->sf->engageEndpoint('/services/data/v37.0/sobjects/Lead', 'POST', $this->attendee);;
+		//return $this->sf->engageEndpoint('/services/data/v37.0/sobjects/Lead', 'POST', $this->attendee);;
     }
 
     public function passwordExpiration()
     {
-
+    	//Do this
+    	//http://docs.aws.amazon.com/ses/latest/DeveloperGuide/send-using-smtp-php.html
     }
 
     private function gumpValidation() 
     {
-    	$this->attendee = $gump->sanitize($data);
-
         $validation = array(
         	'name' => 'required|alpha|max_len,100|min_len,6',
         	'address' => 'required|alpha_numeric|max_len,100|min_len,3',
@@ -119,9 +125,9 @@ class Salesforce
 		    'attendees' => 'trim|sanitize_numbers'
 		);
 
-		$this->postData = $gump->filter($this->attendee, $filters);
+		$this->postData = $this->gump->filter($this->attendee, $filters);
 
-		return $gump->validate($this->attendee, $validation);
+		return $this->gump->validate($this->attendee, $validation);
     }
 }
 

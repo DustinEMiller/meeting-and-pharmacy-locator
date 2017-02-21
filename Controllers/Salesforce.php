@@ -23,7 +23,7 @@ class SalesforceController extends BaseController
     protected function seminarRegistration() 
     {
     	$this->setPostAccess();
-        return $this->sf->seminarRegistration();
+        return $this->sf->seminarRegistration($_POST);
     }
 
 }

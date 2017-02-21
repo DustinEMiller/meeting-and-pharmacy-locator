@@ -37,3 +37,58 @@
 02/17/2017 11:51:00pm SUCCESS
 02/17/2017 11:51:11pm SUCCESS
 02/17/2017 11:55:49pm SUCCESS
+02/21/2017 07:14:14pm Error: call failed with status 0
+02/21/2017 07:14:14pm 
+02/21/2017 07:14:14pm curl_error error setting certificate verify locations:
+  CAfile: E:\php\cacert.pem
+  CApath: none
+02/21/2017 07:16:51pm Error: call failed with status 0
+02/21/2017 07:16:51pm 
+02/21/2017 07:16:51pm curl_error error setting certificate verify locations:
+  CAfile: E:\php\cacert.pem
+  CApath: none
+02/21/2017 07:17:07pm Error: call failed with status 0
+02/21/2017 07:17:07pm 
+02/21/2017 07:17:07pm curl_error error setting certificate verify locations:
+  CAfile: E:\php\cacert.pem
+  CApath: none
+02/21/2017 07:20:14pm Error: call failed with status 0
+02/21/2017 07:20:14pm 
+02/21/2017 07:20:14pm curl_error error setting certificate verify locations:
+  CAfile: E:\php\cacert.pem
+  CApath: none
+02/21/2017 07:20:33pm Error: call failed with status 0
+02/21/2017 07:20:33pm 
+02/21/2017 07:20:33pm curl_error error setting certificate verify locations:
+  CAfile: E:\php\cacert.pem
+  CApath: none
+02/21/2017 07:29:58pm Error: call failed with status 0
+02/21/2017 07:29:58pm 
+02/21/2017 07:29:58pm curl_error error setting certificate verify locations:
+  CAfile: E:\php\cacert.pem
+  CApath: none
+02/21/2017 07:40:13pm Error: call failed with status 0
+02/21/2017 07:40:13pm 
+02/21/2017 07:40:13pm curl_error error setting certificate verify locations:
+  CAfile: E:\php\cacert.pem
+  CApath: none
+02/21/2017 07:41:32pm Error: call failed with status 0
+02/21/2017 07:41:32pm 
+02/21/2017 07:41:32pm curl_error error setting certificate verify locations:
+  CAfile: E:\php\cacert.pem
+  CApath: none
+02/21/2017 07:42:41pm Error: call failed with status 0
+02/21/2017 07:42:41pm 
+02/21/2017 07:42:41pm curl_error error setting certificate verify locations:
+  CAfile: E:\php\cacert.pem
+  CApath: none
+02/21/2017 07:54:00pm Error: call failed with status 0
+02/21/2017 07:54:00pm 
+02/21/2017 07:54:00pm curl_error error setting certificate verify locations:
+  CAfile: C:\Program Files\PHP\v7.1\cacert.pem
+  CApath: none
+02/21/2017 08:03:22pm Error: call failed with status 0
+02/21/2017 08:03:22pm 
+02/21/2017 08:03:22pm curl_error error setting certificate verify locations:
+  CAfile: C:\Program Files\PHP\v7.1\cacert.pem
+  CApath: none

@@ -31,6 +31,7 @@ class Meeting
 
     //Add 'order by' that is linked fto nearest to furthest zip code
     //Should add where condition dor data of meeting
+    
     public function events()
     {
         $inParams = implode(',', array_fill(0, count($this->zipCodes), '?'));
