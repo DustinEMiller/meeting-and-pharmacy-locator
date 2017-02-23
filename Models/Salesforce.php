@@ -78,19 +78,46 @@ class Salesforce
 		return 'SUCCESS';
     }
 
-
-    //End point for RecordTypeId
-    //services/data/v37.0/query?q=select+id,+name+from+recordtype+where+sobjecttype+='lead'+and+name+=+'Medicare'
-    //End point for LeadStatus
-    //services/data/v37.0/query?q=select+id,+ApiName+from+LeadStatus+where+ApiName+='Open : Campaign Related'
     public function seminarRegistration($data)
     {
-    	$this->attendee = $this->gump->sanitize($data);
+    	if(count($data) < 1) {
+    		throw new Exception('No data entered');
+    	}
 
-    	if (!$this->gumpValidation()) {
-			return json_encode($gump->get_readable_errors());
+    	$name = explode(' ', $data['name'], 2);
+
+    	$this->attendee['FirstName'] = $name[0];
+
+    	if(count($name) > 1) {
+    		$this->attendee['LastName'] = $name[1];
+    	}
+
+    	$this->attendee['Company'] = 'MEDICARE';
+    	$this->attendee['Birthdate_Contact__c'] = $data['birthday'];
+    	$this->attendee['City'] = $data['city'];
+    	$this->attendee['State'] = $data['state'];
+    	$this->attendee['PostalCode'] = $data['zip'];
+    	$this->attendee['Street'] = $data['address'];
+
+    	$this->gumpValidation();
+    	
+    	if ($this->attendee === false) {
+			return json_encode($this->gump->errors());
 		} 
-		//return $this->sf->engageEndpoint('/services/data/v37.0/sobjects/Lead', 'POST', $this->attendee);;
+
+		$medicareId = $this->sf->engageEndpoint("/services/data/v37.0/query?q=select+id+from+recordtype+where+sobjecttype+='lead'+and+name+=+'Medicare'");
+
+		$medicareId = $medicareId->records['0']->Id;
+
+		$leadStatus = $this->sf->engageEndpoint("/services/data/v37.0/query?q=select+id+from+leadstatus+where+apiname+=+'Open+:+Campaign+Related'");
+
+		$leadStatus = $leadStatus->records['0']->Id;
+
+		$this->attendee['Status'] = $leadStatus;
+		$this->attendee['RecordTypeId'] = $medicareId;
+
+		//return $this->attendee;
+		return $this->sf->engageEndpoint('/services/data/v37.0/sobjects/Lead', 'POST', $this->attendee);
     }
 
     public function passwordExpiration()
@@ -101,33 +128,29 @@ class Salesforce
 
     private function gumpValidation() 
     {
-        $validation = array(
-        	'name' => 'required|alpha|max_len,100|min_len,6',
+
+    	$this->attendee = $this->gump->sanitize($this->attendee);
+
+        $this->gump->validation_rules(array(
         	'address' => 'required|alpha_numeric|max_len,100|min_len,3',
         	'city' => 'required|alpha|max_len,100|min_len,3',
         	'state' => 'required|exact_len,2',
         	'zip' => 'required|exact_len,6|numeric',
-        	'phoneNumber' => 'required|phone_number',
-        	'email' => 'valid_email',
         	'birthday' => 'date',
         	'attendees' => 'numeric'
-    	);
+    	));
 
-    	$filters = array(
+    	$this->gump->filter_rules(array(
 		    'name' => 'trim|sanitize_string',
 		    'address' => 'trim|sanitize_string',
 		    'city' => 'trim|sanitize_string',
 		    'state' => 'trim|sanitize_string',
 		    'zip' => 'trim|sanitize_numbers',
-		    'email'    => 'trim|sanitize_email',
-		    'phoneNumber' => 'trim|sanitize_string',
 		    'birthday' => 'trim|sanitize_string',
 		    'attendees' => 'trim|sanitize_numbers'
-		);
+		));
 
-		$this->postData = $this->gump->filter($this->attendee, $filters);
-
-		return $this->gump->validate($this->attendee, $validation);
+		$this->attendee = $this->gump->run($this->attendee);
     }
 }
 

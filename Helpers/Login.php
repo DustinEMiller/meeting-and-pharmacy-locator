@@ -4,7 +4,6 @@
 	class Login
 	{
 		private $config; 
-		private $logger;
 
 		public function __construct() 
 	    {
@@ -37,8 +36,8 @@
 			if ( $status != 200 ) {	
 				$this->writeToLog('Error: call failed with status ' . $status);
 				$this->writeToLog(print_r($jsonResponse, true));
-				$this->writeToLog('curl_error ' . curl_error($curl));
-	        	die();
+				$this->writeToLog('curl_error ' . curl_errno($curl));
+	        	throw new Exception('curl_error ' . curl_errno($curl));
 	    	}
 
 			curl_close($curl);
@@ -50,12 +49,12 @@
 
 			if (!$_SESSION['access_token'] || $_SESSION['access_token'] == "") {
 	            $this->writeToLog('Error - access token missing from session!');
-	        	die();
+	        	throw new Exception('access token missing from session!');
 	        }
 
-	        if (!$_SESSION['instance_url'] || $_SESSION['instance_url']== "") {
+	        if (!$_SESSION['instance_url'] || $_SESSION['instance_url'] == "") {
 	            $this->writeToLog('Error - instance URL missing from session!');
-	        	die();
+	        	throw new Exception('instance URL missing from session!');
 	        }
 	    }
 
@@ -69,24 +68,25 @@
 			curl_setopt($curl, CURLOPT_HTTPHEADER, array("Authorization: Bearer ". $token));
 
 			if($method === "POST" && $data !== null) {
-				curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-Type: application/json'));
-				curl_setopt($ch, CURLOPT_POST, 1);
-				curl_setopt($ch, CURLOPT_POSTFIELDS,$data);	
+				curl_setopt($curl, CURLOPT_HTTPHEADER, array("Authorization: Bearer ". $token,
+					'Content-Type: application/json'));
+				curl_setopt($curl, CURLOPT_POST, 1);
+				curl_setopt($curl, CURLOPT_POSTFIELDS,$data);	
 			}
 
 			$jsonResponse = json_decode(curl_exec($curl));
 			
 			$status = curl_getinfo($curl, CURLINFO_HTTP_CODE);
 	                
-            if ( $status != 200 ) {	
+            if( $status != 200 ) {	
 				$this->writeToLog('Error: call failed with status ' . $status);
 				$this->writeToLog(print_r($jsonResponse, true));
-				$this->writeToLog('curl_error ' . curl_error($curl));
-	        	die();
+				$this->writeToLog('curl_error ' . curl_errno($curl));
+	        	throw new Exception('curl_error ' . curl_errno($curl));
 	    	}
 	 
 			curl_close($curl);
-
+			
 			return $jsonResponse;
 	    }
 

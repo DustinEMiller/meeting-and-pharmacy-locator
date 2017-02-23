@@ -1,94 +1,93 @@
-02/17/2017 09:36:49pm Error: call failed with status 400
-02/17/2017 09:36:49pm Array
+02/22/2017 07:38:22pm Error: call failed with status 400
+02/22/2017 07:38:22pm 
+02/22/2017 07:38:22pm curl_error 
+02/22/2017 07:51:29pm Error: call failed with status 400
+02/22/2017 07:51:29pm 
+02/22/2017 07:51:29pm curl_error 
+02/22/2017 07:51:33pm Error: call failed with status 400
+02/22/2017 07:51:33pm 
+02/22/2017 07:51:33pm curl_error 
+02/22/2017 07:51:41pm Error: call failed with status 400
+02/22/2017 07:51:41pm 
+02/22/2017 07:51:41pm curl_error 
+02/22/2017 07:51:45pm Error: call failed with status 400
+02/22/2017 07:51:45pm 
+02/22/2017 07:51:45pm curl_error 
+02/22/2017 07:57:31pm Error: call failed with status 400
+02/22/2017 07:57:31pm 
+02/22/2017 07:57:31pm curl_error 
+02/22/2017 08:04:35pm Error: call failed with status 400
+02/22/2017 08:04:35pm 
+02/22/2017 08:04:35pm curl_error 
+02/22/2017 08:20:08pm Error: call failed with status 400
+02/22/2017 08:20:08pm 
+02/22/2017 08:20:08pm curl_error 
+02/22/2017 08:21:30pm Error: call failed with status 400
+02/22/2017 08:21:30pm 
+02/22/2017 08:21:30pm curl_error 
+02/22/2017 08:21:49pm Error: call failed with status 400
+02/22/2017 08:21:49pm 
+02/22/2017 08:21:49pm curl_error 
+02/22/2017 08:26:14pm Error: call failed with status 400
+02/22/2017 08:26:14pm 
+02/22/2017 08:26:14pm curl_error 
+02/22/2017 09:05:58pm Error: call failed with status 401
+02/22/2017 09:05:58pm Array
 (
-    [error] => invalid_client_id
-    [error_description] => client identifier invalid
+    [0] => stdClass Object
+        (
+            [message] => Session expired or invalid
+            [errorCode] => INVALID_SESSION_ID
+        )
+
 )
 
-02/17/2017 09:36:49pm curl_error 
-02/17/2017 09:38:25pm Error: call failed with status 400
-02/17/2017 09:38:25pm Array
+02/22/2017 09:05:58pm curl_error 
+02/22/2017 09:09:35pm Error: call failed with status 401
+02/22/2017 09:09:36pm Array
 (
-    [error] => invalid_client_id
-    [error_description] => client identifier invalid
+    [0] => stdClass Object
+        (
+            [message] => Session expired or invalid
+            [errorCode] => INVALID_SESSION_ID
+        )
+
 )
 
-02/17/2017 09:38:25pm curl_error 
-02/17/2017 09:41:27pm Error: call failed with status 400
-02/17/2017 09:41:27pm Array
+02/22/2017 09:09:36pm curl_error 0
+02/22/2017 09:25:38pm Error: call failed with status 400
+02/22/2017 09:25:38pm Array
 (
-    [error] => invalid_client_id
-    [error_description] => client identifier invalid
+    [0] => stdClass Object
+        (
+            [message] => Unexpected character ('-' (code 45)) in numeric value: expected digit (0-9) to follow minus sign, for valid numeric value at [line:1, column:3]
+            [errorCode] => JSON_PARSER_ERROR
+        )
+
 )
 
-02/17/2017 09:41:27pm curl_error 
-02/17/2017 09:44:32pm SUCCESS
-02/17/2017 10:27:42pm SUCCESS
-02/17/2017 10:30:21pm SUCCESS
-02/17/2017 10:33:58pm SUCCESS
-02/17/2017 10:34:33pm SUCCESS
-02/17/2017 10:35:06pm SUCCESS
-02/17/2017 10:36:09pm SUCCESS
-02/17/2017 11:03:14pm SUCCESS
-02/17/2017 11:22:47pm SUCCESS
-02/17/2017 11:23:20pm SUCCESS
-02/17/2017 11:23:54pm SUCCESS
-02/17/2017 11:27:13pm SUCCESS
-02/17/2017 11:51:00pm SUCCESS
-02/17/2017 11:51:11pm SUCCESS
-02/17/2017 11:55:49pm SUCCESS
-02/21/2017 07:14:14pm Error: call failed with status 0
-02/21/2017 07:14:14pm 
-02/21/2017 07:14:14pm curl_error error setting certificate verify locations:
-  CAfile: E:\php\cacert.pem
-  CApath: none
-02/21/2017 07:16:51pm Error: call failed with status 0
-02/21/2017 07:16:51pm 
-02/21/2017 07:16:51pm curl_error error setting certificate verify locations:
-  CAfile: E:\php\cacert.pem
-  CApath: none
-02/21/2017 07:17:07pm Error: call failed with status 0
-02/21/2017 07:17:07pm 
-02/21/2017 07:17:07pm curl_error error setting certificate verify locations:
-  CAfile: E:\php\cacert.pem
-  CApath: none
-02/21/2017 07:20:14pm Error: call failed with status 0
-02/21/2017 07:20:14pm 
-02/21/2017 07:20:14pm curl_error error setting certificate verify locations:
-  CAfile: E:\php\cacert.pem
-  CApath: none
-02/21/2017 07:20:33pm Error: call failed with status 0
-02/21/2017 07:20:33pm 
-02/21/2017 07:20:33pm curl_error error setting certificate verify locations:
-  CAfile: E:\php\cacert.pem
-  CApath: none
-02/21/2017 07:29:58pm Error: call failed with status 0
-02/21/2017 07:29:58pm 
-02/21/2017 07:29:58pm curl_error error setting certificate verify locations:
-  CAfile: E:\php\cacert.pem
-  CApath: none
-02/21/2017 07:40:13pm Error: call failed with status 0
-02/21/2017 07:40:13pm 
-02/21/2017 07:40:13pm curl_error error setting certificate verify locations:
-  CAfile: E:\php\cacert.pem
-  CApath: none
-02/21/2017 07:41:32pm Error: call failed with status 0
-02/21/2017 07:41:32pm 
-02/21/2017 07:41:32pm curl_error error setting certificate verify locations:
-  CAfile: E:\php\cacert.pem
-  CApath: none
-02/21/2017 07:42:41pm Error: call failed with status 0
-02/21/2017 07:42:41pm 
-02/21/2017 07:42:41pm curl_error error setting certificate verify locations:
-  CAfile: E:\php\cacert.pem
-  CApath: none
-02/21/2017 07:54:00pm Error: call failed with status 0
-02/21/2017 07:54:00pm 
-02/21/2017 07:54:00pm curl_error error setting certificate verify locations:
-  CAfile: C:\Program Files\PHP\v7.1\cacert.pem
-  CApath: none
-02/21/2017 08:03:22pm Error: call failed with status 0
-02/21/2017 08:03:22pm 
-02/21/2017 08:03:22pm curl_error error setting certificate verify locations:
-  CAfile: C:\Program Files\PHP\v7.1\cacert.pem
-  CApath: none
+02/22/2017 09:25:38pm curl_error 0
+02/22/2017 11:18:37pm Error: call failed with status 400
+02/22/2017 11:18:37pm Array
+(
+    [0] => stdClass Object
+        (
+            [message] => Unexpected character ('-' (code 45)) in numeric value: expected digit (0-9) to follow minus sign, for valid numeric value at [line:1, column:3]
+            [errorCode] => JSON_PARSER_ERROR
+        )
+
+)
+
+02/22/2017 11:18:37pm curl_error 0
+02/22/2017 11:19:34pm Error: call failed with status 400
+02/22/2017 11:19:34pm Array
+(
+    [0] => stdClass Object
+        (
+            [message] => Unexpected character ('-' (code 45)) in numeric value: expected digit (0-9) to follow minus sign, for valid numeric value at [line:1, column:3]
+            [errorCode] => JSON_PARSER_ERROR
+        )
+
+)
+
+02/22/2017 11:19:34pm curl_error 0

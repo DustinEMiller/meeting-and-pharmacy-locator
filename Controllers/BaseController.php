@@ -75,8 +75,7 @@ abstract class BaseController
 
     public function setGetAccess() {
         if($this->method !== 'GET') {
-            $this->_response('Invalid Methodd', 405);
-            print_r('b');
+            $this->_response('Invalid Method', 405);
         } else {
 
         }
@@ -85,8 +84,7 @@ abstract class BaseController
 
     public function setPostAccess() {
         if($this->method !== 'POST') {
-            $this->_response('Invalid Methoda', 405);
-            print_r('c');
+            $this->_response('Invalid Method', 405);
         } else {
             header("Access-Control-Allow-Methods: POST");    
         }
