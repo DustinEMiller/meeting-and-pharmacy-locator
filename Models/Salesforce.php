@@ -2,6 +2,7 @@
 
 require_once __DIR__ . '/../Helpers/Login.php';
 require_once __DIR__ . '/../libs/gump.class.php';
+require_once 'Mail.php';
 
 class Salesforce
 {
@@ -11,6 +12,7 @@ class Salesforce
     protected $sf;
     protected $attendee;
     protected $gump;
+    private $config; 
 
 	public function __construct($pdo)
 	{
@@ -18,11 +20,12 @@ class Salesforce
         $this->_db = $this->_connection->getDb();	
         $this->sf = new Login();
         $this->gump = new GUMP();
+        $this->config = include(__DIR__ . '/../Helpers/config.php');
 	}
 
 	public function seminarSync()
     {
-    	$jsonResponse = $this->sf->engageEndpoint('/services/data/v37.0/analytics/reports/00OU0000003HwP3');
+    	$jsonResponse = $this->sf->engageEndpoint($this->config['seminar.report']);
 
     	$fieldClause = "";
 		$valueClause = "";
@@ -86,6 +89,9 @@ class Salesforce
 
     	$name = explode(' ', $data['name'], 2);
 
+    	unset($data['name']);
+
+    	$this->attendee = $data;
     	$this->attendee['FirstName'] = $name[0];
 
     	if(count($name) > 1) {
@@ -93,61 +99,116 @@ class Salesforce
     	}
 
     	$this->attendee['Company'] = 'MEDICARE';
-    	$this->attendee['Birthdate_Contact__c'] = $data['birthday'];
-    	$this->attendee['City'] = $data['city'];
-    	$this->attendee['State'] = $data['state'];
-    	$this->attendee['PostalCode'] = $data['zip'];
-    	$this->attendee['Street'] = $data['address'];
+
+    	try {
+		  	$date = new DateTime($this->attendee['DOB__c']);
+    		$this->attendee['DOB__c'] = $date->format('Y-m-d');
+		}
+		catch(Exception $e) {
+		  	return  Array(Array(
+		  		'field' => "DOB__c",
+                'value' => $this->attendee['DOB__c'],
+                'rule' => "validate_date",
+                'param' => null
+            ));
+		}
 
     	$this->gumpValidation();
-    	
+
     	if ($this->attendee === false) {
-			return json_encode($this->gump->errors());
+			return $this->gump->errors();
 		} 
 
-		$medicareId = $this->sf->engageEndpoint("/services/data/v37.0/query?q=select+id+from+recordtype+where+sobjecttype+='lead'+and+name+=+'Medicare'");
+		$campaignId = $this->attendee['CampaignId'];
+		unset($this->attendee['CampaignId']);
 
-		$medicareId = $medicareId->records['0']->Id;
+		$leadId = $this->retrieveLeadId();	
 
-		$leadStatus = $this->sf->engageEndpoint("/services/data/v37.0/query?q=select+id+from+leadstatus+where+apiname+=+'Open+:+Campaign+Related'");
+		$leadMember = Array(
+			"Response_Type__c" => "Online",
+			"Response__c" => "Schedule seminar",
+			"Status" => "Responded",
+			"LeadId" => $leadId->id,
+			"CampaignId" => $campaignId
+		);
 
-		$leadStatus = $leadStatus->records['0']->Id;
+		$this->sf->engageEndpoint($this->config['campaign.member.url'], 'POST', json_encode($leadMember));
 
-		$this->attendee['Status'] = $leadStatus;
-		$this->attendee['RecordTypeId'] = $medicareId;
-
-		//return $this->attendee;
-		return $this->sf->engageEndpoint('/services/data/v37.0/sobjects/Lead', 'POST', $this->attendee);
+		return;	
     }
 
     public function passwordExpiration()
     {
     	//Do this
     	//http://docs.aws.amazon.com/ses/latest/DeveloperGuide/send-using-smtp-php.html
+    	$jsonResponse = $this->sf->engageEndpoint($this->config['password.notification']);
+
+    	$headers = array (
+		  'From' => $this->config['ses.sender'],
+		  'To' => $this->config['ses.recipent'],
+		  'Subject' => 'SUBJECT');
+
+		$smtpParams = array (
+		  'host' => 'email-smtp.us-west-2.amazonaws.com',
+		  'port' => '587',
+		  'auth' => true,
+		  'username' => $this->config['ses.user'],
+		  'password' => $this->config['ses.password']
+		);
+
+		 // Create an SMTP client.
+		$mail = Mail::factory('smtp', $smtpParams);
+
+		// Send the email.
+		$result = $mail->send($this->config['ses.recipent'], $headers, 'BODY');
+
+		if (PEAR::isError($result)) {
+		  return "Email not sent. " .$result->getMessage() ."\n";
+		} else {
+		  return "Email sent!"."\n";
+		}
+
+    	return $jsonResponse;
+    }
+
+    private function retrieveLeadId() 
+    {
+    	$medicareId = $this->sf->engageEndpoint($this->config['record.type']);
+
+		$medicareId = $medicareId->records['0']->Id;
+
+		$this->attendee['Status'] = 'Open : Campaign Related';
+		$this->attendee['RecordTypeId'] = $medicareId;
+
+		return $this->sf->engageEndpoint($this->config['lead.url'], 'POST', json_encode($this->attendee));
     }
 
     private function gumpValidation() 
     {
-
     	$this->attendee = $this->gump->sanitize($this->attendee);
 
         $this->gump->validation_rules(array(
-        	'address' => 'required|alpha_numeric|max_len,100|min_len,3',
-        	'city' => 'required|alpha|max_len,100|min_len,3',
-        	'state' => 'required|exact_len,2',
-        	'zip' => 'required|exact_len,6|numeric',
-        	'birthday' => 'date',
-        	'attendees' => 'numeric'
+        	'FirstName' => 'required|alpha|max_len,100|min_len,3',
+        	'LastName' => 'required|alpha|max_len,100|min_len,3',
+        	'Street' => 'required|alpha_space|max_len,100|min_len,3',
+        	'City' => 'required|alpha|max_len,100|min_len,3',
+        	'State' => 'required|exact_len,2',
+        	'PostalCode' => 'required|exact_len,5|numeric',
+        	'DOB__c' => 'date',
+        	'Attendees' => 'numeric',
+        	'CampaignId' => 'required|alpha_numeric|max_len,100|min_len,3'
     	));
 
     	$this->gump->filter_rules(array(
-		    'name' => 'trim|sanitize_string',
-		    'address' => 'trim|sanitize_string',
-		    'city' => 'trim|sanitize_string',
-		    'state' => 'trim|sanitize_string',
-		    'zip' => 'trim|sanitize_numbers',
-		    'birthday' => 'trim|sanitize_string',
-		    'attendees' => 'trim|sanitize_numbers'
+		    'FirstName' => 'trim|sanitize_string',
+		    'LastName' => 'trim|sanitize_string',
+		    'Street' => 'trim|sanitize_string',
+		    'City' => 'trim|sanitize_string',
+		    'State' => 'trim|sanitize_string',
+		    'PostalCode' => 'trim|sanitize_numbers',
+		    'DOB__c' => 'trim|sanitize_string',
+		    'Attendees' => 'trim|sanitize_numbers',
+		    'CampaignId' => 'trim|sanitize_string'
 		));
 
 		$this->attendee = $this->gump->run($this->attendee);

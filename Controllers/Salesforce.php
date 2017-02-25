@@ -20,6 +20,12 @@ class SalesforceController extends BaseController
         return $this->sf->seminarSync();
     }
 
+    protected function passwordExpiration() 
+    {
+    	$this->setGetAccess();
+        return $this->sf->passwordExpiration();
+    }
+
     protected function seminarRegistration() 
     {
     	$this->setPostAccess();

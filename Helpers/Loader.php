@@ -20,7 +20,6 @@ class Loader {
         $this->controllerClass = ucfirst(strtolower($this->controllerName)) . 'Controller';
 
         $this->endpoint = strtolower(array_shift($this->args));
-
     }
                   
     //factory method which establishes the requested controller as an object

@@ -8,7 +8,6 @@
 		public function __construct() 
 	    {
 	    	$this->config = include(__DIR__ . '/../Helpers/config.php');
-
 	    	$this->login();
 	    }
 
@@ -33,7 +32,7 @@
 			$jsonResponse = json_decode(curl_exec($curl), true);
 			$status = curl_getinfo($curl, CURLINFO_HTTP_CODE); 
 
-			if ( $status != 200 ) {	
+			if ($status >= 300) {	
 				$this->writeToLog('Error: call failed with status ' . $status);
 				$this->writeToLog(print_r($jsonResponse, true));
 				$this->writeToLog('curl_error ' . curl_errno($curl));
@@ -65,24 +64,25 @@
 			$curl = curl_init($_SESSION['instance_url'].$url);
 			curl_setopt($curl, CURLOPT_HEADER, false);
 			curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
-			curl_setopt($curl, CURLOPT_HTTPHEADER, array("Authorization: Bearer ". $token));
 
+			curl_setopt($curl, CURLOPT_HTTPHEADER, array("Authorization: Bearer ". $token));
+			
 			if($method === "POST" && $data !== null) {
-				curl_setopt($curl, CURLOPT_HTTPHEADER, array("Authorization: Bearer ". $token,
-					'Content-Type: application/json'));
+				curl_setopt($curl, CURLOPT_HTTPHEADER, array("Authorization: Bearer ". $token,'Content-Type: application/json'));
 				curl_setopt($curl, CURLOPT_POST, 1);
-				curl_setopt($curl, CURLOPT_POSTFIELDS,$data);	
-			}
+				curl_setopt($curl, CURLOPT_POSTFIELDS,$data);
+			} 
 
 			$jsonResponse = json_decode(curl_exec($curl));
 			
 			$status = curl_getinfo($curl, CURLINFO_HTTP_CODE);
 	                
-            if( $status != 200 ) {	
+            if($status >=  300) {	
+            	$this->writeToLog($url);
 				$this->writeToLog('Error: call failed with status ' . $status);
 				$this->writeToLog(print_r($jsonResponse, true));
 				$this->writeToLog('curl_error ' . curl_errno($curl));
-	        	throw new Exception('curl_error ' . curl_errno($curl));
+	        	throw new Exception(print_r($jsonResponse, true));
 	    	}
 	 
 			curl_close($curl);
