@@ -13,7 +13,6 @@
 		'seminar.report' => '/services/data/v37.0/analytics/reports/00OU0000003HwP3',
 		'password.notification' => '/services/data/v37.0/analytics/reports/00O3B000000JmGi',
 		'ses.sender' => get_cfg_var('ses.sender'),
-		'ses.recipent' => get_cfg_var('ses.recipent'),
 		'ses.user' => get_cfg_var('ses.user'),
 		'ses.password' => get_cfg_var('ses.sender'),
 	];

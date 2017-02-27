@@ -81,6 +81,44 @@ class Salesforce
 		return 'SUCCESS';
     }
 
+    public function passwordExpiration()
+    {
+    	//Do this
+    	//http://docs.aws.amazon.com/ses/latest/DeveloperGuide/send-using-smtp-php.html
+    	$jsonResponse = $this->sf->engageEndpoint($this->config['password.notification']);
+
+    	$user = array();
+    	$users = array();
+    	$reportRows = $jsonResponse->{'factMap'}->{'T!T'}->{'rows'};
+
+    	foreach($reportRows as $key => $dataCells) {
+    		foreach($dataCells as $dataCellKey => $dataCell) {
+    			$index = 0;
+		    	foreach($jsonResponse->{'reportExtendedMetadata'}->{'detailColumnInfo'} as $key => $rowHeader) {
+		    		$user[$rowHeader->{'label'}] = $dataCell[$index]->{'label'};
+		    		$index++;
+		    	}
+		    	$users[] = $user;
+	    	}
+    	}
+
+    	foreach($users as $key => $user) {
+    		$now = strtotime(date('Y-m-d'));
+    		$expire = strtotime(date("Y-m-d", strtotime($user['Password Expiration Date'])));
+
+    		$days = floor(($expire - $now) / (60 * 60 * 24));
+
+    		return $user;
+
+    		if($days === 7) {
+    			notify(7, $user);
+    		} else if($dats === 2) {
+    			notify(2, $user);
+    		}
+    	}
+
+    }
+
     public function seminarRegistration($data)
     {
     	if(count($data) < 1) {
@@ -137,16 +175,14 @@ class Salesforce
 		return;	
     }
 
-    public function passwordExpiration()
+    private function notify($days, $user)
     {
-    	//Do this
-    	//http://docs.aws.amazon.com/ses/latest/DeveloperGuide/send-using-smtp-php.html
-    	$jsonResponse = $this->sf->engageEndpoint($this->config['password.notification']);
-
     	$headers = array (
 		  'From' => $this->config['ses.sender'],
-		  'To' => $this->config['ses.recipent'],
-		  'Subject' => 'SUBJECT');
+		  'To' => $user=>['Email'],
+		  'Subject' => 'Salesforce: '.$days . ' days left.');
+
+    	$body = 'Dear ' $user['First Name']. ' ' .  $user['Last Name'] . ', <br/><br/> Your Salesforce password will expire in ' . $days .' please take action.';
 
 		$smtpParams = array (
 		  'host' => 'email-smtp.us-west-2.amazonaws.com',
@@ -160,7 +196,7 @@ class Salesforce
 		$mail = Mail::factory('smtp', $smtpParams);
 
 		// Send the email.
-		$result = $mail->send($this->config['ses.recipent'], $headers, 'BODY');
+		$result = $mail->send($this->config['ses.recipent'], $headers, $body);
 
 		if (PEAR::isError($result)) {
 		  return "Email not sent. " .$result->getMessage() ."\n";
