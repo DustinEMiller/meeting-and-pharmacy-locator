@@ -25,8 +25,8 @@ class Loader {
     //factory method which establishes the requested controller as an object
     public function createController() {
         //check our requested controller's class file exists and require it if so
-        if (file_exists(_DIR__ . "/../Controllers/" . $this->controllerName . ".php")) {
-            require(_DIR__ . "/../Controllers/" . $this->controllerName . ".php");
+        if (file_exists(__DIR__ . "/../Controllers/" . $this->controllerName . ".php")) {
+            require(__DIR__ . "/../Controllers/" . $this->controllerName . ".php");
         } else {
             throw new Exception('Route does not exist');
         }
