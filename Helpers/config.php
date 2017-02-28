@@ -14,6 +14,6 @@
 		'password.notification' => '/services/data/v37.0/analytics/reports/00O3B000000JmGi',
 		'ses.sender' => get_cfg_var('ses.sender'),
 		'ses.user' => get_cfg_var('ses.user'),
-		'ses.password' => get_cfg_var('ses.sender'),
+		'ses.password' => get_cfg_var('ses.password'),
 	];
 ?>

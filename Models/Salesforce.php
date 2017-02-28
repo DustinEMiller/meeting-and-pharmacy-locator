@@ -108,12 +108,12 @@ class Salesforce
 
     		$days = floor(($expire - $now) / (60 * 60 * 24));
 
-    		notify($days, $user);
+    		return $this->notify($days, $user);
 
     		if($days === 7) {
-    			notify(7, $user);
-    		} else if($dats === 2) {
-    			notify(2, $user);
+    			$this->notify(7, $user);
+    		} else if($days === 2) {
+    			$this->notify(2, $user);
     		}
 
     		return $days;
@@ -181,10 +181,10 @@ class Salesforce
     {
     	$headers = array(
 		  'From' => $this->config['ses.sender'],
-		  'To' => $user=>['Email'],
+		  'To' => $user['Email'],
 		  'Subject' => 'Salesforce: '.$days . ' days left.');
 
-    	$body = 'Dear ' $user['First Name']. ' ' .  $user['Last Name'] . ', <br/><br/> Your Salesforce password will expire in ' . $days .' please take action.';
+    	$body = 'Dear ' . $user['First Name'] . ' ' .  $user['Last Name'] . ', <br/><br/> Your Salesforce password will expire in ' . $days .' please take action.';
 
 		$smtpParams = array(
 		  'host' => 'email-smtp.us-west-2.amazonaws.com',
@@ -198,15 +198,13 @@ class Salesforce
 		$mail = Mail::factory('smtp', $smtpParams);
 
 		// Send the email.
-		$result = $mail->send($this->config['ses.recipent'], $headers, $body);
+		$result = $mail->send($user['Email'], $headers, $body);
 
 		if (PEAR::isError($result)) {
 		  return "Email not sent. " .$result->getMessage() ."\n";
 		} else {
 		  return "Email sent!"."\n";
 		}
-
-    	return $jsonResponse;
     }
 
     private function retrieveLeadId() 
