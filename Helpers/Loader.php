@@ -32,7 +32,7 @@ class Loader {
         }*/
 
         try {
-            require_once __DIR__ . '/../Controllers/' . $this->controllerName . '.php';
+            require_once __DIR__ . '/../Controllers/Meeting.php';// . $this->controllerName . '.php';
         } catch (Exception $e) {
             return $e;
         }
