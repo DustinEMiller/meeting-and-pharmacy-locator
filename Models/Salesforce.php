@@ -108,13 +108,15 @@ class Salesforce
 
     		$days = floor(($expire - $now) / (60 * 60 * 24));
 
-    		return $user;
+    		notify($days, $user);
 
     		if($days === 7) {
     			notify(7, $user);
     		} else if($dats === 2) {
     			notify(2, $user);
     		}
+
+    		return $days;
     	}
 
     }
@@ -177,14 +179,14 @@ class Salesforce
 
     private function notify($days, $user)
     {
-    	$headers = array (
+    	$headers = array(
 		  'From' => $this->config['ses.sender'],
 		  'To' => $user=>['Email'],
 		  'Subject' => 'Salesforce: '.$days . ' days left.');
 
     	$body = 'Dear ' $user['First Name']. ' ' .  $user['Last Name'] . ', <br/><br/> Your Salesforce password will expire in ' . $days .' please take action.';
 
-		$smtpParams = array (
+		$smtpParams = array(
 		  'host' => 'email-smtp.us-west-2.amazonaws.com',
 		  'port' => '587',
 		  'auth' => true,
