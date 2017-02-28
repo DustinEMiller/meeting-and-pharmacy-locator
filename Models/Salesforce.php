@@ -2,7 +2,7 @@
 
 require_once __DIR__ . '/../Helpers/Login.php';
 require_once __DIR__ . '/../libs/gump.class.php';
-require_once 'Mail.php';
+require_once __DIR__ . '/../libs/PHPMailer/PHPMailerAutoload.php';
 
 class Salesforce
 {
@@ -179,31 +179,28 @@ class Salesforce
 
     private function notify($days, $user)
     {
-    	$headers = array(
-		  'From' => $this->config['ses.sender'],
-		  'To' => $user['Email'],
-		  'Subject' => 'Salesforce: '.$days . ' days left.');
+    	$mail = new PHPMailer;
+    	$mail->isSMTP(); 
+    	$mail->SMTPAuth = true; 
+    	$mail->SMTPSecure = "tls"; 
+    	$mail->Port = 587; 
+    	$mail->Host = "email-smtp.us-west-2.amazonaws.com";
+		$mail->Username = $this->config['ses.user'];
+		$mail->Password = $this->config['ses.password'];
 
-    	$body = 'Dear ' . $user['First Name'] . ' ' .  $user['Last Name'] . ', <br/><br/> Your Salesforce password will expire in ' . $days .' please take action.';
+		$mail->setFrom($this->config['ses.sender'], 'Sender Name'); //from (verified email address)
+		$mail->Subject = 'Salesforce: '.$days . ' days left.'; //subject
 
-		$smtpParams = array(
-		  'host' => 'email-smtp.us-west-2.amazonaws.com',
-		  'port' => '587',
-		  'auth' => true,
-		  'username' => $this->config['ses.user'],
-		  'password' => $this->config['ses.password']
-		);
+		$body = 'Dear ' . $user['First Name'] . ' ' .  $user['Last Name'] . ', <br/><br/> Your Salesforce password will expire in ' . $days .' please take action.';
 
-		 // Create an SMTP client.
-		$mail = Mail::factory('smtp', $smtpParams);
+		$mail->addAddress($user['Email'], $user['First Name'] . ' ' . $user['Last Name']); 
+    	
+		$mail->Body = $body;
 
-		// Send the email.
-		$result = $mail->send($user['Email'], $headers, $body);
-
-		if (PEAR::isError($result)) {
-		  return "Email not sent. " .$result->getMessage() ."\n";
+		if(!$mail->send()) {
+		    return 'Mailer Error: ' . $mail->ErrorInfo;
 		} else {
-		  return "Email sent!"."\n";
+		    return 'Message has been sent';
 		}
     }
 
