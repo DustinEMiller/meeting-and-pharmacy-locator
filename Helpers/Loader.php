@@ -16,7 +16,7 @@ class Loader {
 
         $this->domain = $domain;
 
-        $this->controllerName = strtolower(array_shift($this->args));
+        $this->controllerName = ucfirst(strtolower(array_shift($this->args)));
         $this->controllerClass = ucfirst(strtolower($this->controllerName)) . 'Controller';
 
         $this->endpoint = strtolower(array_shift($this->args));
@@ -32,7 +32,7 @@ class Loader {
         }*/
 
         try {
-            require_once __DIR__ . '/../Controllers/Meeting.php';// . $this->controllerName . '.php';
+            require_once __DIR__ . '/../Controllers/' . $this->controllerName . '.php';
         } catch (Exception $e) {
             return $e;
         }
