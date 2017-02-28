@@ -32,7 +32,7 @@ class Loader {
         }*/
 
         try {
-            require __DIR__ . DIRECTORY_SEPARATOR .'../Controllers/' . $this->controllerName . '.php';
+            require __DIR__ . '/../controllers/' . $this->controllerName . '.php';
         } catch (Exception $e) {
             return $e;
         }
