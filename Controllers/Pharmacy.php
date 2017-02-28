@@ -28,6 +28,12 @@ class PharmacyController extends BaseController
         return $this->pharmacies->network();
 	}
 
+	public function preferred() 
+	{
+		$this->setGetAccess();
+		return $this->pharmacies->preferred() ;	
+	}
+
 	public function preferredPlus() 
 	{
 		$this->setGetAccess();
