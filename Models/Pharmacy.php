@@ -32,6 +32,10 @@ class Pharmacy
     //Add 'order by' that is linked fto nearest to furthest zip code
     public function network()
     {
+        if(count($this->zipCodes) == 0) {
+            return json_encode('{"results":[]}');
+        }
+
         $inParams = implode(',', array_fill(0, count($this->zipCodes), '?'));
         $qry = $this->_db->prepare('SELECT nabp, pharmacy_name, address, city, state, zip, phone, fax, npi 
             FROM askshirley.network_pharmacies where zip IN ('.$inParams.')');
@@ -47,6 +51,10 @@ class Pharmacy
 
     public function preferred()
     {
+        if(count($this->zipCodes) == 0) {
+            return json_encode('{"results":[]}');
+        }
+
         $inParams = implode(',', array_fill(0, count($this->zipCodes), '?'));
         $qry = $this->_db->prepare('SELECT nabp, npi, pharmacy_name, address, address_2, city, state, zip, phone, fax 
             FROM askshirley.preferred_pharmacies where zip IN ('.$inParams.')');
@@ -62,6 +70,10 @@ class Pharmacy
 
     public function preferredPlus()
     {
+        if(count($this->zipCodes) == 0) {
+            return json_encode('{"results":[]}');
+        }
+
         $inParams = implode(',', array_fill(0, count($this->zipCodes), '?'));
         $qry = $this->_db->prepare('SELECT nabp, npi, pharmacy_name, address, address_2, city, state, zip, phone, fax 
             FROM askshirley.preferred_plus_pharmacies where zip IN ('.$inParams.')');
@@ -92,6 +104,10 @@ class Pharmacy
 
     public function medicare($preferred, $year)
     {
+        if(count($this->zipCodes) == 0) {
+            return json_encode('{"results":[]}');
+        }
+        
         $inParams = implode(',', array_fill(0, count($this->zipCodes), '?'));
         $qry = $this->_db->prepare('SELECT nabp, npi, pharmacy_name, address, address_2, city, state, zip, phone, fax 
             FROM askshirley.medicare_pharmacies where preferred = ? AND year = ? AND zip IN ('.$inParams.')');

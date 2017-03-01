@@ -73,7 +73,8 @@ abstract class BaseController
         throw new Exception("No Endpoint: $this->endpoint");
     }
 
-    public function setGetAccess() {
+    public function setGetAccess() 
+    {
         if($this->method !== 'GET') {
             $this->_response('Invalid Method', 405);
         } else {
@@ -82,7 +83,8 @@ abstract class BaseController
         header("Access-Control-Allow-Methods: GET");
     }
 
-    public function setPostAccess() {
+    public function setPostAccess() 
+    {
         if($this->method !== 'POST') {
             $this->_response('Invalid Method', 405);
         } else {
