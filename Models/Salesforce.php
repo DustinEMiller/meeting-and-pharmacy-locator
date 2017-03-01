@@ -171,7 +171,7 @@ class Salesforce
 
 		$this->sf->engageEndpoint($this->config['campaign.member.url'], 'POST', json_encode($leadMember));
 
-		return;	
+		return 200;	
     }
 
     private function notify($days, $user)
