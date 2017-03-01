@@ -196,7 +196,7 @@ class Salesforce
 		$mail->Body = $body;
 
 		if(!$mail->send()) {
-		    $this->writeToLog('Mailer Error: ' . $mail->ErrorInfo;);
+		    $this->writeToLog('Mailer Error: ' . $mail->ErrorInfo);
 		} else {
 		    $this->writeToLog('Message has been sent');
 		}
