@@ -43,7 +43,7 @@ class PharmacyController extends BaseController
 	public function medicaid() 
 	{
 		$this->setGetAccess();
-		return $this->pharmacies->medicaid() ;		
+		return $this->pharmacies->medicaid();		
 	}
 
 	public function medicare() 

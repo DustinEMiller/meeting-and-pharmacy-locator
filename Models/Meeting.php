@@ -35,7 +35,8 @@ class Meeting
     public function events()
     {
         if(count($this->zipCodes) == 0) {
-            return json_encode('{"results":[]}');
+            $result['results'] = array();
+            return $result;
         }
 
         $inParams = implode(',', array_fill(0, count($this->zipCodes), '?'));
@@ -54,7 +55,8 @@ class Meeting
     public function seminars()
     {
         if(count($this->zipCodes) == 0) {
-            return json_encode('{"results":[]}');
+            $result['results'] = array();
+            return $result;
         }
         
         $inParams = implode(',', array_fill(0, count($this->zipCodes), '?'));

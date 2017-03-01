@@ -33,7 +33,8 @@ class Pharmacy
     public function network()
     {
         if(count($this->zipCodes) == 0) {
-            return json_encode('{"results":[]}');
+            $result['results'] = array();
+            return $result;
         }
 
         $inParams = implode(',', array_fill(0, count($this->zipCodes), '?'));
@@ -52,7 +53,8 @@ class Pharmacy
     public function preferred()
     {
         if(count($this->zipCodes) == 0) {
-            return json_encode('{"results":[]}');
+            $result['results'] = array();
+            return $result;
         }
 
         $inParams = implode(',', array_fill(0, count($this->zipCodes), '?'));
@@ -71,7 +73,8 @@ class Pharmacy
     public function preferredPlus()
     {
         if(count($this->zipCodes) == 0) {
-            return json_encode('{"results":[]}');
+            $result['results'] = array();
+            return $result;
         }
 
         $inParams = implode(',', array_fill(0, count($this->zipCodes), '?'));
@@ -105,7 +108,8 @@ class Pharmacy
     public function medicare($preferred, $year)
     {
         if(count($this->zipCodes) == 0) {
-            return json_encode('{"results":[]}');
+            $result['results'] = array();
+            return $result;
         }
         
         $inParams = implode(',', array_fill(0, count($this->zipCodes), '?'));
