@@ -46,7 +46,7 @@ abstract class BaseController
 		$verification = new Access(new Cxn("shirley"));
 
         if($verification->verifyDomain($domain)) {
-            header("Access-Control-Allow-Origin: ".$_SERVER['HTTP_ORIGIN']);
+            header("Access-Control-Allow-Origin: ".$_SERVER['HTTP_REFERER']);
             header("Content-Type: application/json charset=utf-8");    
         }
 		
