@@ -110,15 +110,12 @@ class Salesforce
 
     		return $this->notify($days, $user);
 
-    		if($days === 7) {
-    			$this->notify(7, $user);
-    		} else if($days === 2) {
-    			$this->notify(2, $user);
+    		if($days === 7 || $days === 2) {
+    			$this->notify($days, $user);
     		}
-
-    		return $days;
     	}
 
+    	return;
     }
 
     public function seminarRegistration($data)
@@ -190,18 +187,21 @@ class Salesforce
 
 		$mail->setFrom($this->config['ses.sender'], 'Sender Name'); //from (verified email address)
 		$mail->Subject = 'Salesforce: '.$days . ' days left.'; //subject
+		$mail->isHTML(true);   
 
-		$body = 'Dear ' . $user['First Name'] . ' ' .  $user['Last Name'] . ', <br/><br/> Your Salesforce password will expire in ' . $days .' please take action.';
+		$body = 'Dear ' . $user['First Name'] . ' ' .  $user['Last Name'] . ', <br><br> Your Salesforce password will expire in ' . $days .' days. Please take action <a href="https://login.salesforce.com/">here.</a>';
 
 		$mail->addAddress($user['Email'], $user['First Name'] . ' ' . $user['Last Name']); 
     	
 		$mail->Body = $body;
 
 		if(!$mail->send()) {
-		    return 'Mailer Error: ' . $mail->ErrorInfo;
+		    $this->writeToLog('Mailer Error: ' . $mail->ErrorInfo;);
 		} else {
-		    return 'Message has been sent';
+		    $this->writeToLog('Message has been sent');
 		}
+
+		return;
     }
 
     private function retrieveLeadId() 
@@ -246,6 +246,12 @@ class Salesforce
 
 		$this->attendee = $this->gump->run($this->attendee);
     }
+
+    public function writeToLog($message) 
+    {
+		$message = date('m/d/Y h:i:sa', time()) . ' ' . $message;
+		file_put_contents($this->config['log'], $message . "\r\n", FILE_APPEND | LOCK_EX);
+	}
 }
 
 ?>
