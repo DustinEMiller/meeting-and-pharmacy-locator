@@ -144,3 +144,21 @@
 
 02/24/2017 09:27:27pm curl_error 0
 03/01/2017 04:47:33pm Message has been sent
+03/02/2017 05:24:35pm /services/data/v37.0/sobjects/CampaignMember
+03/02/2017 05:24:35pm Error: call failed with status 400
+03/02/2017 05:24:35pm Array
+(
+    [0] => stdClass Object
+        (
+            [message] => Campaign ID: id value of incorrect type: 7013B000000RaJ
+            [errorCode] => MALFORMED_ID
+            [fields] => Array
+                (
+                    [0] => CampaignId
+                )
+
+        )
+
+)
+
+03/02/2017 05:24:35pm curl_error 0
