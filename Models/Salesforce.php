@@ -137,7 +137,7 @@ class Salesforce
     	$this->attendee['PostalCode'] = $data['zip'];
     	$this->attendee['CampaignId'] = $data['CampaignId'];
     	$this->attendee['FirstName'] = $name[0];
-    	$this->attendee['Attendees'] = $data['attendee'];	
+    	$this->attendee['Attendees'] = $data['attendees'];	
     	$this->attendee['County__c'] = strtoupper($county[0]['county']);
     	$this->attendee['Marital_Status__c'] = 'U - Unknown';
 
@@ -161,7 +161,14 @@ class Salesforce
 	                'param' => null
 	            ));
 			}
+    	} else {
+    		unset($this->attendee['DOB__c']);	
     	}
+
+    	if($this->attendee['Attendees'] !== '') {
+    		unset($this->attendee['Attendees']);	
+    	}
+
 
     	$this->gumpValidation();
 
