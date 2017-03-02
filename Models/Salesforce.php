@@ -128,7 +128,6 @@ class Salesforce
 
     	unset($data['name']);
 
-    	$this->attendee = $data;
     	$this->attendee['City'] = $data['city'];
     	$this->attendee['State'] = $data['state'];
     	$this->attendee['DOB__c'] = $data['birthday'];
@@ -143,6 +142,9 @@ class Salesforce
 
     	$this->attendee['Company'] = 'MEDICARE';
 
+
+    	//what to do if no borthday? just ignore
+    	
     	try {
 		  	$date = new DateTime($this->attendee['DOB__c']);
     		$this->attendee['DOB__c'] = $date->format('Y-m-d');
