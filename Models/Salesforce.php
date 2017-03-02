@@ -133,8 +133,12 @@ class Salesforce
     	$this->attendee['DOB__c'] = $data['birthday'];
     	$this->attendee['Street'] = $data['address'];
     	$this->attendee['PostalCode'] = $data['zip'];
-    	$this->attendee['Attendees'] = $data['attendee'];
+    	$this->attendee['CampaignId'] = $data['CampaignId'];
     	$this->attendee['FirstName'] = $name[0];
+
+    	if($data['attendee']) {
+    		$this->attendee['Attendees'] = $data['attendee'];	
+    	} 
 
     	if(count($name) > 1) {
     		$this->attendee['LastName'] = $name[1];
