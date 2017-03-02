@@ -242,7 +242,8 @@ class Salesforce
         	'State' => 'required|exact_len,2',
         	'PostalCode' => 'required|exact_len,5|numeric',
         	'DOB__c' => 'date',
-        	'CampaignId' => 'required|alpha_numeric|max_len,100|min_len,3'
+        	'CampaignId' => 'required|alpha_numeric|max_len,100|min_len,3',
+        	'County__c' => 'alpha|max_len,100|min_len,3'
     	));
 
     	$this->gump->filter_rules(array(
