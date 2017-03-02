@@ -174,7 +174,7 @@ class Salesforce
 		unset($this->attendee['CampaignId']);
 
 		$leadId = $this->retrieveLeadId();	
-		
+
 		$leadMember = Array(
 			"Response_Type__c" => "Online",
 			"Response__c" => "Schedule seminar",
@@ -226,7 +226,7 @@ class Salesforce
 
 		$this->attendee['Status'] = 'Open : Campaign Related';
 		$this->attendee['RecordTypeId'] = $medicareId;
-        return;
+
 		return $this->sf->engageEndpoint($this->config['lead.url'], 'POST', json_encode($this->attendee));
     }
 
