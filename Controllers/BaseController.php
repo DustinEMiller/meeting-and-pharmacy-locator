@@ -53,7 +53,7 @@ abstract class BaseController
 		if (!$this->key) {
             throw new Exception('No API Key provided');
         } else if (!$verification->verifyKey($this->key, $domain)) {
-            throw new Exception('Invalid API key provided');
+            throw new Exception('Invalid API Key');
         }
 
         $this->method = $_SERVER['REQUEST_METHOD'];
