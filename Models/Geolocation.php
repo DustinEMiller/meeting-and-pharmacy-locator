@@ -182,4 +182,15 @@ class Geolocation
 
         return($result);
     }
+
+    public function getCounty($zip) 
+    {
+        $qry = $this->_db->prepare('SELECT county_fips.county FROM county_fips LEFT JOIN zip_county_fips ON county_fips.county_fips = zip_county_fips.county_fips WHERE zip_county_fips.zip = :zip LIMIT 1');
+        $qry->bindParam(':zip', $zip);
+
+        $qry->execute();
+        $county = $qry->fetchAll();
+
+        return($county);
+    }
 }

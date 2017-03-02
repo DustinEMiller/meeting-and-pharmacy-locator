@@ -3,6 +3,7 @@
 require_once __DIR__ . '/../Helpers/Login.php';
 require_once __DIR__ . '/../libs/gump.class.php';
 require_once __DIR__ . '/../libs/PHPMailer/PHPMailerAutoload.php';
+require_once __DIR__ . '/../Models/Geolocation.php';
 
 class Salesforce
 {
@@ -108,8 +109,6 @@ class Salesforce
 
     		$days = floor(($expire - $now) / (60 * 60 * 24));
 
-    		return $this->notify($days, $user);
-
     		if($days === 7 || $days === 2) {
     			$this->notify($days, $user);
     		}
@@ -124,6 +123,9 @@ class Salesforce
     		throw new Exception('No data entered');
     	}
 
+    	$geo = new Geolocation($this->_connection, null);
+    	$county = $geo->getCounty($data['zip']);
+
     	$name = explode(' ', $data['name'], 2);
 
     	unset($data['name']);
@@ -135,10 +137,9 @@ class Salesforce
     	$this->attendee['PostalCode'] = $data['zip'];
     	$this->attendee['CampaignId'] = $data['CampaignId'];
     	$this->attendee['FirstName'] = $name[0];
-
-    	if($data['attendee']) {
-    		$this->attendee['Attendees'] = $data['attendee'];	
-    	} 
+    	$this->attendee['Attendees'] = $data['attendee'];	
+    	$this->attendee['County__c'] = strtoupper($county[0]['county']);
+    	$this->attendee['Marital_Status__c'] = 'U - Unknown';
 
     	if(count($name) > 1) {
     		$this->attendee['LastName'] = $name[1];
@@ -146,9 +147,8 @@ class Salesforce
 
     	$this->attendee['Company'] = 'MEDICARE';
 
-
     	//what to do if no borthday? just ignore
-    	if($this->attendee['DOB__c']) {
+    	if($this->attendee['DOB__c'] !== '') {
     		try {
 			  	$date = new DateTime($this->attendee['DOB__c']);
 	    		$this->attendee['DOB__c'] = $date->format('Y-m-d');
@@ -254,7 +254,8 @@ class Salesforce
 		    'PostalCode' => 'trim|sanitize_numbers',
 		    'DOB__c' => 'trim|sanitize_string',
 		    'Attendees' => 'trim|sanitize_numbers',
-		    'CampaignId' => 'trim|sanitize_string'
+		    'CampaignId' => 'trim|sanitize_string',
+		    'County__c' => 'trim|sanitize_string'
 		));
 
 		$this->attendee = $this->gump->run($this->attendee);
