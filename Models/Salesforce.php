@@ -137,7 +137,6 @@ class Salesforce
     	$this->attendee['PostalCode'] = $data['zip'];
     	$this->attendee['CampaignId'] = $data['CampaignId'];
     	$this->attendee['FirstName'] = $name[0];
-    	$this->attendee['Attendees'] = $data['attendees'];	
     	$this->attendee['County__c'] = strtoupper($county[0]['county']);
     	$this->attendee['Marital_Status__c'] = 'U - Unknown';
 
@@ -164,11 +163,6 @@ class Salesforce
     	} else {
     		unset($this->attendee['DOB__c']);	
     	}
-
-    	if($this->attendee['Attendees'] !== '') {
-    		unset($this->attendee['Attendees']);	
-    	}
-
 
     	$this->gumpValidation();
 
@@ -248,7 +242,6 @@ class Salesforce
         	'State' => 'required|exact_len,2',
         	'PostalCode' => 'required|exact_len,5|numeric',
         	'DOB__c' => 'date',
-        	'Attendees' => 'numeric',
         	'CampaignId' => 'required|alpha_numeric|max_len,100|min_len,3'
     	));
 
@@ -260,7 +253,6 @@ class Salesforce
 		    'State' => 'trim|sanitize_string',
 		    'PostalCode' => 'trim|sanitize_numbers',
 		    'DOB__c' => 'trim|sanitize_string',
-		    'Attendees' => 'trim|sanitize_numbers',
 		    'CampaignId' => 'trim|sanitize_string',
 		    'County__c' => 'trim|sanitize_string'
 		));
