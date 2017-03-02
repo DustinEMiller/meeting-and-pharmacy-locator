@@ -129,6 +129,12 @@ class Salesforce
     	unset($data['name']);
 
     	$this->attendee = $data;
+    	$this->attendee['City'] = $data['city'];
+    	$this->attendee['State'] = $data['state'];
+    	$this->attendee['DOB__c'] = $data['birthday'];
+    	$this->attendee['Street'] = $data['address'];
+    	$this->attendee['PostalCode'] = $data['zip'];
+    	$this->attendee['Attendees'] = $data['attendee'];
     	$this->attendee['FirstName'] = $name[0];
 
     	if(count($name) > 1) {
