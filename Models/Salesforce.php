@@ -144,19 +144,20 @@ class Salesforce
 
 
     	//what to do if no borthday? just ignore
-    	
-    	try {
-		  	$date = new DateTime($this->attendee['DOB__c']);
-    		$this->attendee['DOB__c'] = $date->format('Y-m-d');
-		}
-		catch(Exception $e) {
-		  	return  Array(Array(
-		  		'field' => "DOB__c",
-                'value' => $this->attendee['DOB__c'],
-                'rule' => "validate_date",
-                'param' => null
-            ));
-		}
+    	if($this->attendee['DOB__c']) {
+    		try {
+			  	$date = new DateTime($this->attendee['DOB__c']);
+	    		$this->attendee['DOB__c'] = $date->format('Y-m-d');
+			}
+			catch(Exception $e) {
+			  	return  Array(Array(
+			  		'field' => "DOB__c",
+	                'value' => $this->attendee['DOB__c'],
+	                'rule' => "validate_date",
+	                'param' => null
+	            ));
+			}
+    	}
 
     	$this->gumpValidation();
 
