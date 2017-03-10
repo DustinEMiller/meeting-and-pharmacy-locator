@@ -71,7 +71,11 @@
 				curl_setopt($curl, CURLOPT_HTTPHEADER, array("Authorization: Bearer ". $token,'Content-Type: application/json'));
 				curl_setopt($curl, CURLOPT_POST, 1);
 				curl_setopt($curl, CURLOPT_POSTFIELDS,$data);
-			} 
+			} else if ($method === "PATCH" && $data !== null) {
+				curl_setopt($curl, CURLOPT_HTTPHEADER, array("Authorization: Bearer ". $token,'Content-Type: application/json'));
+				curl_setopt($curl, CURLOPT_CUSTOMREQUEST, 'PATCH');
+				curl_setopt($curl, CURLOPT_POSTFIELDS,$data);
+			}
 
 			$jsonResponse = json_decode(curl_exec($curl));
 			

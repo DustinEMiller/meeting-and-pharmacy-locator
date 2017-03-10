@@ -227,7 +227,10 @@ class Salesforce
 		$this->attendee['Status'] = 'Open : Campaign Related';
 		$this->attendee['RecordTypeId'] = $medicareId;
 
-		return $this->sf->engageEndpoint($this->config['lead.url'], 'POST', json_encode($this->attendee));
+		$leadID = $this->sf->engageEndpoint($this->config['lead.url'], 'POST', json_encode($this->attendee));
+		$this->sf->engageEndpoint($this->config['lead.url'].'/'.$leadID->id, 'PATCH', json_encode($this->attendee));
+
+		return $leadID;
     }
 
     private function gumpValidation() 
