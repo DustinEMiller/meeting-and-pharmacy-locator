@@ -77,7 +77,7 @@ class Salesforce
 
 		$currentDate = date('Y-m-d');
 
-		$this->sf->writeToLog('SUCCESS');
+		$this->sf->writeToLog('Seminar sync successful');
 
 		return 'SUCCESS';
     }
