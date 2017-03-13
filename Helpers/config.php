@@ -11,7 +11,7 @@
 		'lead.url' => '/services/data/v37.0/sobjects/Lead',
 		'record.type' => "/services/data/v37.0/query?q=select+id+from+recordtype+where+sobjecttype+='lead'+and+name+=+'Medicare'",
 		'seminar.report' => '/services/data/v37.0/analytics/reports/',
-		'password.notification' => '/services/data/v37.0/analytics/reports/,
+		'password.notification' => '/services/data/v37.0/analytics/reports/',
 		'ses.sender' => get_cfg_var('ses.sender'),
 		'ses.user' => get_cfg_var('ses.user'),
 		'ses.password' => get_cfg_var('ses.password'),
