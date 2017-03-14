@@ -126,23 +126,16 @@ class Salesforce
     	$geo = new Geolocation($this->_connection, null);
     	$county = $geo->getCounty($data['zip']);
 
-    	$name = explode(' ', $data['name'], 2);
-
-    	unset($data['name']);
-
     	$this->attendee['City'] = $data['city'];
     	$this->attendee['State'] = $data['state'];
     	$this->attendee['DOB__c'] = $data['birthday'];
     	$this->attendee['Street'] = $data['address'];
     	$this->attendee['PostalCode'] = $data['zip'];
     	$this->attendee['CampaignId'] = $data['CampaignId'];
-    	$this->attendee['FirstName'] = $name[0];
+    	$this->attendee['FirstName'] = $data['firstName'];
+    	$this->attendee['LastName'] = $data['lastName'];
     	$this->attendee['County__c'] = strtoupper($county[0]['county']);
     	$this->attendee['Marital_Status__c'] = 'U - Unknown';
-
-    	if(count($name) > 1) {
-    		$this->attendee['LastName'] = $name[1];
-    	}
 
     	$this->attendee['Company'] = 'MEDICARE';
 
@@ -238,8 +231,8 @@ class Salesforce
     	$this->attendee = $this->gump->sanitize($this->attendee);
 
         $this->gump->validation_rules(array(
-        	'FirstName' => 'required|alpha|max_len,100|min_len,3',
-        	'LastName' => 'required|alpha|max_len,100|min_len,3',
+        	'FirstName' => 'required|alpha_space|max_len,100|min_len,3',
+        	'LastName' => 'required|alpha_space|max_len,100|min_len,3',
         	'Street' => 'required|max_len,100|min_len,3',
         	'City' => 'required|alpha|max_len,100|min_len,3',
         	'State' => 'required|exact_len,2',
