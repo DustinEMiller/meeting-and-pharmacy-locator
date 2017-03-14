@@ -240,7 +240,7 @@ class Salesforce
         $this->gump->validation_rules(array(
         	'FirstName' => 'required|alpha|max_len,100|min_len,3',
         	'LastName' => 'required|alpha|max_len,100|min_len,3',
-        	'Street' => 'required|alpha_space|max_len,100|min_len,3',
+        	'Street' => 'required|max_len,100|min_len,3',
         	'City' => 'required|alpha|max_len,100|min_len,3',
         	'State' => 'required|exact_len,2',
         	'PostalCode' => 'required|exact_len,5|numeric',
