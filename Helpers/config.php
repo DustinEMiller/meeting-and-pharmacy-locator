@@ -10,7 +10,7 @@
 		'sf.lead.url' => get_cfg_var('salesforce.lead.url'),
 		'sf.record.type' => get_cfg_var('salesforce.record.type'),
 		'sf.seminar.report' => get_cfg_var('salesforce.seminar.report'),
-		'sf.password.notification' => get_cfg_var('salesforce.password.notification')'/services/data/v37.0/analytics/reports/',
+		'sf.password.notification' => get_cfg_var('salesforce.password.notification'),
 		'log' => get_cfg_var('shirley.log'),
 		'ses.sender' => get_cfg_var('ses.sender'),
 		'ses.user' => get_cfg_var('ses.user'),
