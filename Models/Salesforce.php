@@ -26,7 +26,7 @@ class Salesforce
 
 	public function seminarSync()
     {
-    	$jsonResponse = $this->sf->engageEndpoint($this->config['seminar.report']);
+    	$jsonResponse = $this->sf->engageEndpoint($this->config['sf.seminar.report']);
 
     	$fieldClause = "";
 		$valueClause = "";
@@ -86,7 +86,7 @@ class Salesforce
     {
     	//Do this
     	//http://docs.aws.amazon.com/ses/latest/DeveloperGuide/send-using-smtp-php.html
-    	$jsonResponse = $this->sf->engageEndpoint($this->config['password.notification']);
+    	$jsonResponse = $this->sf->engageEndpoint($this->config['sf.password.notification']);
 
     	$user = array();
     	$users = array();
@@ -176,7 +176,7 @@ class Salesforce
 			"CampaignId" => $campaignId
 		);
 
-		$this->sf->engageEndpoint($this->config['campaign.member.url'], 'POST', json_encode($leadMember));
+		$this->sf->engageEndpoint($this->config['sf.campaign.member.url'], 'POST', json_encode($leadMember));
 
 		return 200;	
     }
@@ -213,15 +213,15 @@ class Salesforce
 
     private function retrieveLeadId() 
     {
-    	$medicareId = $this->sf->engageEndpoint($this->config['record.type']);
+    	$medicareId = $this->sf->engageEndpoint($this->config['sf.record.type']);
 
 		$medicareId = $medicareId->records['0']->Id;
 
 		$this->attendee['Status'] = 'Open : Campaign Related';
 		$this->attendee['RecordTypeId'] = $medicareId;
 
-		$leadID = $this->sf->engageEndpoint($this->config['lead.url'], 'POST', json_encode($this->attendee));
-		$this->sf->engageEndpoint($this->config['lead.url'].'/'.$leadID->id, 'PATCH', json_encode($this->attendee));
+		$leadID = $this->sf->engageEndpoint($this->config['sf.lead.url'], 'POST', json_encode($this->attendee));
+		$this->sf->engageEndpoint($this->config['sf.lead.url'].'/'.$leadID->id, 'PATCH', json_encode($this->attendee));
 
 		return $leadID;
     }
