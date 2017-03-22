@@ -5,15 +5,15 @@
 		'sf.username' => get_cfg_var('salesforce.username'),
 		'sf.password' => get_cfg_var('salesforce.pwd'),
 		'sf.securitytoken' => get_cfg_var('salesforce.securitytoken'),
-		'sf.loginurl' => 'https://test.salesforce.com/services/oauth2/token',//'https://login.salesforce.com/services/oauth2/token',
-		'log' => 'log.txt',//'/var/log/sf/sf.log'
-		'campaign.member.url' => '/services/data/v37.0/sobjects/CampaignMember',
-		'lead.url' => '/services/data/v37.0/sobjects/Lead',
-		'record.type' => "/services/data/v37.0/query?q=select+id+from+recordtype+where+sobjecttype+='lead'+and+name+=+'Medicare'",
-		'seminar.report' => '/services/data/v37.0/analytics/reports/',
-		'password.notification' => '/services/data/v37.0/analytics/reports/',
+		'sf.loginurl' => get_cfg_var('salesforce.loginurl'),
+		'sf.campaign.member.url' => get_cfg_var('salesforce.campaign.member.url'),
+		'sf.lead.url' => get_cfg_var('salesforce.lead.url'),
+		'sf.record.type' => get_cfg_var('salesforce.record.type'),
+		'sf.seminar.report' => get_cfg_var('salesforce.seminar.report'),
+		'sf.password.notification' => get_cfg_var('salesforce.password.notification')'/services/data/v37.0/analytics/reports/',
+		'log' => get_cfg_var('shirley.log'),
 		'ses.sender' => get_cfg_var('ses.sender'),
 		'ses.user' => get_cfg_var('ses.user'),
-		'ses.password' => get_cfg_var('ses.password');
+		'ses.password' => get_cfg_var('ses.password')
 	];
 ?>
