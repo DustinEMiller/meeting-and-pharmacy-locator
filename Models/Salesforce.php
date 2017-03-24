@@ -119,6 +119,7 @@ class Salesforce
 
     public function seminarRegistration($data)
     {
+    	$errors = array();
     	if(count($data) < 1) {
     		throw new Exception('No data entered');
     	}
@@ -139,6 +140,12 @@ class Salesforce
 
     	$this->attendee['Company'] = 'MEDICARE';
 
+    	if($this->recaptchaCheck($data['g-recaptcha-response']) === null) {
+    		$errors[] = array('Recaptcha' => 'Incorrect reCaptcha response');
+    		return json_encode($errors);
+    	}
+
+    	unset($data['g-recaptcha-response']);
     	//what to do if no borthday? just ignore
     	if($this->attendee['DOB__c'] !== '') {
     		try {
@@ -163,6 +170,8 @@ class Salesforce
 			return $this->gump->errors();
 		} 
 
+		//message response of {"FieldName":["Array of Errors"], "FieldName":["Array of Errors"]}
+
 		$campaignId = $this->attendee['CampaignId'];
 		unset($this->attendee['CampaignId']);
 
@@ -180,6 +189,32 @@ class Salesforce
 
 		return 200;	
     }
+
+    //Should probably move to a helper file
+    private function recaptchaCheck($response) {
+    	try {
+
+	        $url = 'https://www.google.com/recaptcha/api/siteverify';
+	        $data = ['secret'   => $this->config['google.re'],
+	                 'response' => $response
+
+	        $options = [
+	            'http' => [
+	                'header'  => "Content-type: application/x-www-form-urlencoded\r\n",
+	                'method'  => 'POST',
+	                'content' => http_build_query($data) 
+	            ]
+	        ];
+
+	        $context  = stream_context_create($options);
+	        $result = file_get_contents($url, false, $context);
+
+	        return json_decode($result)->success;
+	    }
+	    catch (Exception $e) {
+	        return null;
+    	}	
+    } 
 
     private function notify($days, $user)
     {

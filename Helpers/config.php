@@ -14,6 +14,7 @@
 		'log' => get_cfg_var('shirley.log'),
 		'ses.sender' => get_cfg_var('ses.sender'),
 		'ses.user' => get_cfg_var('ses.user'),
-		'ses.password' => get_cfg_var('ses.password')
+		'ses.password' => get_cfg_var('ses.password'),
+		'google.re' => get_cfg_var('google.re')
 	];
 ?>
