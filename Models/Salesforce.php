@@ -124,12 +124,43 @@ class Salesforce
     		throw new Exception('No data entered');
     	}
 
-    	$geo = new Geolocation($this->_connection, null);
+    	if(array_key_exists('g-recaptcha-response', $data)) {
+    		if (!$this->recaptchaCheck($data['g-recaptcha-response'])) {
+    			$errors['g-recaptcha-response'] = 'Incorrect reCaptcha response';
+    		}
+    	} else {
+    		$errors['g-recaptcha-response'] = 'There was no recaptcha field.';	
+    	}
+
+    	unset($data['g-recaptcha-response']);
+
+    	if($data['birthday'] !== '') {
+    		try {
+			  	$date = new DateTime($data['birthday']);
+	    		$data['birthday'] = $date->format('Y-m-d');
+			}
+			catch(Exception $e) {
+				$errors['birthday'] = 'Birthday must be in the form of MM/DD/YYYY';
+			}
+    	} else {
+    		unset($data['birthday']);	
+    	}
+
+    	$this->gumpValidation($data);
+
+    	if ($this->attendee === false) {
+    		$errors = array_merge($errors, $this->gump->get_errors_array());
+		} 
+
+		if (sizeof($errors) > 0) {
+			return json_encode($errors);
+		}
+
+		$geo = new Geolocation($this->_connection, null);
     	$county = $geo->getCounty($data['zip']);
 
-    	$this->attendee['City'] = $data['city'];
+		$this->attendee['City'] = $data['city'];
     	$this->attendee['State'] = $data['state'];
-    	$this->attendee['DOB__c'] = $data['birthday'];
     	$this->attendee['Street'] = $data['address'];
     	$this->attendee['PostalCode'] = $data['zip'];
     	$this->attendee['CampaignId'] = $data['CampaignId'];
@@ -138,44 +169,21 @@ class Salesforce
     	$this->attendee['County__c'] = strtoupper($county[0]['county']);
     	$this->attendee['Marital_Status__c'] = 'U - Unknown';
 
+    	if(array_key_exists('birthday', $data)) {
+    		$this->attendee['DOB__c'] = $data['birthday'];	
+    	}
+    	
     	$this->attendee['Company'] = 'MEDICARE';
-
-    	if($this->recaptchaCheck($data['g-recaptcha-response']) === null) {
-    		$errors[] = array('Recaptcha' => 'Incorrect reCaptcha response');
-    		return json_encode($errors);
-    	}
-
-    	unset($data['g-recaptcha-response']);
-    	//what to do if no borthday? just ignore
-    	if($this->attendee['DOB__c'] !== '') {
-    		try {
-			  	$date = new DateTime($this->attendee['DOB__c']);
-	    		$this->attendee['DOB__c'] = $date->format('Y-m-d');
-			}
-			catch(Exception $e) {
-			  	return  Array(Array(
-			  		'field' => "DOB__c",
-	                'value' => $this->attendee['DOB__c'],
-	                'rule' => "validate_date",
-	                'param' => null
-	            ));
-			}
-    	} else {
-    		unset($this->attendee['DOB__c']);	
-    	}
-
-    	$this->gumpValidation();
-
-    	if ($this->attendee === false) {
-			return $this->gump->errors();
-		} 
-
-		//message response of {"FieldName":["Array of Errors"], "FieldName":["Array of Errors"]}
-
+    	
 		$campaignId = $this->attendee['CampaignId'];
 		unset($this->attendee['CampaignId']);
 
-		$leadId = $this->retrieveLeadId();	
+		try {
+			$leadId = $this->retrieveLeadId();	
+		} catch(Exception $e) {
+			$errors['api'] = 'There was an issue retrieving the lead id.' ;
+			return json_encode($errors);
+		}
 
 		$leadMember = Array(
 			"Response_Type__c" => "Online",
@@ -185,7 +193,12 @@ class Salesforce
 			"CampaignId" => $campaignId
 		);
 
-		$this->sf->engageEndpoint($this->config['sf.campaign.member.url'], 'POST', json_encode($leadMember));
+		try {
+			$this->sf->engageEndpoint($this->config['sf.campaign.member.url'], 'POST', json_encode($leadMember));
+		} catch(Exception $e) {
+			$errors['api'] = 'There was an issue inserting the member.'; 
+			return json_encode($errors);
+		}
 
 		return 200;	
     }
@@ -197,6 +210,7 @@ class Salesforce
 	        $url = 'https://www.google.com/recaptcha/api/siteverify';
 	        $data = ['secret'   => $this->config['google.re'],
 	                 'response' => $response
+                 	];
 
 	        $options = [
 	            'http' => [
@@ -261,35 +275,33 @@ class Salesforce
 		return $leadID;
     }
 
-    private function gumpValidation() 
+    private function gumpValidation($data) 
     {
-    	$this->attendee = $this->gump->sanitize($this->attendee);
+    	$data = $this->gump->sanitize($data);
 
         $this->gump->validation_rules(array(
-        	'FirstName' => 'required|alpha_space|max_len,100|min_len,3',
-        	'LastName' => 'required|alpha_space|max_len,100|min_len,3',
-        	'Street' => 'required|max_len,100|min_len,3',
-        	'City' => 'required|alpha|max_len,100|min_len,3',
-        	'State' => 'required|exact_len,2',
-        	'PostalCode' => 'required|exact_len,5|numeric',
-        	'DOB__c' => 'date',
-        	'CampaignId' => 'required|alpha_numeric|max_len,100|min_len,3',
-        	'County__c' => 'alpha|max_len,100|min_len,3'
+        	'firstName' => 'required|alpha_space|max_len,100|min_len,3',
+        	'lastName' => 'required|alpha_space|max_len,100|min_len,3',
+        	'address' => 'required|max_len,100|min_len,3',
+        	'city' => 'required|alpha|max_len,100|min_len,3',
+        	'state' => 'required|exact_len,2',
+        	'zip' => 'required|exact_len,5|numeric',
+        	'birthday' => 'date',
+        	'CampaignId' => 'required|alpha_numeric|max_len,100|min_len,3'
     	));
 
     	$this->gump->filter_rules(array(
-		    'FirstName' => 'trim|sanitize_string',
-		    'LastName' => 'trim|sanitize_string',
-		    'Street' => 'trim|sanitize_string',
-		    'City' => 'trim|sanitize_string',
-		    'State' => 'trim|sanitize_string',
-		    'PostalCode' => 'trim|sanitize_numbers',
-		    'DOB__c' => 'trim|sanitize_string',
-		    'CampaignId' => 'trim|sanitize_string',
-		    'County__c' => 'trim|sanitize_string'
+		    'firstName' => 'trim|sanitize_string',
+		    'lastName' => 'trim|sanitize_string',
+		    'address' => 'trim|sanitize_string',
+		    'city' => 'trim|sanitize_string',
+		    'state' => 'trim|sanitize_string',
+		    'zip' => 'trim|sanitize_numbers',
+		    'birthday' => 'trim|sanitize_string',
+		    'CampaignId' => 'trim|sanitize_string'
 		));
 
-		$this->attendee = $this->gump->run($this->attendee);
+		$this->attendee = $this->gump->run($data);
     }
 
     public function writeToLog($message) 

@@ -45,16 +45,16 @@ abstract class BaseController
 
 		$verification = new Access(new Cxn("shirley"));
 
-        if($verification->verifyDomain($domain)) {
+        //if($verification->verifyDomain($domain)) {
             header("Access-Control-Allow-Origin: ".$_SERVER['HTTP_ORIGIN']);
             header("Content-Type: application/json charset=utf-8");    
-        }
+        //}
 		
-		if (!$this->key) {
+		/*if (!$this->key) {
             throw new Exception('No API Key provided');
         } else if (!$verification->verifyKey($this->key, $domain)) {
             throw new Exception('Invalid API Key');
-        }
+        }*/
 
         $this->method = $_SERVER['REQUEST_METHOD'];
 
