@@ -97,6 +97,7 @@
 	    public function writeToLog($message) 
 	    {
 			$message = date('m/d/Y h:i:sa', time()) . ' ' . $message;
+			print_r($this->config['log']);
 			file_put_contents($this->config['log'], $message . "\r\n", FILE_APPEND | LOCK_EX);
 		}
 

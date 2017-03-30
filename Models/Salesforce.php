@@ -146,9 +146,7 @@ class Salesforce
     		unset($data['birthday']);	
     	}
 
-    	$this->gumpValidation($data);
-
-    	if ($this->attendee === false) {
+    	if ($this->gumpValidation($data) === false) {
     		$errors = array_merge($errors, $this->gump->get_errors_array());
 		} 
 
@@ -179,11 +177,12 @@ class Salesforce
 		unset($this->attendee['CampaignId']);
 
 		try {
-			$leadId = $this->retrieveLeadId();	
+			$leadId = $this->retrieveLeadId();
 		} catch(Exception $e) {
-			$errors['api'] = 'There was an issue retrieving the lead id.' ;
+			$errors['api'] = 'There was an issue obtaining lead memeber.'; 
 			return json_encode($errors);
 		}
+				
 
 		$leadMember = Array(
 			"Response_Type__c" => "Online",
@@ -301,7 +300,7 @@ class Salesforce
 		    'CampaignId' => 'trim|sanitize_string'
 		));
 
-		$this->attendee = $this->gump->run($data);
+		return $this->gump->run($data);
     }
 
     public function writeToLog($message) 
