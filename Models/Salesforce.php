@@ -199,7 +199,7 @@ class Salesforce
 			return json_encode($errors);
 		}
 
-		return 200;	
+		return;	
     }
 
     //Should probably move to a helper file
