@@ -279,10 +279,10 @@ class Salesforce
     	$data = $this->gump->sanitize($data);
 
         $this->gump->validation_rules(array(
-        	'firstName' => 'required|alpha_space|max_len,100|min_len,3',
-        	'lastName' => 'required|alpha_space|max_len,100|min_len,3',
-        	'address' => 'required|max_len,100|min_len,3',
-        	'city' => 'required|alpha|max_len,100|min_len,3',
+        	'firstName' => 'required|alpha_space|max_len,100',
+        	'lastName' => 'required|alpha_space|max_len,100',
+        	'address' => 'required|max_len,100',
+        	'city' => 'required|alpha|max_len,100',
         	'state' => 'required|exact_len,2',
         	'zip' => 'required|exact_len,5|numeric',
         	'birthday' => 'date',
