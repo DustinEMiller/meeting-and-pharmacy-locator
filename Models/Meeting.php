@@ -66,10 +66,10 @@ class Meeting
 
         if($now >= $upperBound && $now <= $lowerBound) {
             $qry = $this->_db->prepare('SELECT location, campaign_name, address, address2, city, zip, start_date, 
-                time, state, campaign_id, presentation_language FROM askshirley.seminars where zip IN ('.$inParams.') ORDER BY start_date, time ASC' );
+                start_time, state, campaign_id, presentation_language FROM askshirley.seminars where zip IN ('.$inParams.') ORDER BY start_date, time ASC' );
         } else {
             $qry = $this->_db->prepare('SELECT location, campaign_name, address, address2, city, zip, start_date, 
-                time, state, campaign_id, presentation_language FROM askshirley.seminars where zip IN ('.$inParams.') AND month(start_date) < 10 ORDER BY start_date, time ASC' );    
+                start_time, state, campaign_id, presentation_language FROM askshirley.seminars where zip IN ('.$inParams.') AND month(start_date) < 10 ORDER BY start_date, time ASC' );    
         }
 
         foreach ($this->zipCodes as $k => $zipCode) {
