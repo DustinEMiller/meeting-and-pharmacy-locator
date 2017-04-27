@@ -41,7 +41,7 @@ class Meeting
 
         $inParams = implode(',', array_fill(0, count($this->zipCodes), '?'));
         $qry = $this->_db->prepare('SELECT campaign_id, campaign_name, location, address, address2, city, zip, state, start_date, end_date, start_time, end_time, room_name, presentation_language
-            FROM askshirley.events_2 where zip IN ('.$inParams.') ORDER BY start_time ASC');
+            FROM askshirley.events where zip IN ('.$inParams.') ORDER BY start_time ASC');
 
         foreach ($this->zipCodes as $k => $zipCode) {
             $qry->bindValue(($k+1), $zipCode);

@@ -33,7 +33,7 @@ class Salesforce
 		        break;
 		    case "events":
 		        $jsonResponse = $this->sf->engageEndpoint($this->config['sf.event.report']);
-		        $table = "events_2";
+		        $table = "events";
 		        break;
 		    default:
 		    	return;
