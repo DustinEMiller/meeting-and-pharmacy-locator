@@ -24,9 +24,20 @@ class Salesforce
         $this->config = include(__DIR__ . '/../Helpers/config.php');
 	}
 
-	public function seminarSync()
+	public function reportSync($type)
     {
-    	$jsonResponse = $this->sf->engageEndpoint($this->config['sf.seminar.report']);
+    	switch ($type) {
+		    case "seminars":
+		        $jsonResponse = $this->sf->engageEndpoint($this->config['sf.seminar.report']);
+		        $table = "seminars";
+		        break;
+		    case "events":
+		        $jsonResponse = $this->sf->engageEndpoint($this->config['sf.event.report']);
+		        $table = "events";
+		        break;
+		    default:
+		    	return;
+		}
 
     	$fieldClause = "";
 		$valueClause = "";
@@ -45,7 +56,7 @@ class Salesforce
 		$valueClause = rtrim($valueClause, ',');
 		$updateClause = rtrim($updateClause, ',');
 
-		$qry = $this->_db->prepare("INSERT INTO seminars (" . $fieldClause . ") VALUES (" . $valueClause . ") 
+		$qry = $this->_db->prepare("INSERT INTO ". $table ." (" . $fieldClause . ") VALUES (" . $valueClause . ") 
 			ON DUPLICATE KEY UPDATE " . $updateClause);
 
 		$reportRows = $jsonResponse->{'factMap'}->{'T!T'}->{'rows'};
@@ -77,7 +88,7 @@ class Salesforce
 
 		$currentDate = date('Y-m-d');
 
-		$this->sf->writeToLog('Seminar sync successful');
+		$this->sf->writeToLog($type.' sync successful');
 
 		return 'SUCCESS';
     }
