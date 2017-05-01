@@ -120,7 +120,7 @@ class Salesforce
 
     		$days = floor(($expire - $now) / (60 * 60 * 24));
 
-    		if($days === 7 || $days === 2) {
+    		if($days == 7 || $days == 2) {
     			$this->notify($days, $user);
     		}
     	}
