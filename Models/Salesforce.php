@@ -39,6 +39,9 @@ class Salesforce
 		    	return;
 		}
 
+		$qry = $this->_db->prepare("TRUNCATE ". $table .";");
+		$qry->execute();
+
     	$fieldClause = "";
 		$valueClause = "";
 		$updateClause = "";
