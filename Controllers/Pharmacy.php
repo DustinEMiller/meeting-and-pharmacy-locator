@@ -6,7 +6,7 @@ require_once __DIR__ . '/../Models/Pharmacy.php';
 class PharmacyController extends BaseController
 {
 	protected $zipcodes = Array();
-	protected $pharma0cies;
+	protected $pharmacies;
 
 	public function __construct($args, $endpoint, $domain) 
 	{
