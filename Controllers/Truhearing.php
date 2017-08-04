@@ -1,7 +1,7 @@
 <?php
 require_once 'BaseController.php';
 require_once __DIR__ . '/../Helpers/Cxn.php';
-require_once __DIR__ . '/../Models/Pharmacy.php';
+require_once __DIR__ . '/../Models/Truhearing.php';
 
 class TruhearingController extends BaseController
 {
