@@ -59,7 +59,7 @@ class Truhearing
 
         $inParams = implode(',', array_fill(0, count($this->zipCodes), '?'));
         $qry = $this->_db->prepare('SELECT provider_name, specialty, clinic_name, address, city, state, zip, phone
-            FROM askshirley.truhearing where specialty = "HIS" AND zip IN ('.$inParams.')');
+            FROM askshirley.truhearing where specialty = "Hearing Instrument Specialist" AND zip IN ('.$inParams.')');
 
         foreach ($this->zipCodes as $k => $zipCode) {
             $qry->bindValue(($k+1), $zipCode);
@@ -79,7 +79,7 @@ class Truhearing
 
         $inParams = implode(',', array_fill(0, count($this->zipCodes), '?'));
         $qry = $this->_db->prepare('SELECT provider_name, specialty, clinic_name, address, city, state, zip, phone
-            FROM askshirley.truhearing where specialty = "AUD" AND zip IN ('.$inParams.')');
+            FROM askshirley.truhearing where specialty = "Audiologist" AND zip IN ('.$inParams.')');
 
         foreach ($this->zipCodes as $k => $zipCode) {
             $qry->bindValue(($k+1), $zipCode);
