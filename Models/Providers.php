@@ -147,18 +147,18 @@ class Providers
 
         if(strtolower($data['minlat']) == 'all') {
             $qry = $this->_db->prepare('SELECT full_name, gender, eprescribe, wheelchair_accessible, language_list, provider_type, address, 
-          address2, city, state, zip, lat, providers.long, phone_number, fax_number, hours_operation, providers_providers_specialty.specialty
+          address2, city, state, zip, lat, providers.long, phone_number, fax_number, hours_operation, specialty_list_all, providers_providers_specialty.specialty
           FROM askshirley.providers inner join providers_providers_specialty on providers.id = providers_providers_specialty.providers_id 
-          where providers.provider_type LIKE :type AND providers_providers_specialty.specialty LIKE :specialty');
+          where providers.provider_type LIKE :type AND providers_providers_specialty.specialty LIKE :specialty GROUP BY providers_providers_specialty.providers_id');
 
             $qry->bindParam(':type', $data['type']);
             $qry->bindParam(':specialty', $data['specialty']);
         } else {
             $qry = $this->_db->prepare('SELECT full_name, gender, eprescribe, wheelchair_accessible, language_list, provider_type, address, 
-          address2, city, state, zip, lat, providers.long, phone_number, fax_number, hours_operation, providers_providers_specialty.specialty
+          address2, city, state, zip, lat, providers.long, phone_number, fax_number, hours_operation, specialty_list_all, providers_providers_specialty.specialty
           FROM askshirley.providers inner join providers_providers_specialty on providers.id = providers_providers_specialty.providers_id 
           where providers.provider_type LIKE :type AND providers_providers_specialty.specialty LIKE :specialty AND 
-          providers.lat BETWEEN :minlat AND :maxlat AND providers.long BETWEEN :minlong AND :maxlong LIMIT 50000');
+          providers.lat BETWEEN :minlat AND :maxlat AND providers.long BETWEEN :minlong AND :maxlong GROUP BY providers_providers_specialty.providers_id LIMIT 50000');
 
             $qry->bindParam(':type', $data['type']);
             $qry->bindParam(':specialty', $data['specialty']);
