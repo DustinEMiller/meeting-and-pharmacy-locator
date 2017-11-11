@@ -40,6 +40,12 @@ class PharmacyController extends BaseController
 		return $this->pharmacies->preferredPlus() ;	
 	}
 
+    public function commercial()
+    {
+        $this->setGetAccess();
+        return $this->pharmacies->commercial($this->extractType());
+    }
+
 	public function medicaid() 
 	{
 		$this->setGetAccess();
@@ -70,6 +76,11 @@ class PharmacyController extends BaseController
 			throw new Exception('Incorrect URL Structure');	
 		}
 	}
+
+    private function extractType()
+    {
+        return end($this->args);
+    }
 
 
 

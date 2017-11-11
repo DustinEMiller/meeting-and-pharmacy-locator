@@ -90,6 +90,40 @@ class Pharmacy
         return($result);     
     }
 
+    public function commercial($type)
+    {
+        if(count($this->zipCodes) == 0) {
+            $result['results'] = array();
+            return $result;
+        }
+
+        $type = strtolower($type);
+
+        $preferred = '%';
+        $preferredPlus = '%';
+
+        if($type == 'preferred') {
+            $preferred = 'Yes';
+        } else if($type == 'preferredplus') {
+            $preferredPlus = 'Yes';
+        }
+
+        $inParams = implode(',', array_fill(0, count($this->zipCodes), '?'));
+        $qry = $this->_db->prepare('SELECT nabp, npi, pharmacy_name, address, address2, city, state, zip, phone, fax 
+            FROM askshirley.commercial_pharmacies where preferred LIKE ? AND preferred_plus LIKE ? AND zip IN ('.$inParams.')');
+
+        $qry->bindValue(1, $preferred);
+        $qry->bindValue(2, $preferredPlus);
+
+        foreach ($this->zipCodes as $k => $zipCode) {
+            $qry->bindValue(($k+3), $zipCode);
+        }
+
+        $qry->execute();
+        $result['results'] = $qry->fetchAll();
+        return($result);
+    }
+
     public function medicaid()
     {
         $inParams = implode(',', array_fill(0, count($this->zipCodes), '?'));
