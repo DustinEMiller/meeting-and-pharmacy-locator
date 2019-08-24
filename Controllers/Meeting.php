@@ -20,9 +20,17 @@ class MeetingController extends BaseController
         parent::__construct($args, $endpoint, $domain);
 
         if (array_key_exists(0, $this->args) && !is_numeric($this->args[0])) {
+            $brandKey = array_search('brand', $this->args);
+            $brandArray = array();
+
+            if($brandKey) {
+                $brandArray = array_slice($this->args, $brandKey);
+                array_splice($this->args, $brandKey++, count($brandArray));
+            }
+
             $this->locationType = array_shift($this->args);
             $this->zipcodes = $this->locationVerification();
-            $this->meetings = new Meeting(new Cxn("shirley"), $this->zipcodes);
+            $this->meetings = new Meeting(new Cxn("shirley"), $this->zipcodes, $brandArray);
         } else {
             throw new Exception('Incorrect URL Structure');
         }
