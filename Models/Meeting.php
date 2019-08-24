@@ -70,12 +70,14 @@ class Meeting
         $now = new DateTime('now');
         $upperBound = new DateTime('Oct 1');
         $lowerBound = new DateTime('Dec 31');
+        $index = 0;
 
         if($now >= $upperBound && $now <= $lowerBound) {
             if(isset($this->brand)) {
                 $qry = $this->_db->prepare('SELECT location, campaign_name, address, address2, city, zip, start_date, 
-                start_time, state, campaign_id, presentation_language FROM askshirley.seminars where brand LIKE :brand AND zip IN ('.$inParams.') ORDER BY start_date, start_time ASC' );
-                $qry->bindValue(":brand", $this->brand);
+                start_time, state, campaign_id, presentation_language FROM askshirley.seminars where brand LIKE ? AND zip IN ('.$inParams.') ORDER BY start_date, start_time ASC' );
+                $qry->bindValue(1, $this->brand);
+                $index++;
                 $this->debug .= " 1 ";
             } else {
                 $qry = $this->_db->prepare('SELECT location, campaign_name, address, address2, city, zip, start_date, 
@@ -85,8 +87,9 @@ class Meeting
         } else {
             if(isset($this->brand)) {
                 $qry = $this->_db->prepare('SELECT location, campaign_name, address, address2, city, zip, start_date, 
-                start_time, state, campaign_id, presentation_language FROM askshirley.seminars where brand LIKE :brand AND zip IN ('.$inParams.') AND month(start_date) < 10 ORDER BY start_date, start_time ASC' );
-                $qry->bindValue(":brand", $this->brand);
+                start_time, state, campaign_id, presentation_language FROM askshirley.seminars where brand LIKE ? AND zip IN ('.$inParams.') AND month(start_date) < 10 ORDER BY start_date, start_time ASC' );
+                $qry->bindValue(1, $this->brand);
+                $index++;
                 $this->debug .= " 3 ";
             } else {
                 $qry = $this->_db->prepare('SELECT location, campaign_name, address, address2, city, zip, start_date, 
@@ -96,7 +99,7 @@ class Meeting
         }
 
         foreach ($this->zipCodes as $k => $zipCode) {
-            $qry->bindValue(($k+1), $zipCode);
+            $qry->bindValue(($k+1+$index), $zipCode);
         }
 
         $qry->execute();
