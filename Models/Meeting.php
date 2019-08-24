@@ -101,6 +101,6 @@ class Meeting
 
         $qry->execute();
         $result['results'] = $qry->fetchAll();
-        return($this->debug . " /n" . $result);
+        return($result);
     }
 }
