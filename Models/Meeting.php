@@ -27,7 +27,9 @@ class Meeting
         $this->_db = $this->_connection->getDb();
         $this->debug = "no brand";
         if(count($brandArray) == 2) {
-            $this->brand = urldecode($brandArray[1]);
+            if(strtolower($brandArray[1]) != 'null') {
+                $this->brand = urldecode($brandArray[1]);
+            }
             $this->debug = "brand = " . $this->brand;
         }
 
