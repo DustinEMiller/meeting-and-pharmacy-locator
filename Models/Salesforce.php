@@ -138,7 +138,7 @@ class Salesforce
     		throw new Exception('No data entered');
     	}
 
-    	if(array_key_exists('g-recaptcha-response', $data)) {
+    	/*if(array_key_exists('g-recaptcha-response', $data)) {
     		if (!$this->recaptchaCheck($data['g-recaptcha-response'])) {
     			$errors['g-recaptcha-response'] = 'Incorrect reCaptcha response';
     		}
@@ -146,7 +146,7 @@ class Salesforce
     		$errors['g-recaptcha-response'] = 'There was no recaptcha field.';	
     	}
 
-    	unset($data['g-recaptcha-response']);
+    	unset($data['g-recaptcha-response']);*/
 
     	if($data['birthday'] !== '') {
     		try {
