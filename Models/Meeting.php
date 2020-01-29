@@ -22,7 +22,7 @@ class Meeting
     private $campaignId;
     private $debug;
 
-    public function __construct($pdo, $zipCodes, $brandArray, $campaignArray)
+    public function __construct($pdo, $zipCodes, $brandArray, $campaignId)
     {
         $this->_connection = $pdo;
         $this->_db = $this->_connection->getDb();
@@ -34,15 +34,12 @@ class Meeting
             $this->debug = "brand = " . $this->brand;
         }
 
-        if(count($campaignArray) == 2) {
-            if(strtolower($campaignArray[1]) != 'null') {
-                $this->campaignId = urldecode($campaignArray[1]);
-            }
+        if($campaignId) {
+            $this->campaignId = urldecode($campaignId);
             $this->debug = "brand = " . $this->brand;
         }
 
-        $this->debug .= $campaignArray[0];
-        $this->debug .= $campaignArray[1];
+        $this->debug .= $campaignId;
 
         foreach ($zipCodes['zip_codes'] as $v) {
             $this->zipCodes[] = $v['zip_code'];
