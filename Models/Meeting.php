@@ -125,7 +125,7 @@ class Meeting
         }
 
         $qry->execute();
-        $result['results'] = $qry->fetchAll();
+        $result['results'] = $this->debug;//$qry->fetchAll();
         return($this->debug);
     }
 }
