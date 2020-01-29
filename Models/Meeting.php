@@ -71,7 +71,7 @@ class Meeting
 
     public function seminars()
     {
-        if(count($this->zipCodes) == 0) {
+        if(count($this->zipCodes) == 0 && !$this->campaignId) {
             $result['results'] = array();
             return $result;
         }
@@ -125,7 +125,7 @@ class Meeting
         }
 
         $qry->execute();
-        $result['results'] = $this->debug;//$qry->fetchAll();
-        return($this->debug);
+        $result['results'] = $qry->fetchAll();
+        return($result);
     }
 }
