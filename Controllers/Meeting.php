@@ -35,11 +35,11 @@ class MeetingController extends BaseController
                 $campaignArray = array_slice($this->args, $campaignId);
                 array_splice($this->args, $campaignId++, count($campaignArray));
             }
-
+            throw new Exception($campaignId);
             if($campaignId != "") {
                 $this->zipcodes = $this->locationVerification();
             }
-            throw new Exception($campaignId);
+
 
             $this->locationType = array_shift($this->args);
 
