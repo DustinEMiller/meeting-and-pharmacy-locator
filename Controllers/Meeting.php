@@ -23,17 +23,24 @@ class MeetingController extends BaseController
             $brandKey = array_search('brand', $this->args);
             $brandArray = array();
             $campaignId = array_search('campaignid', array_map('strtolower', $this->args));
+            $campaignArray = array();
+
 
             if($brandKey) {
                 $brandArray = array_slice($this->args, $brandKey);
                 array_splice($this->args, $brandKey++, count($brandArray));
             }
 
-            $this->locationType = array_shift($this->args);
+            if($campaignId ) {
+                $campaignArray = array_slice($this->args, $campaignId);
+                array_splice($this->args, $campaignId++, count($campaignArray));
+            }
 
             if($campaignId != "") {
                 $this->zipcodes = $this->locationVerification();
             }
+
+            $this->locationType = array_shift($this->args);
 
             $this->meetings = new Meeting(new Cxn("shirley"), $this->zipcodes, $brandArray, $campaignId);
         } else {
