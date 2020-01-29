@@ -41,6 +41,9 @@ class Meeting
             $this->debug = "brand = " . $this->brand;
         }
 
+        $this->debug .= $campaignArray[0];
+        $this->debug .= $campaignArray[1];
+
         foreach ($zipCodes['zip_codes'] as $v) {
             $this->zipCodes[] = $v['zip_code'];
         } 
@@ -73,7 +76,7 @@ class Meeting
     {
         if(count($this->zipCodes) == 0 && !$this->campaignId) {
             $result['results'] = array();
-            return $this->campaignId;
+            return $this->debug;
         }
         
         $inParams = implode(',', array_fill(0, count($this->zipCodes), '?'));
