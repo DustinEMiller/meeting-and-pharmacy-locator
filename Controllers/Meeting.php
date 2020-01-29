@@ -31,7 +31,7 @@ class MeetingController extends BaseController
                 array_splice($this->args, $brandKey++, count($brandArray));
             }
 
-            if($campaignId ) {
+            if($campaignId) {
                 $campaignArray = array_slice($this->args, $campaignId);
                 array_splice($this->args, $campaignId++, count($campaignArray));
             }
@@ -39,6 +39,7 @@ class MeetingController extends BaseController
             if($campaignId != "") {
                 $this->zipcodes = $this->locationVerification();
             }
+            throw new Exception($campaignId);
 
             $this->locationType = array_shift($this->args);
 
