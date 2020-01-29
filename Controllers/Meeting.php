@@ -35,8 +35,9 @@ class MeetingController extends BaseController
                 $campaignId = array_slice($this->args, $campaignIdKey);
             }
 
-            if($campaignId != "") {
+            if(!$campaignId) {
                 $this->zipcodes = $this->locationVerification();
+                $this->locationType = array_shift($this->args);
             }
 
             $this->locationType = array_shift($this->args);
