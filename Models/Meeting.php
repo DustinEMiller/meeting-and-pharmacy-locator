@@ -22,7 +22,7 @@ class Meeting
     private $campaignId;
     private $debug;
 
-    public function __construct($pdo, $zipCodes, $brandArray, $campaignId)
+    public function __construct($pdo, $zipCodes, $brandArray, $campaignArray)
     {
         $this->_connection = $pdo;
         $this->_db = $this->_connection->getDb();
@@ -34,8 +34,11 @@ class Meeting
             $this->debug = "brand = " . $this->brand;
         }
 
-        if($campaignId) {
-            $this->campaignId = $campaignId;
+        if(count($campaignArray) == 2) {
+            if(strtolower($campaignArray[1]) != 'null') {
+                $this->campaignId = urldecode($campaignArray[1]);
+            }
+            $this->debug = "brand = " . $this->brand;
         }
 
         foreach ($zipCodes['zip_codes'] as $v) {
@@ -89,7 +92,7 @@ class Meeting
             } else if(isset($this->campaignId)) {
                 $qry = $this->_db->prepare('SELECT location, campaign_name, address, address2, city, zip, start_date, 
                 start_time, state, campaign_id, presentation_language FROM askshirley.seminars where campaign_id LIKE ? ORDER BY start_date, start_time ASC');
-                $qry->bindValue(1, $this->brand);
+                $qry->bindValue(1, $this->campaignid);
                 $index++;
                 $this->debug .= " 1 ";
             } else {
