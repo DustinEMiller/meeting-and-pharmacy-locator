@@ -42,7 +42,7 @@ class MeetingController extends BaseController
 
             $this->locationType = array_shift($this->args);
 
-            $this->meetings = new Meeting(new Cxn("shirley"), $this->zipcodes, $brandArray, $campaignId);
+            $this->meetings = new Meeting(new Cxn("shirley"), $this->zipcodes, $brandArray, $this->args);
         } else {
             throw new Exception('Incorrect URL Structure');
         }
