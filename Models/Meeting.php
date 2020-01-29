@@ -19,9 +19,10 @@ class Meeting
     private $queryCache = array();
     private $zipCodes = array();
     private $brand;
+    private $campaignId;
     private $debug;
 
-    public function __construct($pdo, $zipCodes, $brandArray)
+    public function __construct($pdo, $zipCodes, $brandArray, $campaignId)
     {
         $this->_connection = $pdo;
         $this->_db = $this->_connection->getDb();
@@ -31,6 +32,10 @@ class Meeting
                 $this->brand = urldecode($brandArray[1]);
             }
             $this->debug = "brand = " . $this->brand;
+        }
+
+        if($campaignId) {
+            $this->campaignId = $campaignId;
         }
 
         foreach ($zipCodes['zip_codes'] as $v) {
@@ -77,7 +82,13 @@ class Meeting
         if($now >= $upperBound && $now <= $lowerBound) {
             if(isset($this->brand)) {
                 $qry = $this->_db->prepare('SELECT location, campaign_name, address, address2, city, zip, start_date, 
-                start_time, state, campaign_id, presentation_language FROM askshirley.seminars where brand LIKE ? AND zip IN ('.$inParams.') ORDER BY start_date, start_time ASC' );
+                start_time, state, campaign_id, presentation_language FROM askshirley.seminars where brand LIKE ? AND zip IN (' . $inParams . ') ORDER BY start_date, start_time ASC');
+                $qry->bindValue(1, $this->brand);
+                $index++;
+                $this->debug .= " 1 ";
+            } else if(isset($this->campaignId)) {
+                $qry = $this->_db->prepare('SELECT location, campaign_name, address, address2, city, zip, start_date, 
+                start_time, state, campaign_id, presentation_language FROM askshirley.seminars where campaign_id LIKE ? ORDER BY start_date, start_time ASC');
                 $qry->bindValue(1, $this->brand);
                 $index++;
                 $this->debug .= " 1 ";

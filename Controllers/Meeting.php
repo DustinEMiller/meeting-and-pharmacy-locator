@@ -22,6 +22,7 @@ class MeetingController extends BaseController
         if (array_key_exists(0, $this->args) && !is_numeric($this->args[0])) {
             $brandKey = array_search('brand', $this->args);
             $brandArray = array();
+            $campaignId = array_search('campaignid', array_map('strtolower', $this->args));
 
             if($brandKey) {
                 $brandArray = array_slice($this->args, $brandKey);
@@ -29,8 +30,12 @@ class MeetingController extends BaseController
             }
 
             $this->locationType = array_shift($this->args);
-            $this->zipcodes = $this->locationVerification();
-            $this->meetings = new Meeting(new Cxn("shirley"), $this->zipcodes, $brandArray);
+
+            if($campaignId != "") {
+                $this->zipcodes = $this->locationVerification();
+            }
+
+            $this->meetings = new Meeting(new Cxn("shirley"), $this->zipcodes, $brandArray, $campaignId);
         } else {
             throw new Exception('Incorrect URL Structure');
         }
