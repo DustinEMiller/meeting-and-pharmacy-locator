@@ -73,7 +73,7 @@ class Meeting
     {
         if(count($this->zipCodes) == 0 && !$this->campaignId) {
             $result['results'] = array();
-            return $result;
+            return $this->campaignId;
         }
         
         $inParams = implode(',', array_fill(0, count($this->zipCodes), '?'));
