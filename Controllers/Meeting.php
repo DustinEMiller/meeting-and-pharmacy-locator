@@ -22,7 +22,7 @@ class MeetingController extends BaseController
         if (array_key_exists(0, $this->args) && !is_numeric($this->args[0])) {
             $brandKey = array_search('brand', $this->args);
             $brandArray = array();
-            $campaignId = array_search('campaignid', array_map('strtolower', $this->args));
+            $campaignId = array_search('campaignid', $this->args);
             $campaignArray = array();
 
 
