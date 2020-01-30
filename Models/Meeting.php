@@ -68,10 +68,10 @@ class Meeting
     {
 
         $this->debug .= 'before';
-        $this->debug .= $this->campaignid;
+        $this->debug .= $this->campaignId;
         if(count($this->zipCodes) == 0 && !$this->campaignId) {
             $result['results'] = array();
-            return $this->debug;
+            return $result;
         }
         
         $inParams = implode(',', array_fill(0, count($this->zipCodes), '?'));
@@ -90,7 +90,7 @@ class Meeting
             } else if($this->campaignId) {
                 $qry = $this->_db->prepare('SELECT location, campaign_name, address, address2, city, zip, start_date, 
                 start_time, state, campaign_id, presentation_language FROM askshirley.seminars where campaign_id LIKE ? ORDER BY start_date, start_time ASC');
-                $qry->bindValue(1, $this->campaignid);
+                $qry->bindValue(1, $this->campaignId);
                 $index++;
                 $this->debug .= " 11 ";
             } else {
@@ -110,7 +110,7 @@ class Meeting
                 $this->debug .= $this->campaignid;
                 $qry = $this->_db->prepare('SELECT location, campaign_name, address, address2, city, zip, start_date, 
                 start_time, state, campaign_id, presentation_language FROM askshirley.seminars where campaign_id LIKE ? ORDER BY start_date, start_time ASC');
-                $qry->bindValue(1, $this->campaignid);
+                $qry->bindValue(1, $this->campaignId);
                 $index++;
                 $this->debug .= $this->campaignid;
                 $this->debug .= 'after';
