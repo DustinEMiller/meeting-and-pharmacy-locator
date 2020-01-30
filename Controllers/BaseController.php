@@ -100,21 +100,21 @@ abstract class BaseController
             if (count($this->args) < 2 || 
                 !is_numeric($this->args[0]) || 
                 !is_numeric($this->args[1])) {
-                    throw new Exception('Incorrect URI structure for this endpoint');
+                    throw new Exception('Incorrect URI structure for this endpoint1');
             } else {
                 $zip = new Geolocation(new Cxn("shirley"),$this->args);
                 return $zip->radius();
             }
         } else if (strtolower($this->locationType) === 'citystate') {
             if (count($this->args) < 3 || !is_numeric($this->args[2])) {
-                throw new Exception('Incorrect URI structure for this endpoint');
+                throw new Exception('Incorrect URI structure for this endpoint2');
             } else {
                 $zip = new Geolocation(new Cxn("shirley"),$this->args);
                 return $zip->cityzips();       
             }
 
         } else {
-            throw new Exception('Incorrect URI structure for this endpoint');
+            throw new Exception('Incorrect URI structure for this endpoint3');
         }
     
     }
