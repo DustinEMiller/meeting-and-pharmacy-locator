@@ -111,7 +111,7 @@ class Meeting
                 start_time, state, campaign_id, presentation_language FROM askshirley.seminars where campaign_id LIKE ? ORDER BY start_date, start_time ASC');
                 $qry->bindValue(1, $this->campaignid);
                 $index++;
-                $this->debug .= " 1 ";
+                $this->debug .= $this->campaignid;
             } else {
                 $qry = $this->_db->prepare('SELECT location, campaign_name, address, address2, city, zip, start_date, 
                 start_time, state, campaign_id, presentation_language FROM askshirley.seminars where zip IN ('.$inParams.') AND month(start_date) < 10 ORDER BY start_date, start_time ASC' );
@@ -125,6 +125,6 @@ class Meeting
 
         $qry->execute();
         $result['results'] = $qry->fetchAll();
-        return($result);
+        return($this->debug);
     }
 }
