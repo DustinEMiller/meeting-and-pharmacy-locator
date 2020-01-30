@@ -39,7 +39,7 @@ class Meeting
             $this->debug = 'test';
         }
 
-        $this->debug .= $campaignId;
+        $this->debug .= $this->campaignId;
 
         foreach ($zipCodes['zip_codes'] as $v) {
             $this->zipCodes[] = $v['zip_code'];
