@@ -114,7 +114,7 @@ abstract class BaseController
             }
 
         } else {
-            throw new Exception('Incorrect URI structure for this endpoint3');
+            throw new Exception('Incorrect URI structure for this endpoint' . $this->locationType);
         }
     
     }
