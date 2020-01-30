@@ -22,7 +22,7 @@ class Meeting
     private $campaignId;
     private $debug;
 
-    public function __construct($pdo, $zipCodes, $brandArray, $campaignId)
+    public function __construct($pdo, $zipCodes, $brandArray, $campaignArray)
     {
         $this->_connection = $pdo;
         $this->_db = $this->_connection->getDb();
@@ -34,9 +34,8 @@ class Meeting
             $this->debug = "brand = " . $this->brand;
         }
 
-        if($campaignId) {
-            $this->campaignId = urldecode($campaignId);
-            $this->debug = "brand = " . $this->brand;
+        if(!empty($campaignId)) {
+            $this->campaignId = urldecode($campaignArray[0]);
         }
 
         $this->debug .= $campaignId;
