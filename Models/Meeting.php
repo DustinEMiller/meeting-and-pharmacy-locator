@@ -112,7 +112,7 @@ class Meeting
                 start_time, state, campaign_id, presentation_language FROM askshirley.seminars where campaign_id LIKE ? ORDER BY start_date, start_time ASC');
                 $qry->bindValue(1, $this->campaignId);
                 $index++;
-                $this->debug .= $this->campaignid;
+                $this->debug .= $this->campaignId;
                 $this->debug .= 'after';
             } else {
                 $qry = $this->_db->prepare('SELECT location, campaign_name, address, address2, city, zip, start_date, 
@@ -127,6 +127,6 @@ class Meeting
 
         $qry->execute();
         $result['results'] = $qry->fetchAll();
-        return($this->debug);
+        return($result);
     }
 }
