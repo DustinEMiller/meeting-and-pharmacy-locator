@@ -35,10 +35,8 @@ class Meeting
         }
 
         if($campaignId) {
-            $this->campaignId = urldecode($campaignId);
+            $this->campaignId = $campaignId;
         }
-
-        $this->debug .= $campaignId;
 
         foreach ($zipCodes['zip_codes'] as $v) {
             $this->zipCodes[] = $v['zip_code'];
