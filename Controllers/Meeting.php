@@ -59,4 +59,3 @@ class MeetingController extends BaseController
 
 }
 
-?>

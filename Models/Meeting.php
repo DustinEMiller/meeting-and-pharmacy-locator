@@ -92,7 +92,7 @@ class Meeting
                 $qry->bindValue(1, $this->brand);
                 $index++;
                 $this->debug .= " 1 ";
-            } else if(isset($this->campaignId)) {
+            } else if($this->campaignId) {
                 $qry = $this->_db->prepare('SELECT location, campaign_name, address, address2, city, zip, start_date, 
                 start_time, state, campaign_id, presentation_language FROM askshirley.seminars where campaign_id LIKE ? ORDER BY start_date, start_time ASC');
                 $qry->bindValue(1, $this->campaignid);
@@ -110,7 +110,7 @@ class Meeting
                 $qry->bindValue(1, $this->brand);
                 $index++;
                 $this->debug .= " 3 ";
-            } else if(isset($this->campaignId)) {
+            } else if($this->campaignId) {
                 $this->debug .= 'before';
                 $this->debug .= $this->campaignid;
                 $qry = $this->_db->prepare('SELECT location, campaign_name, address, address2, city, zip, start_date, 
