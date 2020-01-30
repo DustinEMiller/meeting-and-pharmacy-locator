@@ -34,12 +34,7 @@ class Meeting
             $this->debug = "brand = " . $this->brand;
         }
 
-        if($campaignId) {
-            $this->campaignId = $campaignId;
-            $this->debug = 'test';
-        }
-
-        $this->debug .= $this->campaignId;
+        $this->campaignId = $campaignId;
 
         foreach ($zipCodes['zip_codes'] as $v) {
             $this->zipCodes[] = $v['zip_code'];
