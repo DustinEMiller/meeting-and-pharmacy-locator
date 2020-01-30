@@ -71,6 +71,9 @@ class Meeting
 
     public function seminars()
     {
+
+        $this->debug .= 'before';
+        $this->debug .= $this->campaignid;
         if(count($this->zipCodes) == 0 && !$this->campaignId) {
             $result['results'] = array();
             return $this->debug;
