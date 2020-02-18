@@ -277,22 +277,13 @@ class Salesforce
     {
     	$medicareId = $this->sf->engageEndpoint($this->config['sf.record.type']);
 
-        $this->writeToLog('$medicareId 0: ');
-        $this->writeToLog($medicareId);
-
 		$medicareId = $medicareId->records['0']->Id;
-
-        $this->writeToLog('$medicareId 1: ');
-        $this->writeToLog($medicareId);
 
 		$this->attendee['Status'] = 'Open : Campaign Related';
 		$this->attendee['RecordTypeId'] = $medicareId;
 
 		$leadID = $this->sf->engageEndpoint($this->config['sf.lead.url'], 'POST', json_encode($this->attendee));
-        $this->writeToLog('$medicareId 2: ');
-        $this->writeToLog($leadID);
 		$this->sf->engageEndpoint($this->config['sf.lead.url'].'/'.$leadID->id, 'PATCH', json_encode($this->attendee));
-        $this->writeToLog('blank: ' );
 
 		return $leadID;
     }
