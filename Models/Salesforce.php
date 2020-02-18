@@ -194,7 +194,7 @@ class Salesforce
 			$leadId = $this->retrieveLeadId();
 		} catch(Exception $e) {
 			$errors['api'] = 'There was an issue obtaining lead member.';
-			return json_encode($e->getMessage());
+			return json_encode($errors);
 		}
 				
 
@@ -277,13 +277,19 @@ class Salesforce
     {
     	$medicareId = $this->sf->engageEndpoint($this->config['sf.record.type']);
 
+        $this->writeToLog('$medicareId 0: ' . $medicareId);
+
 		$medicareId = $medicareId->records['0']->Id;
+
+        $this->writeToLog('$medicareId 1: ' . $medicareId);
 
 		$this->attendee['Status'] = 'Open : Campaign Related';
 		$this->attendee['RecordTypeId'] = $medicareId;
 
 		$leadID = $this->sf->engageEndpoint($this->config['sf.lead.url'], 'POST', json_encode($this->attendee));
+        $this->writeToLog('$medicareId 2: ' . $leadID);
 		$this->sf->engageEndpoint($this->config['sf.lead.url'].'/'.$leadID->id, 'PATCH', json_encode($this->attendee));
+        $this->writeToLog('blank: ' );
 
 		return $leadID;
     }
