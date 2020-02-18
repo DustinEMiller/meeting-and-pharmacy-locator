@@ -194,7 +194,7 @@ class Salesforce
 			$leadId = $this->retrieveLeadId();
 		} catch(Exception $e) {
 			$errors['api'] = 'There was an issue obtaining lead member.';
-			return json_encode($e);
+			return json_encode($e->getMessage());
 		}
 				
 
