@@ -193,8 +193,8 @@ class Salesforce
 		try {
 			$leadId = $this->retrieveLeadId();
 		} catch(Exception $e) {
-			$errors['api'] = 'There was an issue obtaining lead memeber.'; 
-			return json_encode($errors);
+			$errors['api'] = 'There was an issue obtaining lead member.';
+			return json_encode($e);
 		}
 				
 
