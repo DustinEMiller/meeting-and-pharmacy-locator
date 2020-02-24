@@ -180,7 +180,7 @@ class Salesforce
     	$this->attendee['LastName'] = $data['lastName'];
     	$this->attendee['County__c'] = strtoupper($county[0]['county']);
     	$this->attendee['Marital_Status__c'] = 'U - Unknown';
-
+        $this->attendee['LeadSource'] = 'Web Form';
     	if(array_key_exists('birthday', $data)) {
     		$this->attendee['DOB__c'] = $data['birthday'];	
     	}
