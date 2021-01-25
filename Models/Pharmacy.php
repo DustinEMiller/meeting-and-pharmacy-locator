@@ -148,7 +148,7 @@ class Pharmacy
         
         $inParams = implode(',', array_fill(0, count($this->zipCodes), '?'));
         $qry = $this->_db->prepare('SELECT nabp, npi, pharmacy_name, address, address_2, city, state, zip, phone, fax 
-            FROM askshirley.medicare_pharmacies year = ? AND zip IN ('.$inParams.')');
+            FROM askshirley.medicare_pharmacies where year = ? AND zip IN ('.$inParams.')');
 
         $qry->bindValue(2, $year);
 
