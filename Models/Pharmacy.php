@@ -150,10 +150,10 @@ class Pharmacy
         $qry = $this->_db->prepare('SELECT nabp, npi, pharmacy_name, address, address_2, city, state, zip, phone, fax 
             FROM askshirley.medicare_pharmacies where year = ? AND zip IN ('.$inParams.')');
 
-        $qry->bindValue(2, $year);
+        $qry->bindValue(1, $year);
 
         foreach ($this->zipCodes as $k => $zipCode) {
-            $qry->bindValue(($k+3), $zipCode);
+            $qry->bindValue(($k+2), $zipCode);
         }
 
         $qry->execute();
