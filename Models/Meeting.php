@@ -18,11 +18,23 @@ class Meeting
     protected $_db;
     private $queryCache = array();
     private $zipCodes = array();
+    private $brand;
+    private $campaignId;
+    private $debug;
 
-    public function __construct($pdo, $zipCodes)
+    public function __construct($pdo, $zipCodes, $brandArray, $campaignId)
     {
         $this->_connection = $pdo;
         $this->_db = $this->_connection->getDb();
+
+        if(count($brandArray) == 2) {
+            if(strtolower($brandArray[1]) != 'null') {
+                $this->brand = urldecode($brandArray[1]);
+            }
+            $this->debug = "brand = " . $this->brand;
+        }
+
+        $this->campaignId = $campaignId;
 
         foreach ($zipCodes['zip_codes'] as $v) {
             $this->zipCodes[] = $v['zip_code'];
@@ -54,7 +66,10 @@ class Meeting
 
     public function seminars()
     {
-        if(count($this->zipCodes) == 0) {
+
+        $this->debug .= 'before';
+        $this->debug .= $this->campaignId;
+        if(count($this->zipCodes) == 0 && !$this->campaignId) {
             $result['results'] = array();
             return $result;
         }
@@ -63,21 +78,55 @@ class Meeting
         $now = new DateTime('now');
         $upperBound = new DateTime('Oct 1');
         $lowerBound = new DateTime('Dec 31');
+        $index = 0;
 
         if($now >= $upperBound && $now <= $lowerBound) {
-            $qry = $this->_db->prepare('SELECT location, campaign_name, address, address2, city, zip, start_date, 
+            if(isset($this->brand)) {
+                $qry = $this->_db->prepare('SELECT location, campaign_name, address, address2, city, zip, start_date, 
+                start_time, state, campaign_id, presentation_language FROM askshirley.seminars where brand LIKE ? AND zip IN (' . $inParams . ') ORDER BY start_date, start_time ASC');
+                $qry->bindValue(1, $this->brand);
+                $index++;
+                $this->debug .= " 1 ";
+            } else if($this->campaignId) {
+                $qry = $this->_db->prepare('SELECT location, campaign_name, address, address2, city, zip, start_date, 
+                start_time, state, campaign_id, presentation_language FROM askshirley.seminars where campaign_id LIKE ? ORDER BY start_date, start_time ASC');
+                $qry->bindValue(1, $this->campaignId);
+                $index++;
+                $this->debug .= " 11 ";
+            } else {
+                $qry = $this->_db->prepare('SELECT location, campaign_name, address, address2, city, zip, start_date, 
                 start_time, state, campaign_id, presentation_language FROM askshirley.seminars where zip IN ('.$inParams.') ORDER BY start_date, start_time ASC' );
+                $this->debug .= " 2 ";
+            }
         } else {
-            $qry = $this->_db->prepare('SELECT location, campaign_name, address, address2, city, zip, start_date, 
-                start_time, state, campaign_id, presentation_language FROM askshirley.seminars where zip IN ('.$inParams.') AND month(start_date) < 10 ORDER BY start_date, start_time ASC' );    
+            if(isset($this->brand)) {
+                $qry = $this->_db->prepare('SELECT location, campaign_name, address, address2, city, zip, start_date, 
+                start_time, state, campaign_id, presentation_language FROM askshirley.seminars where brand LIKE ? AND zip IN ('.$inParams.') AND month(start_date) < 10 ORDER BY start_date, start_time ASC' );
+                $qry->bindValue(1, $this->brand);
+                $index++;
+                $this->debug .= " 3 ";
+            } else if($this->campaignId) {
+                $this->debug .= 'before';
+                $this->debug .= $this->campaignid;
+                $qry = $this->_db->prepare('SELECT location, campaign_name, address, address2, city, zip, start_date, 
+                start_time, state, campaign_id, presentation_language FROM askshirley.seminars where campaign_id LIKE ? ORDER BY start_date, start_time ASC');
+                $qry->bindValue(1, $this->campaignId);
+                $index++;
+                $this->debug .= $this->campaignId;
+                $this->debug .= 'after';
+            } else {
+                $qry = $this->_db->prepare('SELECT location, campaign_name, address, address2, city, zip, start_date, 
+                start_time, state, campaign_id, presentation_language FROM askshirley.seminars where zip IN ('.$inParams.') AND month(start_date) < 10 ORDER BY start_date, start_time ASC' );
+                $this->debug .= " 4 ";
+            }
         }
 
         foreach ($this->zipCodes as $k => $zipCode) {
-            $qry->bindValue(($k+1), $zipCode);
+            $qry->bindValue(($k+1+$index), $zipCode);
         }
 
         $qry->execute();
         $result['results'] = $qry->fetchAll();
-        return($result);     
+        return($result);
     }
 }

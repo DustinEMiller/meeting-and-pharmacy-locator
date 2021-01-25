@@ -138,7 +138,7 @@ class Salesforce
     		throw new Exception('No data entered');
     	}
 
-    	if(array_key_exists('g-recaptcha-response', $data)) {
+    	/*if(array_key_exists('g-recaptcha-response', $data)) {
     		if (!$this->recaptchaCheck($data['g-recaptcha-response'])) {
     			$errors['g-recaptcha-response'] = 'Incorrect reCaptcha response';
     		}
@@ -146,7 +146,7 @@ class Salesforce
     		$errors['g-recaptcha-response'] = 'There was no recaptcha field.';	
     	}
 
-    	unset($data['g-recaptcha-response']);
+    	unset($data['g-recaptcha-response']);*/
 
     	if($data['birthday'] !== '') {
     		try {
@@ -180,7 +180,7 @@ class Salesforce
     	$this->attendee['LastName'] = $data['lastName'];
     	$this->attendee['County__c'] = strtoupper($county[0]['county']);
     	$this->attendee['Marital_Status__c'] = 'U - Unknown';
-
+        $this->attendee['LeadSource'] = 'Web Form';
     	if(array_key_exists('birthday', $data)) {
     		$this->attendee['DOB__c'] = $data['birthday'];	
     	}
@@ -193,7 +193,7 @@ class Salesforce
 		try {
 			$leadId = $this->retrieveLeadId();
 		} catch(Exception $e) {
-			$errors['api'] = 'There was an issue obtaining lead memeber.'; 
+			$errors['api'] = 'There was an issue obtaining lead member.';
 			return json_encode($errors);
 		}
 				
